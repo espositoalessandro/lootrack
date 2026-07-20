@@ -1,16 +1,17 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, from, map, mergeMap, of, switchMap } from "rxjs";
+import { catchError, concatMap, map, of, switchMap } from "rxjs";
 
 import { TransactionsDatabaseService } from "../../data/transactions-database.service";
 import {
-  addTransactions,
-  addTransactionsFailure,
-  addTransactionsSuccess,
+  addTransaction,
+  addTransactionFailure,
+  addTransactionSuccess,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
 } from "./transactions.actions";
+import { TransactionType } from "../../data/models";
 
 @Injectable()
 export class TransactionsEffects {
@@ -41,27 +42,32 @@ export class TransactionsEffects {
     ),
   );
 
-  readonly addTransactions$ = createEffect(() =>
+  readonly addTransaction$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(addTransactions),
-      switchMap(({ transactions }) =>
-        from(transactions).pipe(
-          mergeMap((transaction) =>
-            this.transactionsDatabase.add(transaction).pipe(
-              map(() => addTransactionsSuccess({ transaction: transaction })),
-              catchError((error: unknown) =>
-                of(
-                  addTransactionsFailure({
-                    error:
-                      error instanceof Error
-                        ? error.message
-                        : "Unable to add transaction",
-                  }),
-                ),
+      ofType(addTransaction),
+
+      concatMap(({ transaction }) =>
+        this.transactionsDatabase
+          .add({
+            type: transaction.type as TransactionType,
+            amountInCents: transaction.amountInCents,
+            description: transaction.description,
+            occurredOn: transaction.occurredOn,
+          })
+          .pipe(
+            map(() => addTransactionSuccess()),
+
+            catchError((error: unknown) =>
+              of(
+                addTransactionFailure({
+                  error:
+                    error instanceof Error
+                      ? error.message
+                      : "Unable to add transaction",
+                }),
               ),
             ),
           ),
-        ),
       ),
     ),
   );

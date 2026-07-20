@@ -12,7 +12,7 @@
       <input
         id="amount-input"
         tuiInput
-        formControlName="amountInCents"
+        formControlName="amount"
         type="number"
         [placeholder]="'newTransaction.amountPlaceholder' | transloco"
       />
@@ -29,7 +29,7 @@
         [placeholder]="'newTransaction.descriptionPlaceholder' | transloco"
       />
     </tui-textfield>
-    <tui-textfield>
+    <tui-textfield tuiMobileCalendar tuiAnimated>
       <label for="occurred-input" tuiLabel>Choose a date</label>
       <input id="occurred-input" tuiInputDateTime formControlName="occurred" />
       <tui-calendar *tuiDropdown />

@@ -1,6 +1,6 @@
 import { createAction, props } from "@ngrx/store";
 
-import type { Transaction } from "../../data/models";
+import type { AddTransaction, Transaction } from "../../data/models";
 
 export const loadTransactions = createAction(
   "[Transactions Page] Load Requested",
@@ -16,17 +16,16 @@ export const loadTransactionsFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const addTransactions = createAction(
-  "[Transactions Page] Add Requested",
-  props<{ transactions: Transaction[] }>(),
+export const addTransaction = createAction(
+  "[New Transaction Page] Add Requested",
+  props<{ transaction: AddTransaction }>(),
 );
 
-export const addTransactionsSuccess = createAction(
+export const addTransactionSuccess = createAction(
   "[Transactions Database] Add Succeeded",
-  props<{ transaction: Transaction }>(),
 );
 
-export const addTransactionsFailure = createAction(
+export const addTransactionFailure = createAction(
   "[Transactions Database] Add Failed",
   props<{ error: string }>(),
 );

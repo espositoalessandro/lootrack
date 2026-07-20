@@ -2,9 +2,9 @@ import { createReducer, on } from "@ngrx/store";
 
 import type { Transaction } from "../../data/models";
 import {
-  addTransactions,
-  addTransactionsFailure,
-  addTransactionsSuccess,
+  addTransaction,
+  addTransactionFailure,
+  addTransactionSuccess,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -44,20 +44,19 @@ export const transactionsReducer = createReducer(
     error,
   })),
 
-  on(addTransactions, (state) => ({
+  on(addTransaction, (state) => ({
     ...state,
     loading: true,
     error: null,
   })),
 
-  on(addTransactionsSuccess, (state, { transaction }) => ({
+  on(addTransactionSuccess, (state) => ({
     ...state,
-    item: transaction,
     loading: false,
     error: null,
   })),
 
-  on(addTransactionsFailure, (state, { error }) => ({
+  on(addTransactionFailure, (state, { error }) => ({
     ...state,
     loading: false,
     error,

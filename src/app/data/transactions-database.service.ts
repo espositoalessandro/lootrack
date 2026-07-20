@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { defer, Observable } from "rxjs";
-import { Transaction } from "./models";
+import { AddTransaction, Transaction } from "./models";
 import { lootrackDb } from "./database";
 
 @Injectable({
@@ -11,7 +11,13 @@ export class TransactionsDatabaseService {
     return defer(() => lootrackDb.transactions.toArray());
   }
 
-  add(transaction: Transaction): Observable<string> {
-    return defer(() => lootrackDb.transactions.add(transaction));
+  add(transaction: AddTransaction): Observable<string> {
+    return defer(() =>
+      lootrackDb.transactions.add({
+        ...transaction,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      }),
+    );
   }
 }

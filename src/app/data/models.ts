@@ -8,3 +8,10 @@ export interface Transaction {
   occurredOn: string;
   createdAt: string;
 }
+
+export interface AddTransaction {
+  type: TransactionType;
+  amountInCents: number;
+  description: string;
+  occurredOn: string;
+}
