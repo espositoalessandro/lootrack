@@ -1,5 +1,11 @@
 <tui-root>
-  <router-outlet />
-  <router-outlet name="sheet" />
-  <app-floating-footer></app-floating-footer>
+  <div class="min-h-dvh">
+    <main class="min-h-dvh pb-[calc(5rem+env(safe-area-inset-bottom))]">
+      <router-outlet />
+    </main>
+
+    <router-outlet name="sheet" />
+
+    <app-floating-footer />
+  </div>
 </tui-root>

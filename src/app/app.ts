@@ -5,7 +5,7 @@ import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, TuiRoot, FloatingFooter, FloatingFooter],
+  imports: [RouterOutlet, TuiRoot, FloatingFooter],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })
