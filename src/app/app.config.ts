@@ -12,6 +12,5 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideTaiga(),
-    provideTaiga(),
   ],
 };
