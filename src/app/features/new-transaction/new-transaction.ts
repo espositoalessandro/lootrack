@@ -2,7 +2,7 @@ import { Component, inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { TuiButton, TuiInput, TuiTextfield } from "@taiga-ui/core";
 import {
-  TuiMobileCalendarDropdown,
+  TuiDropdownSheet,
   TuiSheetDialog,
   TuiSheetDialogOptions,
 } from "@taiga-ui/addon-mobile";
@@ -15,7 +15,7 @@ import {
   Validators,
 } from "@angular/forms";
 import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
-import { TuiInputDateTime } from "@taiga-ui/kit";
+import { TuiInputDate, TuiInputDateTime } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
 import { AddTransaction } from "../../data/models";
@@ -32,7 +32,8 @@ import { AddTransaction } from "../../data/models";
     TuiAnimated,
     TuiInput,
     TuiInputDateTime,
-    TuiMobileCalendarDropdown,
+    TuiInputDate,
+    TuiDropdownSheet,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -54,7 +55,7 @@ export class NewTransaction {
       nonNullable: true,
     }),
   });
-  protected readonly open = true;
+  protected open = true;
 
   protected readonly options: Partial<TuiSheetDialogOptions> = {
     label: "Add transactions",
@@ -95,5 +96,6 @@ export class NewTransaction {
     };
 
     this.store.dispatch(addTransaction({ transaction }));
+    this.close();
   }
 }
