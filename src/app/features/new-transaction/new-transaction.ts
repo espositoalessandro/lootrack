@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
+import { TuiAnimated, TuiAutoFocus, TuiDay } from "@taiga-ui/cdk";
 import { TuiInputDate, TuiInputDateTime } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
@@ -34,6 +34,7 @@ import { AddTransaction } from "../../data/models";
     TuiInputDateTime,
     TuiInputDate,
     TuiDropdownSheet,
+    TuiAutoFocus,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
