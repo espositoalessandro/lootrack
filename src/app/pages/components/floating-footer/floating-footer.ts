@@ -1,8 +1,9 @@
 import { Component } from "@angular/core";
+import { TuiActionBar } from "@taiga-ui/kit";
 
 @Component({
   selector: "app-floating-footer",
-  imports: [],
+  imports: [TuiActionBar],
   templateUrl: "./floating-footer.html",
   styleUrl: "./floating-footer.scss",
 })
