@@ -6,7 +6,7 @@ export const routes: Routes = [
     loadComponent: () => import("./features/home/home").then((m) => m.Home),
   },
   {
-    path: "new-transaction",
+    path: "new-transactions",
     outlet: "sheet",
     loadComponent: () =>
       import("./features/new-transaction/new-transaction").then(

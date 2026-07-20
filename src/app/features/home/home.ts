@@ -1,36 +1,24 @@
-import { Component, OnInit } from "@angular/core";
-import { lootrackDb } from "../../data/database";
-import { Transaction } from "../../data/models";
+import { AsyncPipe, JsonPipe } from "@angular/common";
+import { Component, inject, OnInit } from "@angular/core";
+import { Store } from "@ngrx/store";
+
+import { loadTransactions } from "../../state/transactions/transactions.actions";
+import { selectTransactionsState } from "../../state/transactions/transactions.selector";
 
 @Component({
   selector: "app-home",
-  imports: [],
+  imports: [AsyncPipe, JsonPipe],
   templateUrl: "./home.html",
   styleUrl: "./home.scss",
 })
 export class Home implements OnInit {
-  async ngOnInit(): Promise<void> {
-    await this.testIndexedDb();
-  }
+  private readonly store = inject(Store);
 
-  private async testIndexedDb(): Promise<void> {
-    const existingTransactions = await lootrackDb.transactions.toArray();
+  protected readonly transactionsState$ = this.store.select(
+    selectTransactionsState,
+  );
 
-    if (existingTransactions.length === 0) {
-      const testTransaction: Transaction = {
-        id: crypto.randomUUID(),
-        type: "expense",
-        amountInCents: 1250,
-        description: "IndexedDB test",
-        occurredOn: "2026-07-20",
-        createdAt: new Date().toISOString(),
-      };
-
-      await lootrackDb.transactions.add(testTransaction);
-    }
-
-    const savedTransactions = await lootrackDb.transactions.toArray();
-
-    console.log("Transactions from IndexedDB:", savedTransactions);
+  ngOnInit(): void {
+    this.store.dispatch(loadTransactions());
   }
 }

@@ -10,6 +10,10 @@ import { routes } from "./app.routes";
 import { provideHttpClient } from "@angular/common/http";
 import { TranslocoHttpLoader } from "./transloco-loader";
 import { provideTransloco } from "@jsverse/transloco";
+import { provideStore } from "@ngrx/store";
+import { transactionsReducer } from "./state/transactions/transactions.reducer";
+import { TransactionsEffects } from "./state/transactions/transactions.effects";
+import { provideEffects } from "@ngrx/effects";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +21,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideTaiga(),
     provideHttpClient(),
+    provideStore({
+      transactions: transactionsReducer,
+    }),
+    provideEffects(TransactionsEffects),
     provideTransloco({
       config: {
         availableLangs: ["en"],

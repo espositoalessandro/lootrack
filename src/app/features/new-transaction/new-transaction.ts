@@ -6,7 +6,7 @@ import { TuiFloatingContainer } from "@taiga-ui/layout";
 import { TranslocoPipe } from "@jsverse/transloco";
 
 @Component({
-  selector: "app-new-transaction",
+  selector: "app-new-transactions",
   imports: [TuiButton, TuiSheetDialog, TuiFloatingContainer, TranslocoPipe],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -17,7 +17,7 @@ export class NewTransaction {
   protected readonly open = true;
 
   protected readonly options: Partial<TuiSheetDialogOptions> = {
-    label: "Add transaction",
+    label: "Add transactions",
     closable: true,
   };
 
