@@ -2,7 +2,19 @@
   <button tuiIconButton appearance="secondary" routerLink="/" type="button">
     <tui-icon icon="@font.home" />
   </button>
-  <button tuiIconButton appearance="secondary" routerLink="/newTransaction">
+
+  <button
+    tuiIconButton
+    appearance="secondary"
+    type="button"
+    [routerLink]="[
+      {
+        outlets: {
+          sheet: ['new-transaction']
+        }
+      }
+    ]"
+  >
     <tui-icon icon="@tui.plus" />
   </button>
 </tui-action-bar>

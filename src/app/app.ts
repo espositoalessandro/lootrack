@@ -1,5 +1,5 @@
 import { TuiRoot } from "@taiga-ui/core";
-import { Component, signal } from "@angular/core";
+import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 
@@ -9,6 +9,4 @@ import { FloatingFooter } from "./layout/floating-footer/floating-footer";
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })
-export class App {
-  protected readonly title = signal("lootrack");
-}
+export class App {}
