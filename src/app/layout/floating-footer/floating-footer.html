@@ -1,20 +1,20 @@
-<tui-action-bar>
-  <button tuiIconButton appearance="secondary" routerLink="/" type="button">
-    <tui-icon icon="@font.home" />
-  </button>
-
-  <button
-    tuiIconButton
-    appearance="secondary"
-    type="button"
-    [routerLink]="[
+<div class="d-flex w-100 fixed bottom-0">
+  <div tuiAppearance="floating" tuiButtonGroup>
+    <button
+      type="button"
+      [routerLink]="[
       {
         outlets: {
           sheet: ['new-transaction']
         }
       }
     ]"
-  >
-    <tui-icon icon="@tui.plus" />
-  </button>
-</tui-action-bar>
+    >
+      <tui-icon icon="@tui.plus" />
+    </button>
+
+    <button routerLink="/" type="button">
+      <tui-icon icon="@font.home" />
+    </button>
+  </div>
+</div>
