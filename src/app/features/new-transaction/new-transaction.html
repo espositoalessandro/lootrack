@@ -4,8 +4,45 @@
   [tuiSheetDialogOptions]="options"
   (tuiSheetDialogChange)="onOpenChange($event)"
 >
+  <form [formGroup]="form" (ngSubmit)="null" class="flex flex-col gap-4">
+    <tui-textfield tuiAnimated>
+      <label for="amount-input" tuiLabel>
+        {{ 'newTransaction.amount' | transloco }}</label
+      >
+      <input
+        id="amount-input"
+        tuiInput
+        formControlName="amountInCents"
+        type="number"
+        [placeholder]="'newTransaction.amountPlaceholder' | transloco"
+      />
+    </tui-textfield>
+    <tui-textfield tuiAnimated>
+      <label for="description-input" tuiLabel>
+        {{ 'newTransaction.description' | transloco }}</label
+      >
+      <input
+        id="description-input"
+        tuiInput
+        formControlName="description"
+        type="text"
+        [placeholder]="'newTransaction.descriptionPlaceholder' | transloco"
+      />
+    </tui-textfield>
+    <tui-textfield>
+      <label for="occurred-input" tuiLabel>Choose a date</label>
+      <input id="occurred-input" tuiInputDateTime formControlName="occurred" />
+      <tui-calendar *tuiDropdown />
+    </tui-textfield>
+  </form>
   <footer tuiFloatingContainer class="footer">
-    <button size="m" tuiButton type="button" (click)="observer.complete()">
+    <button
+      size="m"
+      tuiButton
+      type="submit"
+      (click)="onSubmit()"
+      [disabled]="form.invalid"
+    >
       {{ 'buttons.confirm' | transloco }}
     </button>
   </footer>

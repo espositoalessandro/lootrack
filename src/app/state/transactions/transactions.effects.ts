@@ -1,9 +1,12 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, map, of, switchMap } from "rxjs";
+import { catchError, from, map, mergeMap, of, switchMap } from "rxjs";
 
 import { TransactionsDatabaseService } from "../../data/transactions-database.service";
 import {
+  addTransactions,
+  addTransactionsFailure,
+  addTransactionsSuccess,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -31,6 +34,31 @@ export class TransactionsEffects {
                     ? error.message
                     : "Unable to load transactions",
               }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly addTransactions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(addTransactions),
+      switchMap(({ transactions }) =>
+        from(transactions).pipe(
+          mergeMap((transaction) =>
+            this.transactionsDatabase.add(transaction).pipe(
+              map(() => addTransactionsSuccess({ transaction: transaction })),
+              catchError((error: unknown) =>
+                of(
+                  addTransactionsFailure({
+                    error:
+                      error instanceof Error
+                        ? error.message
+                        : "Unable to add transaction",
+                  }),
+                ),
+              ),
             ),
           ),
         ),
