@@ -23,6 +23,7 @@ export const addTransaction = createAction(
 
 export const addTransactionSuccess = createAction(
   "[Transactions Database] Add Succeeded",
+  props<{ transaction: Transaction }>(),
 );
 
 export const addTransactionFailure = createAction(

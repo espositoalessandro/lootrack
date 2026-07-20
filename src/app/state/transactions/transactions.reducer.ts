@@ -50,8 +50,9 @@ export const transactionsReducer = createReducer(
     error: null,
   })),
 
-  on(addTransactionSuccess, (state) => ({
+  on(addTransactionSuccess, (state, { transaction }) => ({
     ...state,
+    items: [transaction, ...state.items],
     loading: false,
     error: null,
   })),

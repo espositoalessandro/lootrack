@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { TuiAnimated } from "@taiga-ui/cdk";
+import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
 import { TuiInputDateTime } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
@@ -41,10 +41,18 @@ export class NewTransaction {
   private readonly store = inject(Store);
 
   private readonly router = inject(Router);
-  protected form = new FormGroup({
-    amount: new FormControl(0, Validators.required),
-    occurred: new FormControl(new Date(), Validators.required),
-    description: new FormControl(""),
+  protected readonly form = new FormGroup({
+    amount: new FormControl<number | null>(null, [
+      Validators.required,
+      Validators.min(0.01),
+    ]),
+    occurred: new FormControl<TuiDay>(TuiDay.currentLocal(), {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    description: new FormControl("", {
+      nonNullable: true,
+    }),
   });
   protected readonly open = true;
 
@@ -69,10 +77,20 @@ export class NewTransaction {
     }
   }
   protected onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    const occurred = this.form.controls.occurred.value;
+    const occurredOn = [
+      occurred.year,
+      String(occurred.month + 1).padStart(2, "0"),
+      String(occurred.day).padStart(2, "0"),
+    ].join("-");
     const transaction: AddTransaction = {
-      amountInCents: this.form.value.amount!,
+      amountInCents: Math.round(this.form.controls.amount.value! * 100),
       description: this.form.value.description ?? "",
-      occurredOn: this.form.value.occurred!.toISOString(),
+      occurredOn: occurredOn,
       type: "expense",
     };
 

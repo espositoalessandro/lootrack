@@ -11,7 +11,6 @@ import {
   loadTransactionsFailure,
   loadTransactionsSuccess,
 } from "./transactions.actions";
-import { TransactionType } from "../../data/models";
 
 @Injectable()
 export class TransactionsEffects {
@@ -47,27 +46,22 @@ export class TransactionsEffects {
       ofType(addTransaction),
 
       concatMap(({ transaction }) =>
-        this.transactionsDatabase
-          .add({
-            type: transaction.type as TransactionType,
-            amountInCents: transaction.amountInCents,
-            description: transaction.description,
-            occurredOn: transaction.occurredOn,
-          })
-          .pipe(
-            map(() => addTransactionSuccess()),
+        this.transactionsDatabase.add(transaction).pipe(
+          map((newTransaction) =>
+            addTransactionSuccess({ transaction: newTransaction }),
+          ),
 
-            catchError((error: unknown) =>
-              of(
-                addTransactionFailure({
-                  error:
-                    error instanceof Error
-                      ? error.message
-                      : "Unable to add transaction",
-                }),
-              ),
+          catchError((error: unknown) =>
+            of(
+              addTransactionFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to add transaction",
+              }),
             ),
           ),
+        ),
       ),
     ),
   );

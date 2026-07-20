@@ -1,10 +1,9 @@
 <ng-template
-  let-observer
   [tuiSheetDialog]="open"
   [tuiSheetDialogOptions]="options"
   (tuiSheetDialogChange)="onOpenChange($event)"
 >
-  <form [formGroup]="form" (ngSubmit)="null" class="flex flex-col gap-4">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
     <tui-textfield tuiAnimated>
       <label for="amount-input" tuiLabel>
         {{ 'newTransaction.amount' | transloco }}</label
@@ -36,13 +35,7 @@
     </tui-textfield>
   </form>
   <footer tuiFloatingContainer class="footer">
-    <button
-      size="m"
-      tuiButton
-      type="submit"
-      (click)="onSubmit()"
-      [disabled]="form.invalid"
-    >
+    <button size="m" tuiButton type="submit" [disabled]="form.invalid">
       {{ 'buttons.confirm' | transloco }}
     </button>
   </footer>

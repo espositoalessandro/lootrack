@@ -11,13 +11,15 @@ export class TransactionsDatabaseService {
     return defer(() => lootrackDb.transactions.toArray());
   }
 
-  add(transaction: AddTransaction): Observable<string> {
-    return defer(() =>
-      lootrackDb.transactions.add({
-        ...transaction,
+  add(input: AddTransaction): Observable<Transaction> {
+    return defer(async () => {
+      const transaction: Transaction = {
+        ...input,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
-      }),
-    );
+      };
+      await lootrackDb.transactions.add(transaction);
+      return transaction;
+    });
   }
 }
