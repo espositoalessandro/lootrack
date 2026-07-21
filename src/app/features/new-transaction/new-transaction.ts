@@ -31,9 +31,9 @@ import {
 import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
 import { selectTransactionById } from "../../state/transactions/transactions.selector";
-import { filter, take, tap } from "rxjs";
+import { filter, take } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { Actions, ofType } from "@ngrx/effects";
 
 @Component({
   selector: "app-new-transactions",
@@ -93,24 +93,16 @@ export class NewTransaction implements OnInit {
     closable: true,
   };
 
-  readonly closeTransactionSheet$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(addTransactionSuccess, updateTransactionSuccess),
-        tap(() => {
-          void this.router.navigate([
-            {
-              outlets: {
-                sheet: null,
-              },
-            },
-          ]);
-        }),
-      ),
-    { dispatch: false },
-  );
-
   ngOnInit(): void {
+    this.actions$
+      .pipe(
+        ofType(addTransactionSuccess, updateTransactionSuccess),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.close();
+      });
+
     if (!this.transactionId) {
       return;
     }
