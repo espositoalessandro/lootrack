@@ -19,3 +19,8 @@ export const selectTransactionsError = createSelector(
   selectTransactionsState,
   (state) => state.error,
 );
+
+export const selectTransactionById = (id: string) =>
+  createSelector(selectTransactions, (transactions) =>
+    transactions.find((transaction) => transaction.id === id),
+  );

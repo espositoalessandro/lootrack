@@ -1,5 +1,5 @@
-import { Component, inject } from "@angular/core";
-import { Router } from "@angular/router";
+import { Component, DestroyRef, inject, OnInit } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 import { TuiButton, TuiInput, TuiTextfield, TuiTitle } from "@taiga-ui/core";
 import {
   TuiDropdownSheet,
@@ -17,10 +17,23 @@ import {
 import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
 import { TuiInputDate, TuiInputDateTime, TuiSegmented } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
-import { addTransaction } from "../../state/transactions/transactions.actions";
-import { AddTransaction, TransactionType } from "../../data/models";
+import {
+  addTransaction,
+  addTransactionSuccess,
+  updateTransaction,
+  updateTransactionSuccess,
+} from "../../state/transactions/transactions.actions";
+import {
+  AddTransaction,
+  Transaction,
+  TransactionType,
+} from "../../data/models";
 import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
+import { selectTransactionById } from "../../state/transactions/transactions.selector";
+import { filter, take, tap } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
 
 @Component({
   selector: "app-new-transactions",
@@ -43,9 +56,16 @@ import { type MaskitoOptions } from "@maskito/core";
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
 })
-export class NewTransaction {
+export class NewTransaction implements OnInit {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly actions$ = inject(Actions);
+
+  protected readonly transactionId = this.route.snapshot.paramMap.get("id");
+  protected readonly isEditMode = this.transactionId !== null;
+
   protected readonly amountMask: MaskitoOptions = {
     mask: /^\d*(?:[.,]\d{0,2})?$/,
   };
@@ -72,6 +92,56 @@ export class NewTransaction {
   protected readonly options: Partial<TuiSheetDialogOptions> = {
     closable: true,
   };
+
+  readonly closeTransactionSheet$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(addTransactionSuccess, updateTransactionSuccess),
+        tap(() => {
+          void this.router.navigate([
+            {
+              outlets: {
+                sheet: null,
+              },
+            },
+          ]);
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  ngOnInit(): void {
+    if (!this.transactionId) {
+      return;
+    }
+
+    this.store
+      .select(selectTransactionById(this.transactionId))
+      .pipe(
+        filter(
+          (transaction): transaction is Transaction =>
+            transaction !== undefined,
+        ),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((transaction) => {
+        this.prefillForm(transaction);
+      });
+  }
+
+  private prefillForm(transaction: Transaction): void {
+    const [year, month, day] = transaction.occurredOn.split("-").map(Number);
+
+    this.form.setValue({
+      amount: (transaction.amountInCents / 100).toFixed(2),
+
+      occurred: new TuiDay(year, month - 1, day),
+
+      description: transaction.description,
+      type: transaction.type,
+    });
+  }
 
   protected close(): void {
     void this.router.navigate([
@@ -115,7 +185,15 @@ export class NewTransaction {
       type: this.form.value.type!,
     };
 
-    this.store.dispatch(addTransaction({ transaction }));
-    this.close();
+    if (this.transactionId) {
+      this.store.dispatch(
+        updateTransaction({
+          id: this.transactionId,
+          changes: transaction,
+        }),
+      );
+    } else {
+      this.store.dispatch(addTransaction({ transaction }));
+    }
   }
 }

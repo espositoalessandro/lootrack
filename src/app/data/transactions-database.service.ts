@@ -29,4 +29,23 @@ export class TransactionsDatabaseService {
       return id;
     });
   }
+
+  update(id: string, changes: AddTransaction): Observable<Transaction> {
+    return defer(async () => {
+      const existing = await lootrackDb.transactions.get(id);
+
+      if (!existing) {
+        throw new Error("Transaction not found");
+      }
+
+      const updatedTransaction: Transaction = {
+        ...existing,
+        ...changes,
+      };
+
+      await lootrackDb.transactions.put(updatedTransaction);
+
+      return updatedTransaction;
+    });
+  }
 }

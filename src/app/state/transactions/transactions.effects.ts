@@ -13,6 +13,9 @@ import {
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
+  updateTransaction,
+  updateTransactionFailure,
+  updateTransactionSuccess,
 } from "./transactions.actions";
 
 @Injectable()
@@ -82,6 +85,33 @@ export class TransactionsEffects {
                   error instanceof Error
                     ? error.message
                     : "Unable to delete transaction",
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly updateTransaction$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateTransaction),
+
+      concatMap(({ id, changes }) =>
+        this.transactionsDatabase.update(id, changes).pipe(
+          map((transaction) =>
+            updateTransactionSuccess({
+              updatedTransaction: transaction,
+            }),
+          ),
+
+          catchError((error: unknown) =>
+            of(
+              updateTransactionFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to update transaction",
               }),
             ),
           ),

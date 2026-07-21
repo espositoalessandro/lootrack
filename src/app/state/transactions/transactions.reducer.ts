@@ -11,6 +11,9 @@ import {
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
+  updateTransaction,
+  updateTransactionFailure,
+  updateTransactionSuccess,
 } from "./transactions.actions";
 
 export interface TransactionsState {
@@ -80,6 +83,27 @@ export const transactionsReducer = createReducer(
   })),
 
   on(deleteTransactionFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  on(updateTransaction, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+
+  on(updateTransactionSuccess, (state, { updatedTransaction }) => ({
+    ...state,
+    items: state.items.map((item) =>
+      item.id === updatedTransaction.id ? updatedTransaction : item,
+    ),
+    loading: false,
+    error: null,
+  })),
+
+  on(updateTransactionFailure, (state, { error }) => ({
     ...state,
     loading: false,
     error,

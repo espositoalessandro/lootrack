@@ -6,6 +6,7 @@ import { AmountPipe } from "../../../shared/pipes/amount-pipe";
 import { Store } from "@ngrx/store";
 import { selectTransactionsLoading } from "../../../state/transactions/transactions.selector";
 import { deleteTransaction } from "../../../state/transactions/transactions.actions";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-transaction-item",
@@ -15,6 +16,7 @@ import { deleteTransaction } from "../../../state/transactions/transactions.acti
 })
 export class TransactionItem {
   transaction = input.required<Transaction>();
+  private readonly router = inject(Router);
   private readonly store = inject(Store);
   protected readonly loading$ = this.store.select(selectTransactionsLoading);
   protected expanded = false;
@@ -23,5 +25,13 @@ export class TransactionItem {
     this.store.dispatch(deleteTransaction({ id: this.transaction().id }));
   }
 
-  onEditTransaction() {}
+  protected onEditTransaction(): void {
+    void this.router.navigate([
+      {
+        outlets: {
+          sheet: ["edit-transaction", this.transaction().id],
+        },
+      },
+    ]);
+  }
 }

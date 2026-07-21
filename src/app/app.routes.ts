@@ -21,6 +21,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "edit-transaction/:id",
+    outlet: "sheet",
+    loadComponent: () =>
+      import("./features/new-transaction/new-transaction").then(
+        (m) => m.NewTransaction,
+      ),
+  },
+  {
     path: "**",
     redirectTo: "",
   },

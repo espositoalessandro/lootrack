@@ -45,3 +45,18 @@ export const deleteTransactionFailure = createAction(
   "[Transactions Database] Delete Failed",
   props<{ error: string }>(),
 );
+
+export const updateTransaction = createAction(
+  "[Transaction Item] Delete Requested",
+  props<{ id: string; changes: AddTransaction }>(),
+);
+
+export const updateTransactionSuccess = createAction(
+  "[Transactions Database] Delete Succeeded",
+  props<{ updatedTransaction: Transaction }>(),
+);
+
+export const updateTransactionFailure = createAction(
+  "[Transactions Database] Delete Failed",
+  props<{ error: string }>(),
+);

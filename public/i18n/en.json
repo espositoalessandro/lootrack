@@ -1,10 +1,12 @@
 {
   "buttons": {
     "close": "Close",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "confirmEdit": "Confirm edit"
   },
   "newTransaction": {
     "title": "Add transaction",
+    "titleEdit": "Edit transaction",
     "amount": "Amount",
     "amountPlaceholder": "Enter amount",
     "description": "Description",

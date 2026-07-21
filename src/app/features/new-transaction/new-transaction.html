@@ -5,7 +5,8 @@
 >
   <div class="flex items-center justify-center w-full">
     <h1 [tuiTitle]="'m'" class="pb-4">
-      {{ 'newTransaction.title' | transloco }}
+      {{ isEditMode ? 'newTransaction.titleEdit' : 'newTransaction.title' |
+      transloco }}
     </h1>
   </div>
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
@@ -65,7 +66,7 @@
     </tui-segmented>
     <footer tuiFloatingContainer class="footer">
       <button size="m" tuiButton type="submit" [disabled]="form.invalid">
-        {{ 'buttons.confirm' | transloco }}
+        {{ isEditMode ? 'buttons.confirmEdit':'buttons.confirm' | transloco }}
       </button>
     </footer>
   </form>
