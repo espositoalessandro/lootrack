@@ -2,10 +2,7 @@ import { Injectable } from "@angular/core";
 import { defer, Observable } from "rxjs";
 import { AddCategory, Category } from "./models";
 import { lootrackDb } from "./database";
-
-function normalizeCategoryName(name: string): string {
-  return name.normalize("NFKC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
-}
+import { categoryNamesMatch, cleanCategoryName } from "./category-name";
 
 @Injectable({
   providedIn: "root",
@@ -25,25 +22,23 @@ export class CategoriesRepository {
 
   add(input: AddCategory): Observable<Category> {
     return defer(async () => {
-      const normalizedName = normalizeCategoryName(input.name);
-
       const categories = await lootrackDb.categories.toArray();
 
       const existing = categories.find(
         (category) =>
           category.type === input.type &&
-          normalizeCategoryName(category.name) === normalizedName,
+          categoryNamesMatch(category.name, input.name),
       );
 
       if (existing && existing.deletedAt === null) {
         throw new Error(
-          `An ${input.type} category named "${input.name.trim()}" already exists`,
+          `An ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
         );
       }
 
       if (existing && existing.deletedAt !== null) {
         throw new Error(
-          `A deleted ${input.type} category named "${input.name.trim()}" already exists`,
+          `A deleted ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
         );
       }
 
@@ -51,7 +46,7 @@ export class CategoriesRepository {
 
       const category: Category = {
         id: crypto.randomUUID(),
-        name: input.name.trim().replace(/\s+/g, " "),
+        name: cleanCategoryName(input.name),
         type: input.type,
         createdAt: now,
         updatedAt: now,
@@ -92,27 +87,25 @@ export class CategoriesRepository {
         throw new Error("Category not found");
       }
 
-      const normalizedName = normalizeCategoryName(name);
-
       const duplicate = await lootrackDb.categories
         .filter(
           (category) =>
             category.id !== id &&
             category.type === existing.type &&
             category.deletedAt === null &&
-            normalizeCategoryName(category.name) === normalizedName,
+            categoryNamesMatch(category.name, name),
         )
         .first();
 
       if (duplicate) {
         throw new Error(
-          `An ${existing.type} category named "${name.trim()}" already exists`,
+          `An ${existing.type} category named "${cleanCategoryName(name)}" already exists`,
         );
       }
 
       const updatedCategory: Category = {
         ...existing,
-        name: name.trim().replace(/\s+/g, " "),
+        name: cleanCategoryName(name),
         updatedAt: new Date().toISOString(),
       };
 
