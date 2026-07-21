@@ -1,14 +1,19 @@
 <tui-root>
-  <tui-loader [overlay]="true" [loading]=" !!(transactionsLoading$ | async)">
-    <div class="relative h-dvh overflow-hidden">
+  <div class="relative h-dvh overflow-hidden">
+    <tui-loader
+      class="block h-full"
+      [overlay]="true"
+      [loading]="!!(transactionsLoading$ | async)"
+    >
       <main
         class="h-full overflow-x-hidden overflow-y-auto overscroll-contain pb-[calc(6rem+env(safe-area-inset-bottom))]"
       >
         <router-outlet />
       </main>
+    </tui-loader>
 
-      <router-outlet name="sheet" />
-    </div>
-  </tui-loader>
-  <app-floating-footer />
+    <router-outlet name="sheet" />
+
+    <app-floating-footer />
+  </div>
 </tui-root>
