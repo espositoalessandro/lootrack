@@ -14,10 +14,10 @@
         appDelayedAutoFocus
         tuiInput
         formControlName="amount"
-        type="number"
+        type="text"
         inputmode="decimal"
-        step="0.01"
         autocomplete="off"
+        [maskito]="amountMask"
         [placeholder]="'newTransaction.amountPlaceholder' | transloco"
       />
     </tui-textfield>

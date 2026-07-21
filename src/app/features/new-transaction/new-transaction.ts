@@ -20,6 +20,8 @@ import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
 import { AddTransaction, TransactionType } from "../../data/models";
 import { DelayedAutoFocus } from "../../shared/pipes/delay-autofocus-directive";
+import { MaskitoDirective } from "@maskito/angular";
+import { type MaskitoOptions } from "@maskito/core";
 
 @Component({
   selector: "app-new-transactions",
@@ -38,19 +40,25 @@ import { DelayedAutoFocus } from "../../shared/pipes/delay-autofocus-directive";
     TuiSegmented,
     TuiAutoFocus,
     DelayedAutoFocus,
+    MaskitoDirective,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
 })
 export class NewTransaction {
   private readonly store = inject(Store);
-
   private readonly router = inject(Router);
+  protected readonly amountMask: MaskitoOptions = {
+    mask: /^\d*(?:[.,]\d{0,2})?$/,
+  };
   protected readonly form = new FormGroup({
-    amount: new FormControl<number | null>(null, [
-      Validators.required,
-      Validators.min(0.01),
-    ]),
+    amount: new FormControl("", {
+      nonNullable: true,
+      validators: [
+        Validators.required,
+        Validators.pattern(/^\d+(?:[.,]\d{1,2})?$/),
+      ],
+    }),
     occurred: new FormControl<TuiDay>(TuiDay.currentLocal(), {
       nonNullable: true,
       validators: Validators.required,
@@ -89,6 +97,14 @@ export class NewTransaction {
       this.form.markAllAsTouched();
       return;
     }
+    const rawAmount = this.form.controls.amount.value.trim();
+    const normalizedAmount = rawAmount.replace(",", ".");
+    const amount = Number(normalizedAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.form.controls.amount.setErrors({ invalidAmount: true });
+      return;
+    }
     const occurred = this.form.controls.occurred.value;
     const occurredOn = [
       occurred.year,
@@ -96,7 +112,7 @@ export class NewTransaction {
       String(occurred.day).padStart(2, "0"),
     ].join("-");
     const transaction: AddTransaction = {
-      amountInCents: Math.round(this.form.controls.amount.value! * 100),
+      amountInCents: Math.round(amount * 100),
       description: this.form.value.description ?? "",
       occurredOn: occurredOn,
       type: this.form.value.type!,
