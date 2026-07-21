@@ -14,7 +14,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
+import { TuiAnimated, TuiDay, TuiPlatform } from "@taiga-ui/cdk";
 import {
   TuiChevron,
   TuiDataListWrapperComponent,
@@ -42,6 +42,7 @@ import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
 import { selectTransactionById } from "../../state/transactions/transactions.selector";
 import {
+  defer,
   distinctUntilChanged,
   filter,
   map,
@@ -81,6 +82,7 @@ import {
     AsyncPipe,
     TuiStringifyPipe,
     TuiStringifyContentPipe,
+    TuiPlatform,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -125,10 +127,12 @@ export class NewTransaction implements OnInit {
     closable: true,
   };
 
-  protected readonly categories$ = this.form.controls.type.valueChanges.pipe(
-    startWith(this.form.controls.type.value),
-    distinctUntilChanged(),
-    switchMap((type) => this.store.select(selectCategoriesByType(type))),
+  protected readonly categories$ = defer(() =>
+    this.form.controls.type.valueChanges.pipe(
+      startWith(this.form.controls.type.value),
+      distinctUntilChanged(),
+      switchMap((type) => this.store.select(selectCategoriesByType(type))),
+    ),
   );
 
   ngOnInit(): void {
@@ -161,7 +165,6 @@ export class NewTransaction implements OnInit {
               transaction !== undefined,
           ),
           take(1),
-          takeUntilDestroyed(this.destroyRef),
           switchMap((transaction) => {
             if (!transaction.categoryId) {
               return of({
@@ -172,11 +175,17 @@ export class NewTransaction implements OnInit {
             return this.store
               .select(selectCategoryById(transaction.categoryId))
               .pipe(
-                map((category) => ({ transaction, category })),
+                filter(
+                  (category): category is Category => category !== undefined,
+                ),
                 take(1),
-                takeUntilDestroyed(this.destroyRef),
+                map((category) => ({
+                  transaction,
+                  category,
+                })),
               );
           }),
+          takeUntilDestroyed(this.destroyRef),
         )
         .subscribe(({ transaction, category }) => {
           this.prefillForm(transaction, category);
@@ -236,6 +245,7 @@ export class NewTransaction implements OnInit {
       String(occurred.day).padStart(2, "0"),
     ].join("-");
     const transaction: AddTransaction = {
+      categoryId: this.form.value.category?.id ?? null,
       amountInCents: Math.round(amount * 100),
       description: this.form.value.description ?? "",
       occurredOn: occurredOn,

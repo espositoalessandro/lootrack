@@ -14,6 +14,7 @@ export interface Transaction {
 
 export interface AddTransaction {
   type: TransactionType;
+  categoryId: string | null;
   amountInCents: number;
   description: string;
   occurredOn: string;

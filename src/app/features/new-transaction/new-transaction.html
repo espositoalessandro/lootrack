@@ -28,7 +28,7 @@
     @let categoryStringify = "name" | tuiStringify;
     <tui-textfield
       tuiChevron
-      tuiTextfieldSize="m"
+      [tuiDropdownSheet]="'newTransaction.categoriesSelectHeader' | transloco"
       [stringify]="categoryStringify"
       [tuiTextfieldCleaner]="false"
     >
@@ -39,6 +39,7 @@
       />
       <tui-data-list-wrapper
         *tuiDropdown
+        [tuiPlatform]="'ios'"
         [items]="categories$ | async"
         [itemContent]="categoryStringify | tuiStringifyContent"
       />

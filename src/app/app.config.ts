@@ -16,6 +16,7 @@ import { TransactionsEffects } from "./state/transactions/transactions.effects";
 import { provideEffects } from "@ngrx/effects";
 import { provideServiceWorker } from "@angular/service-worker";
 import { categoriesReducer } from "./state/categories/categories.reducer";
+import { CategoriesEffects } from "./state/categories/categories.effects";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,7 +28,7 @@ export const appConfig: ApplicationConfig = {
       transactions: transactionsReducer,
       categories: categoriesReducer,
     }),
-    provideEffects(TransactionsEffects),
+    provideEffects(TransactionsEffects, CategoriesEffects),
     provideTransloco({
       config: {
         availableLangs: ["en"],
