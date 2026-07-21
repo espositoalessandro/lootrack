@@ -14,6 +14,7 @@ import { provideStore } from "@ngrx/store";
 import { transactionsReducer } from "./state/transactions/transactions.reducer";
 import { TransactionsEffects } from "./state/transactions/transactions.effects";
 import { provideEffects } from "@ngrx/effects";
+import { provideServiceWorker } from "@angular/service-worker";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,6 +35,10 @@ export const appConfig: ApplicationConfig = {
         prodMode: !isDevMode(),
       },
       loader: TranslocoHttpLoader,
+    }),
+    provideServiceWorker("ngsw-worker.js", {
+      enabled: !isDevMode(),
+      registrationStrategy: "registerWhenStable:30000",
     }),
   ],
 };
