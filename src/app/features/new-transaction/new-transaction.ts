@@ -14,12 +14,11 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { TuiAnimated, TuiAutoFocus, TuiDay } from "@taiga-ui/cdk";
+import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
 import { TuiInputDate, TuiInputDateTime, TuiSegmented } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
 import { AddTransaction, TransactionType } from "../../data/models";
-import { DelayedAutoFocus } from "../../shared/pipes/delay-autofocus-directive";
 import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
 
@@ -38,8 +37,6 @@ import { type MaskitoOptions } from "@maskito/core";
     TuiInputDate,
     TuiDropdownSheet,
     TuiSegmented,
-    TuiAutoFocus,
-    DelayedAutoFocus,
     MaskitoDirective,
   ],
   templateUrl: "./new-transaction.html",
