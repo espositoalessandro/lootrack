@@ -29,6 +29,7 @@
         size="m"
         tuiIconButton
         type="button"
+        [disabled]="loading$ | async"
         (click)="onDeleteTransaction()"
       >
         remove

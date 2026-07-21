@@ -74,7 +74,7 @@ export const transactionsReducer = createReducer(
 
   on(deleteTransactionSuccess, (state, { id }) => ({
     ...state,
-    items: [...state.items.filter((transaction) => transaction.id !== id)],
+    items: state.items.filter((transaction) => transaction.id !== id),
     loading: false,
     error: null,
   })),

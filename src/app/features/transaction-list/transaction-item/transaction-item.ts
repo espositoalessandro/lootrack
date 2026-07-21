@@ -1,6 +1,6 @@
 import { Component, inject, input } from "@angular/core";
 import { Transaction } from "../../../data/models";
-import { CurrencyPipe } from "@angular/common";
+import { AsyncPipe, CurrencyPipe } from "@angular/common";
 import { TuiButton, TuiExpand } from "@taiga-ui/core";
 import { AmountPipe } from "../../../shared/pipes/amount-pipe";
 import { Store } from "@ngrx/store";
@@ -9,20 +9,18 @@ import { deleteTransaction } from "../../../state/transactions/transactions.acti
 
 @Component({
   selector: "app-transaction-item",
-  imports: [CurrencyPipe, AmountPipe, TuiButton, TuiExpand],
+  imports: [CurrencyPipe, AmountPipe, TuiButton, TuiExpand, AsyncPipe],
   templateUrl: "./transaction-item.html",
   styleUrl: "./transaction-item.scss",
 })
 export class TransactionItem {
   transaction = input.required<Transaction>();
   private readonly store = inject(Store);
-  protected readonly transactionsLoading$ = this.store.select(
-    selectTransactionsLoading,
-  );
+  protected readonly loading$ = this.store.select(selectTransactionsLoading);
   protected expanded = false;
 
   onDeleteTransaction() {
-    this.store.dispatch(deleteTransaction({ id: this.transaction()!.id }));
+    this.store.dispatch(deleteTransaction({ id: this.transaction().id }));
   }
 
   onEditTransaction() {}

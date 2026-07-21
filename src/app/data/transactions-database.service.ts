@@ -23,7 +23,7 @@ export class TransactionsDatabaseService {
     });
   }
 
-  remove(id: string) {
+  remove(id: string): Observable<string> {
     return defer(async () => {
       await lootrackDb.transactions.delete(id);
       return id;

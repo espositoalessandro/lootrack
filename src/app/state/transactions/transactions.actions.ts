@@ -32,7 +32,7 @@ export const addTransactionFailure = createAction(
 );
 
 export const deleteTransaction = createAction(
-  "[New Transaction Page] Delete Requested",
+  "[Transaction Item] Delete Requested",
   props<{ id: string }>(),
 );
 
