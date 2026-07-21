@@ -6,8 +6,16 @@ import { lootrackDb } from "./database";
 @Injectable({
   providedIn: "root",
 })
-export class TransactionsDatabaseService {
-  getAll(): Observable<Transaction[]> {
+export class TransactionsRepository {
+  getActive(): Observable<Transaction[]> {
+    return defer(() =>
+      lootrackDb.transactions
+        .filter((transaction) => transaction.deletedAt === null)
+        .toArray(),
+    );
+  }
+
+  getAllIncludingDeleted(): Observable<Transaction[]> {
     return defer(() => lootrackDb.transactions.toArray());
   }
 
@@ -17,6 +25,9 @@ export class TransactionsDatabaseService {
         ...input,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        categoryId: null,
+        deletedAt: null,
       };
       await lootrackDb.transactions.add(transaction);
       return transaction;
@@ -24,9 +35,27 @@ export class TransactionsDatabaseService {
   }
 
   remove(id: string): Observable<string> {
+    // return defer(async () => {
+    //   await lootrackDb.transactions.delete(id);
+    //   return id;
+    // });
+
     return defer(async () => {
-      await lootrackDb.transactions.delete(id);
-      return id;
+      const existing = await lootrackDb.transactions.get(id);
+
+      if (!existing) {
+        throw new Error("Transaction not found");
+      }
+
+      const deletedTransaction: Transaction = {
+        ...existing,
+        deletedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await lootrackDb.transactions.put(deletedTransaction);
+
+      return deletedTransaction.id;
     });
   }
 
@@ -41,6 +70,7 @@ export class TransactionsDatabaseService {
       const updatedTransaction: Transaction = {
         ...existing,
         ...changes,
+        updatedAt: new Date().toISOString(),
       };
 
       await lootrackDb.transactions.put(updatedTransaction);

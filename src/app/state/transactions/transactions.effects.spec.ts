@@ -4,7 +4,7 @@ import type { Action } from "@ngrx/store";
 import { firstValueFrom, of, Subject, throwError } from "rxjs";
 
 import type { AddTransaction, Transaction } from "../../data/models";
-import { TransactionsDatabaseService } from "../../data/transactions-database.service";
+import { TransactionsRepository } from "../../data/transactions-repository";
 import {
   addTransaction,
   addTransactionSuccess,
@@ -58,7 +58,7 @@ describe("TransactionsEffects", () => {
         TransactionsEffects,
         provideMockActions(() => actions$),
         {
-          provide: TransactionsDatabaseService,
+          provide: TransactionsRepository,
           useValue: database,
         },
       ],

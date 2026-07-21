@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, concatMap, map, of, switchMap } from "rxjs";
 
-import { TransactionsDatabaseService } from "../../data/transactions-database.service";
+import { TransactionsRepository } from "../../data/transactions-repository";
 import {
   addTransaction,
   addTransactionFailure,
@@ -22,14 +22,14 @@ import {
 export class TransactionsEffects {
   private readonly actions$ = inject(Actions);
 
-  private readonly transactionsDatabase = inject(TransactionsDatabaseService);
+  private readonly transactionsDatabase = inject(TransactionsRepository);
 
   readonly loadTransactions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadTransactions),
 
       switchMap(() =>
-        this.transactionsDatabase.getAll().pipe(
+        this.transactionsDatabase.getActive().pipe(
           map((transactions) => loadTransactionsSuccess({ transactions })),
 
           catchError((error: unknown) =>

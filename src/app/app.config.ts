@@ -15,6 +15,7 @@ import { transactionsReducer } from "./state/transactions/transactions.reducer";
 import { TransactionsEffects } from "./state/transactions/transactions.effects";
 import { provideEffects } from "@ngrx/effects";
 import { provideServiceWorker } from "@angular/service-worker";
+import { categoriesReducer } from "./state/categories/categories.reducer";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideStore({
       transactions: transactionsReducer,
+      categories: categoriesReducer,
     }),
     provideEffects(TransactionsEffects),
     provideTransloco({

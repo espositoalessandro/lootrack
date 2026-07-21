@@ -6,7 +6,10 @@ export interface Transaction {
   amountInCents: number;
   description: string;
   occurredOn: string;
+  categoryId: string | null;
   createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface AddTransaction {
@@ -14,4 +17,18 @@ export interface AddTransaction {
   amountInCents: number;
   description: string;
   occurredOn: string;
+}
+
+export interface Category {
+  id: string;
+  type: TransactionType;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface AddCategory {
+  name: string;
+  type: TransactionType;
 }
