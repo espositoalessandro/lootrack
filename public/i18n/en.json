@@ -2,7 +2,8 @@
   "buttons": {
     "close": "Close",
     "confirm": "Confirm",
-    "confirmEdit": "Confirm edit"
+    "confirmEdit": "Confirm edit",
+    "add": "Add"
   },
   "newTransaction": {
     "title": "Add transaction",
@@ -12,6 +13,11 @@
     "description": "Description",
     "descriptionPlaceholder": "Enter description",
     "expense": "Expense",
-    "income": "Income"
+    "income": "Income",
+    "category": "Category",
+    "categoriesPlaceholder": "Choose a category",
+    "categoriesSelectHeader": "Choose a category",
+    "date": "Date",
+    "dateSelectHeader": "Choose a date"
   }
 }

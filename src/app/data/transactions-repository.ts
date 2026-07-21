@@ -26,7 +26,6 @@ export class TransactionsRepository {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        categoryId: null,
         deletedAt: null,
       };
       await lootrackDb.transactions.add(transaction);
@@ -35,11 +34,6 @@ export class TransactionsRepository {
   }
 
   remove(id: string): Observable<string> {
-    // return defer(async () => {
-    //   await lootrackDb.transactions.delete(id);
-    //   return id;
-    // });
-
     return defer(async () => {
       const existing = await lootrackDb.transactions.get(id);
 

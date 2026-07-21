@@ -5,7 +5,7 @@
 >
   <div class="flex items-center justify-center w-full">
     <h1 [tuiTitle]="'m'" class="pb-4">
-      {{ isEditMode ? 'newTransaction.titleEdit' : 'newTransaction.title' |
+      {{ (isEditMode ? "newTransaction.titleEdit" : "newTransaction.title") |
       transloco }}
     </h1>
   </div>
@@ -57,8 +57,13 @@
         [placeholder]="'newTransaction.descriptionPlaceholder' | transloco"
       />
     </tui-textfield>
-    <tui-textfield tuiAnimated tuiDropdownSheet="Choose a date">
-      <label for="occurred-input" tuiLabel>Choose a date</label>
+    <tui-textfield
+      tuiAnimated
+      [tuiDropdownSheet]="'newTransaction.dateSelectHeader' | transloco"
+    >
+      <label for="occurred-input" tuiLabel>
+        {{ "newTransaction.date" | transloco }}
+      </label>
       <input id="occurred-input" tuiInputDate formControlName="occurred" />
       <tui-calendar *tuiDropdown />
     </tui-textfield>
@@ -86,7 +91,7 @@
     </tui-segmented>
     <footer tuiFloatingContainer class="footer">
       <button size="m" tuiButton type="submit" [disabled]="form.invalid">
-        {{ isEditMode ? 'buttons.confirmEdit':'buttons.confirm' | transloco }}
+        {{ (isEditMode ? "buttons.confirmEdit" : "buttons.add") | transloco }}
       </button>
     </footer>
   </form>
