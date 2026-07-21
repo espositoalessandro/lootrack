@@ -9,12 +9,14 @@
         {{ 'newTransaction.amount' | transloco }}</label
       >
       <input
-        #amountInput
         id="amount-input"
+        tuiAutoFocus
+        appDelayedAutoFocus
         tuiInput
         formControlName="amount"
-        type="text"
+        type="number"
         inputmode="decimal"
+        step="0.01"
         autocomplete="off"
         [placeholder]="'newTransaction.amountPlaceholder' | transloco"
       />

@@ -1,10 +1,4 @@
-import {
-  Component,
-  effect,
-  ElementRef,
-  inject,
-  viewChild,
-} from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { TuiButton, TuiInput, TuiTextfield } from "@taiga-ui/core";
 import {
@@ -20,11 +14,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
+import { TuiAnimated, TuiAutoFocus, TuiDay } from "@taiga-ui/cdk";
 import { TuiInputDate, TuiInputDateTime, TuiSegmented } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
 import { AddTransaction, TransactionType } from "../../data/models";
+import { DelayedAutoFocus } from "../../shared/pipes/delay-autofocus-directive";
 
 @Component({
   selector: "app-new-transactions",
@@ -41,6 +36,8 @@ import { AddTransaction, TransactionType } from "../../data/models";
     TuiInputDate,
     TuiDropdownSheet,
     TuiSegmented,
+    TuiAutoFocus,
+    DelayedAutoFocus,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -66,22 +63,6 @@ export class NewTransaction {
     }),
   });
   protected open = true;
-  private readonly amountInput =
-    viewChild<ElementRef<HTMLInputElement>>("amountInput");
-
-  constructor() {
-    effect(() => {
-      const input = this.amountInput()?.nativeElement;
-
-      if (!input) {
-        return;
-      }
-      setTimeout(() => {
-        input.focus();
-        input.select();
-      }, 300);
-    });
-  }
   protected readonly options: Partial<TuiSheetDialogOptions> = {
     label: "Add transactions",
     closable: true,
