@@ -7,6 +7,9 @@ import {
   addTransaction,
   addTransactionFailure,
   addTransactionSuccess,
+  deleteTransaction,
+  deleteTransactionFailure,
+  deleteTransactionSuccess,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -58,6 +61,27 @@ export class TransactionsEffects {
                   error instanceof Error
                     ? error.message
                     : "Unable to add transaction",
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly deleteTransaction$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteTransaction),
+      concatMap(({ id }) =>
+        this.transactionsDatabase.remove(id).pipe(
+          map(() => deleteTransactionSuccess({ id })),
+          catchError((error: unknown) =>
+            of(
+              deleteTransactionFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to delete transaction",
               }),
             ),
           ),

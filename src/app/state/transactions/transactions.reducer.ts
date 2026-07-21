@@ -5,6 +5,9 @@ import {
   addTransaction,
   addTransactionFailure,
   addTransactionSuccess,
+  deleteTransaction,
+  deleteTransactionFailure,
+  deleteTransactionSuccess,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -58,6 +61,25 @@ export const transactionsReducer = createReducer(
   })),
 
   on(addTransactionFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+
+  on(deleteTransaction, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+
+  on(deleteTransactionSuccess, (state, { id }) => ({
+    ...state,
+    items: [...state.items.filter((transaction) => transaction.id !== id)],
+    loading: false,
+    error: null,
+  })),
+
+  on(deleteTransactionFailure, (state, { error }) => ({
     ...state,
     loading: false,
     error,

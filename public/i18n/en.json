@@ -4,6 +4,7 @@
     "confirm": "Confirm"
   },
   "newTransaction": {
+    "title": "Add transaction",
     "amount": "Amount",
     "amountPlaceholder": "Enter amount",
     "description": "Description",

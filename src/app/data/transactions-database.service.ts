@@ -22,4 +22,11 @@ export class TransactionsDatabaseService {
       return transaction;
     });
   }
+
+  remove(id: string) {
+    return defer(async () => {
+      await lootrackDb.transactions.delete(id);
+      return id;
+    });
+  }
 }

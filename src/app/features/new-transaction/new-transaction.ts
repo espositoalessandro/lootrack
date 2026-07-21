@@ -1,6 +1,6 @@
 import { Component, inject } from "@angular/core";
 import { Router } from "@angular/router";
-import { TuiButton, TuiInput, TuiTextfield } from "@taiga-ui/core";
+import { TuiButton, TuiInput, TuiTextfield, TuiTitle } from "@taiga-ui/core";
 import {
   TuiDropdownSheet,
   TuiSheetDialog,
@@ -38,6 +38,7 @@ import { type MaskitoOptions } from "@maskito/core";
     TuiDropdownSheet,
     TuiSegmented,
     MaskitoDirective,
+    TuiTitle,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -69,7 +70,6 @@ export class NewTransaction {
   });
   protected open = true;
   protected readonly options: Partial<TuiSheetDialogOptions> = {
-    label: "Add transactions",
     closable: true,
   };
 

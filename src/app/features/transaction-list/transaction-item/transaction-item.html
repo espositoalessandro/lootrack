@@ -1,12 +1,38 @@
-<div appearance="neutral" tuiCardMedium class="flex w-full">
-  <h1
-    tuiTitle
-    [style.color]="transaction().type === 'income' ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)' "
-  >
-    {{transaction().amountInCents | amount | currency: "EUR"}}
-    @if(transaction().description) {
-    <span tuiSubtitle>{{transaction().description}}</span>
-    }
-  </h1>
-  <span> {{transaction().occurredOn}} </span>
-</div>
+<button
+  tuiButton
+  type="button"
+  (click)="expanded = !expanded"
+  [style.--t-bg]="
+    transaction().type === 'income'
+      ? 'var(--tui-status-positive)'
+      : 'var(--tui-status-negative)'"
+>
+  {{transaction().amountInCents | amount | currency: "EUR"}}
+</button>
+<tui-expand [expanded]="expanded">
+  <div class="flex flex-row items-center justify-between gap-2 p-4">
+    <p>{{transaction().occurredOn}}</p>
+    <div class="flex flex-row gap-2">
+      <button
+        appearance="primary"
+        iconStart="@tui.square-pen"
+        size="m"
+        tuiIconButton
+        type="button"
+        (click)="onEditTransaction()"
+      >
+        edit
+      </button>
+      <button
+        appearance="secondary-destructive"
+        iconStart="@tui.trash-2"
+        size="m"
+        tuiIconButton
+        type="button"
+        (click)="onDeleteTransaction()"
+      >
+        remove
+      </button>
+    </div>
+  </div>
+</tui-expand>
