@@ -9,10 +9,13 @@
         {{ 'newTransaction.amount' | transloco }}</label
       >
       <input
+        #amountInput
         id="amount-input"
         tuiInput
         formControlName="amount"
-        type="number"
+        type="text"
+        inputmode="decimal"
+        autocomplete="off"
         [placeholder]="'newTransaction.amountPlaceholder' | transloco"
       />
     </tui-textfield>
@@ -43,7 +46,7 @@
     >
       <label class="flex-1">
         <input
-          name="transaction-type-radio"
+          name="type"
           type="radio"
           value="expense"
           formControlName="type"
@@ -51,12 +54,7 @@
         {{ 'newTransaction.expense' | transloco }}
       </label>
       <label class="flex-1">
-        <input
-          name="transaction-type-radio"
-          type="radio"
-          value="income"
-          formControlName="type"
-        />
+        <input name="type" type="radio" value="income" formControlName="type" />
         {{ 'newTransaction.income' | transloco }}
       </label>
     </tui-segmented>
