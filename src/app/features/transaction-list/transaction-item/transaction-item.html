@@ -1,0 +1,12 @@
+<div appearance="neutral" tuiCardMedium class="flex w-full">
+  <h1
+    tuiTitle
+    [style.color]="transaction().type === 'income' ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)' "
+  >
+    {{transaction().amountInCents | amount | currency: "EUR"}}
+    @if(transaction().description) {
+    <span tuiSubtitle>{{transaction().description}}</span>
+    }
+  </h1>
+  <span> {{transaction().occurredOn}} </span>
+</div>

@@ -14,6 +14,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "list",
+    loadComponent: () =>
+      import("./features/transaction-list/transaction-list").then(
+        (m) => m.TransactionList,
+      ),
+  },
+  {
     path: "**",
     redirectTo: "",
   },
