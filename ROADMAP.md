@@ -21,60 +21,60 @@ The application is designed to work primarily as an installable Progressive Web 
 
 ### Application foundation
 
-- [ ] Configure Angular application structure
-- [ ] Configure Angular PWA support
-- [ ] Define the design system
-- [ ] Create the mobile application shell
-- [ ] Add floating header and bottom navigation
-- [ ] Configure routing and lazy-loaded pages
+* [ ] Define the design system
+* [ ] Add floating header and bottom navigation
+* [x] Configure Angular application structure
+* [x] Configure Angular PWA support
+* [x] Create the mobile application shell
+* [x] Configure routing and lazy-loaded pages
 
 ### Domain model
 
-- [ ] Define transaction model
-- [ ] Define category model
-- [ ] Define account model
-- [ ] Define budget model
-- [ ] Use stable UUIDs for all persisted entities
-- [ ] Add creation and modification timestamps
-- [ ] Define repository interfaces independently from IndexedDB
+* [ ] Define category model
+* [ ] Define account model
+* [ ] Define budget model
+* [ ] Add creation and modification timestamps
+* [ ] Define repository interfaces independently from IndexedDB
+* [x] Define transaction model
+* [x] Use stable UUIDs for all persisted entities
 
-### State management
+### ~~State management~~
 
-- [ ] Configure NgRx Store
-- [ ] Configure NgRx Effects
-- [ ] Configure selectors
-- [ ] Define feature state boundaries
-- [ ] Keep persistence logic outside components
+* [x] Configure NgRx Store
+* [x] Configure NgRx Effects
+* [x] Configure selectors
+* [x] Define feature state boundaries
+* [x] Keep persistence logic outside components
 
 ### Local persistence
 
-- [ ] Configure IndexedDB with Dexie
-- [ ] Implement local repositories
-- [ ] Add database schema versioning
-- [ ] Add migrations for future schema changes
-- [ ] Load persisted data when the application starts
-- [ ] Request persistent browser storage when supported
+* [ ] Add migrations for future schema changes
+* [ ] Request persistent browser storage when supported
+* [x] Configure IndexedDB with Dexie
+* [x] Implement local repositories
+* [x] Add database schema versioning
+* [x] Load persisted data when the application starts
 
 ### Initial features
 
-- [ ] Dashboard
-- [ ] Transaction list
-- [ ] Add transaction
-- [ ] Edit transaction
-- [ ] Delete transaction
-- [ ] Category management
-- [ ] Account management
-- [ ] Basic monthly totals
-- [ ] Basic category breakdown
+* [ ] Dashboard
+* [ ] Category management
+* [ ] Account management
+* [ ] Basic monthly totals
+* [ ] Basic category breakdown
+* [x] Transaction list
+* [x] Add transaction
+* [x] Edit transaction
+* [x] Delete transaction
 
 ### Quality baseline
 
-- [ ] Form validation
-- [ ] Empty states
-- [ ] Error handling
-- [ ] Basic accessibility
-- [ ] Unit tests for domain and persistence logic
-- [ ] End-to-end test for transaction CRUD
+* [ ] Empty states
+* [ ] Error handling
+* [ ] Basic accessibility
+* [ ] Unit tests for domain and persistence logic
+* [ ] End-to-end test for transaction CRUD
+* [x] Form validation
 
 ---
 

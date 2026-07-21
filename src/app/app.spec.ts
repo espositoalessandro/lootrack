@@ -1,23 +1,35 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { TestBed } from "@angular/core/testing";
+import { MockStore, provideMockStore } from "@ngrx/store/testing";
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+import { App } from "./app";
+import { loadTransactions } from "./state/transactions/transactions.actions";
+
+describe("App", () => {
+  let store: MockStore;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       imports: [App],
-    }).compileComponents();
+      providers: [provideMockStore()],
+    });
+
+    TestBed.overrideComponent(App, {
+      set: {
+        imports: [],
+        template: "",
+      },
+    });
+
+    store = TestBed.inject(MockStore);
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  it("should request transactions when initialized", () => {
+    const dispatchSpy = vi.spyOn(store, "dispatch");
 
-  it('should render title', async () => {
     const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, lootrack');
+
+    fixture.detectChanges();
+
+    expect(dispatchSpy).toHaveBeenCalledWith(loadTransactions());
   });
 });
