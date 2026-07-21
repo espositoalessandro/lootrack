@@ -95,8 +95,8 @@ export class CategoriesEffects {
     this.actions$.pipe(
       ofType(updateCategory),
 
-      concatMap(({ id, changes }) =>
-        this.categoriesDatabase.update(id, changes).pipe(
+      concatMap(({ id, name }) =>
+        this.categoriesDatabase.updateName(id, name).pipe(
           map((category) =>
             updateCategorySuccess({
               updatedCategory: category,

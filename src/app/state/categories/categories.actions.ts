@@ -46,7 +46,7 @@ export const deleteCategoryFailure = createAction(
 
 export const updateCategory = createAction(
   "[Category Item] Update Requested",
-  props<{ id: string; changes: AddCategory }>(),
+  props<{ id: string; name: string }>(),
 );
 
 export const updateCategorySuccess = createAction(
