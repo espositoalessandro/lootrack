@@ -15,10 +15,10 @@ import {
   Validators,
 } from "@angular/forms";
 import { TuiAnimated, TuiAutoFocus, TuiDay } from "@taiga-ui/cdk";
-import { TuiInputDate, TuiInputDateTime } from "@taiga-ui/kit";
+import { TuiInputDate, TuiInputDateTime, TuiSegmented } from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import { addTransaction } from "../../state/transactions/transactions.actions";
-import { AddTransaction } from "../../data/models";
+import { AddTransaction, TransactionType } from "../../data/models";
 
 @Component({
   selector: "app-new-transactions",
@@ -35,6 +35,7 @@ import { AddTransaction } from "../../data/models";
     TuiInputDate,
     TuiDropdownSheet,
     TuiAutoFocus,
+    TuiSegmented,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -53,6 +54,9 @@ export class NewTransaction {
       validators: Validators.required,
     }),
     description: new FormControl("", {
+      nonNullable: true,
+    }),
+    type: new FormControl<TransactionType>("expense", {
       nonNullable: true,
     }),
   });
@@ -93,7 +97,7 @@ export class NewTransaction {
       amountInCents: Math.round(this.form.controls.amount.value! * 100),
       description: this.form.value.description ?? "",
       occurredOn: occurredOn,
-      type: "expense",
+      type: this.form.value.type!,
     };
 
     this.store.dispatch(addTransaction({ transaction }));

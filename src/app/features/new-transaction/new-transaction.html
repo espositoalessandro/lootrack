@@ -34,7 +34,33 @@
       <input id="occurred-input" tuiInputDate formControlName="occurred" />
       <tui-calendar *tuiDropdown />
     </tui-textfield>
-
+    <tui-segmented
+      size="m"
+      class="flex w-full"
+      [style.--tui-background-base]="
+    form.controls.type.value === 'income'
+      ? 'var(--tui-status-positive)'
+      : 'var(--tui-status-negative)'"
+    >
+      <label class="flex-1">
+        <input
+          name="transaction-type-radio"
+          type="radio"
+          value="expense"
+          formControlName="type"
+        />
+        {{ 'newTransaction.expense' | transloco }}
+      </label>
+      <label class="flex-1">
+        <input
+          name="transaction-type-radio"
+          type="radio"
+          value="income"
+          formControlName="type"
+        />
+        {{ 'newTransaction.income' | transloco }}
+      </label>
+    </tui-segmented>
     <footer tuiFloatingContainer class="footer">
       <button size="m" tuiButton type="submit" [disabled]="form.invalid">
         {{ 'buttons.confirm' | transloco }}

@@ -2,5 +2,13 @@
   "buttons": {
     "close": "Close",
     "confirm": "Confirm"
+  },
+  "newTransaction": {
+    "amount": "Amount",
+    "amountPlaceholder": "Enter amount",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description",
+    "expense": "Expense",
+    "income": "Income"
   }
 }
