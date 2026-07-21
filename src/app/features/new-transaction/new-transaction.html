@@ -25,6 +25,25 @@
         [placeholder]="'newTransaction.amountPlaceholder' | transloco"
       />
     </tui-textfield>
+    @let categoryStringify = "name" | tuiStringify;
+    <tui-textfield
+      tuiChevron
+      tuiTextfieldSize="m"
+      [stringify]="categoryStringify"
+      [tuiTextfieldCleaner]="false"
+    >
+      <input
+        tuiSelect
+        formControlName="category"
+        [placeholder]="'newTransaction.categoriesPlaceholder' | transloco"
+      />
+      <tui-data-list-wrapper
+        *tuiDropdown
+        [items]="categories$ | async"
+        [itemContent]="categoryStringify | tuiStringifyContent"
+      />
+    </tui-textfield>
+
     <tui-textfield tuiAnimated>
       <label for="description-input" tuiLabel>
         {{ 'newTransaction.description' | transloco }}</label

@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from "@ngrx/store";
 
 import type { CategoriesState } from "./categories.reducer";
+import { TransactionType } from "../../data/models";
 
 export const selectCategoryState =
   createFeatureSelector<CategoriesState>("categories");
@@ -23,4 +24,9 @@ export const selectCategoryError = createSelector(
 export const selectCategoryById = (id: string) =>
   createSelector(selectCategory, (categories) =>
     categories.find((category) => category.id === id),
+  );
+
+export const selectCategoriesByType = (type: TransactionType) =>
+  createSelector(selectCategory, (categories) =>
+    categories.filter((category) => category.type === type),
   );

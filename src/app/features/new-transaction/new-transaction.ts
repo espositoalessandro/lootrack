@@ -15,7 +15,16 @@ import {
   Validators,
 } from "@angular/forms";
 import { TuiAnimated, TuiDay } from "@taiga-ui/cdk";
-import { TuiInputDate, TuiInputDateTime, TuiSegmented } from "@taiga-ui/kit";
+import {
+  TuiChevron,
+  TuiDataListWrapperComponent,
+  TuiInputDate,
+  TuiInputDateTime,
+  TuiSegmented,
+  TuiSelect,
+  TuiStringifyContentPipe,
+  TuiStringifyPipe,
+} from "@taiga-ui/kit";
 import { Store } from "@ngrx/store";
 import {
   addTransaction,
@@ -25,15 +34,29 @@ import {
 } from "../../state/transactions/transactions.actions";
 import {
   AddTransaction,
+  Category,
   Transaction,
   TransactionType,
 } from "../../data/models";
 import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
 import { selectTransactionById } from "../../state/transactions/transactions.selector";
-import { filter, take } from "rxjs";
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  of,
+  startWith,
+  switchMap,
+  take,
+} from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Actions, ofType } from "@ngrx/effects";
+import { AsyncPipe } from "@angular/common";
+import {
+  selectCategoriesByType,
+  selectCategoryById,
+} from "../../state/categories/categories.selector";
 
 @Component({
   selector: "app-new-transactions",
@@ -52,6 +75,12 @@ import { Actions, ofType } from "@ngrx/effects";
     TuiSegmented,
     MaskitoDirective,
     TuiTitle,
+    TuiDataListWrapperComponent,
+    TuiChevron,
+    TuiSelect,
+    AsyncPipe,
+    TuiStringifyPipe,
+    TuiStringifyContentPipe,
   ],
   templateUrl: "./new-transaction.html",
   styleUrl: "./new-transaction.scss",
@@ -77,6 +106,9 @@ export class NewTransaction implements OnInit {
         Validators.pattern(/^\d+(?:[.,]\d{1,2})?$/),
       ],
     }),
+    category: new FormControl<Category | null>(null, {
+      validators: Validators.required,
+    }),
     occurred: new FormControl<TuiDay>(TuiDay.currentLocal(), {
       nonNullable: true,
       validators: Validators.required,
@@ -93,7 +125,14 @@ export class NewTransaction implements OnInit {
     closable: true,
   };
 
+  protected readonly categories$ = this.form.controls.type.valueChanges.pipe(
+    startWith(this.form.controls.type.value),
+    distinctUntilChanged(),
+    switchMap((type) => this.store.select(selectCategoriesByType(type))),
+  );
+
   ngOnInit(): void {
+    // close on transaction creation/edit
     this.actions$
       .pipe(
         ofType(addTransactionSuccess, updateTransactionSuccess),
@@ -103,33 +142,59 @@ export class NewTransaction implements OnInit {
         this.close();
       });
 
-    if (!this.transactionId) {
-      return;
-    }
+    this.form.controls.type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => {
+        const category = this.form.controls.category.value;
 
-    this.store
-      .select(selectTransactionById(this.transactionId))
-      .pipe(
-        filter(
-          (transaction): transaction is Transaction =>
-            transaction !== undefined,
-        ),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((transaction) => {
-        this.prefillForm(transaction);
+        if (category && category.type !== type) {
+          this.form.controls.category.reset();
+        }
       });
+
+    if (this.transactionId) {
+      this.store
+        .select(selectTransactionById(this.transactionId))
+        .pipe(
+          filter(
+            (transaction): transaction is Transaction =>
+              transaction !== undefined,
+          ),
+          take(1),
+          takeUntilDestroyed(this.destroyRef),
+          switchMap((transaction) => {
+            if (!transaction.categoryId) {
+              return of({
+                transaction,
+                category: undefined,
+              });
+            }
+            return this.store
+              .select(selectCategoryById(transaction.categoryId))
+              .pipe(
+                map((category) => ({ transaction, category })),
+                take(1),
+                takeUntilDestroyed(this.destroyRef),
+              );
+          }),
+        )
+        .subscribe(({ transaction, category }) => {
+          this.prefillForm(transaction, category);
+        });
+    }
   }
 
-  private prefillForm(transaction: Transaction): void {
+  private prefillForm(
+    transaction: Transaction,
+    category: Category | undefined,
+  ): void {
     const [year, month, day] = transaction.occurredOn.split("-").map(Number);
 
     this.form.setValue({
       amount: (transaction.amountInCents / 100).toFixed(2),
 
       occurred: new TuiDay(year, month - 1, day),
-
+      category: category ? category : null,
       description: transaction.description,
       type: transaction.type,
     });
