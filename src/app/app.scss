@@ -1,4 +1,30 @@
 :host {
+  --app-top-chrome-space: 5rem;
+  --app-bottom-chrome-space: 6rem;
+
   display: block;
   min-height: 100dvh;
+}
+
+.app-content {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  padding-block-start: calc(
+    var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
+  );
+
+  padding-block-end: calc(
+    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
+  );
+
+  scroll-padding-block-start: calc(
+    var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
+  );
+
+  scroll-padding-block-end: calc(
+    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
+  );
 }

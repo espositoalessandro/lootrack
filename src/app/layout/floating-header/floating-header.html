@@ -1,0 +1,26 @@
+<header
+  class="pointer-events-none absolute inset-x-0 z-20 top-0"
+  [class.tui-liquid-glass_blur]="true"
+>
+  <section tuiPlatform="ios" class="pointer-events-auto w-full">
+    <tui-app-bar class="p-4">
+      <button
+        tuiIconButton
+        size="l"
+        tuiSlot="start"
+        type="button"
+        iconStart="@tui.ellipsis-vertical"
+        title="menu"
+      ></button>
+      <h1 [tuiTitle]="'m'">Lootracker</h1>
+      <button
+        tuiIconButton
+        size="l"
+        tuiSlot="end"
+        type="button"
+        iconEnd="@tui.settings"
+        title="Settings"
+      ></button>
+    </tui-app-bar>
+  </section>
+</header>

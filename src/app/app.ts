@@ -9,10 +9,18 @@ import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 import { loadCategories } from "./state/categories/categories.actions";
 import { loadTransactions } from "./state/transactions/transactions.actions";
 import { selectTransactionsLoading } from "./state/transactions/transactions.selector";
+import { FloatingHeader } from "./layout/floating-header/floating-header";
 
 @Component({
   selector: "app-root",
-  imports: [RouterOutlet, TuiRoot, FloatingFooter, AsyncPipe, TuiLoader],
+  imports: [
+    RouterOutlet,
+    TuiRoot,
+    FloatingFooter,
+    AsyncPipe,
+    TuiLoader,
+    FloatingHeader,
+  ],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })

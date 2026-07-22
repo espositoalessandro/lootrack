@@ -5,12 +5,12 @@
       [overlay]="true"
       [loading]="!!(transactionsLoading$ | async)"
     >
-      <main
-        class="h-full overflow-x-hidden overflow-y-auto overscroll-contain pb-[calc(6rem+env(safe-area-inset-bottom))]"
-      >
+      <main class="app-content">
         <router-outlet />
       </main>
     </tui-loader>
+
+    <app-floating-header />
 
     <router-outlet name="sheet" />
 

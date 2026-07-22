@@ -22,7 +22,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideTaiga(),
+    provideTaiga({ apis: { liquidGlass: true } }),
     provideHttpClient(),
     provideStore({
       transactions: transactionsReducer,
