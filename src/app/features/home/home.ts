@@ -7,6 +7,14 @@ import { TuiButton, TuiTitle } from "@taiga-ui/core";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { TuiStatus } from "@taiga-ui/kit";
 
+function getCurrentMonthKey(): string {
+  const now = new Date();
+
+  return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0")].join(
+    "-",
+  );
+}
+
 @Component({
   selector: "app-home",
   imports: [
@@ -24,17 +32,9 @@ import { TuiStatus } from "@taiga-ui/kit";
 export class Home {
   private readonly store = inject(Store);
 
-  protected readonly currentMonth = signal(
-    new Date().toISOString().slice(0, 7),
-  );
+  protected readonly currentMonth = signal(getCurrentMonthKey());
 
-  protected monthIncomesExpenses = computed(() =>
+  protected readonly monthTotals = computed(() =>
     this.store.selectSignal(selectTotalsByMonth(this.currentMonth()))(),
-  );
-
-  protected monthNet = computed(
-    () =>
-      this.monthIncomesExpenses().totalIncome -
-      this.monthIncomesExpenses().totalExpense,
   );
 }

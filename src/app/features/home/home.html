@@ -10,30 +10,31 @@
   <br />
   <br />
   <div class="flex flex-col w-full justify-center gap-2">
+    @let totals = monthTotals();
     <div class="flex flex-col items-center justify-center">
       <span>Net this month</span>
-      <h1 [tuiTitle]="'l'" class="text-center align-center">
-        {{monthNet() | amount | currency: "EUR"}}
+      <h1 [tuiTitle]="'l'" class="text-center">
+        {{totals.netTotal | amount | currency: "EUR"}}
       </h1>
     </div>
     <hr class="m-2" />
     <div class="flex flex-row justify-around gap-2">
-      <span tuiStatus="var(--tui-status-positive)">
+      <div tuiStatus="var(--tui-status-positive)">
         <div class="flex flex-col">
           <span>Income</span>
           <h1 [tuiTitle]="'m'">
-            {{monthIncomesExpenses().totalIncome | amount | currency: "EUR"}}
+            {{totals.totalIncome | amount | currency: "EUR"}}
           </h1>
         </div>
-      </span>
-      <span tuiStatus="var(--tui-status-negative)">
+      </div>
+      <div tuiStatus="var(--tui-status-negative)">
         <div class="flex flex-col">
           <span>Expenses</span>
           <h1 [tuiTitle]="'m'">
-            {{monthIncomesExpenses().totalExpense | amount | currency: "EUR"}}
+            {{totals.totalExpense | amount | currency: "EUR"}}
           </h1>
         </div>
-      </span>
+      </div>
     </div>
   </div>
 </div>

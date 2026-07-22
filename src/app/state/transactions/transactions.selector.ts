@@ -43,6 +43,7 @@ export const selectTotalsByMonth = (month: string) =>
   createSelector(selectTransactions, (transactions) => {
     let totalIncome = 0;
     let totalExpense = 0;
+
     for (const transaction of transactions) {
       if (!transaction.occurredOn.startsWith(month)) {
         continue;
@@ -54,5 +55,10 @@ export const selectTotalsByMonth = (month: string) =>
         totalExpense += transaction.amountInCents;
       }
     }
-    return { totalIncome, totalExpense };
+
+    return {
+      totalIncome,
+      totalExpense,
+      netTotal: totalIncome - totalExpense,
+    };
   });
