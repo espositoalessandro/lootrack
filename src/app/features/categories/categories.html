@@ -46,32 +46,51 @@
   @if (categorySummaries().length) {
   <div class="flex flex-col gap-3">
     @for ( summary of categorySummaries(); track summary.category.id ) {
-    <button
-      type="button"
-      class="category-row"
-      (click)="editCategory(summary.category.id)"
-    >
-      <span class="category-symbol" [attr.data-type]="selectedType()">
-        {{ summary.category.name.charAt(0).toUpperCase() }}
-      </span>
-
-      <span class="min-w-0 text-left">
-        <strong class="block truncate text-base">
-          {{ summary.category.name }}
-        </strong>
-
-        <span class="block text-sm text-(--tui-text-secondary)">
-          {{ summary.transactionCount }} {{ summary.transactionCount === 1 ?
-          "transaction" : "transactions" }}
+    <tui-swipe-actions [autoClose]="true">
+      <div class="category-row">
+        <span class="category-symbol" [attr.data-type]="selectedType()">
+          {{ summary.category.name.charAt(0).toUpperCase() }}
         </span>
-      </span>
 
-      <strong class="category-total" [attr.data-type]="selectedType()">
-        {{ summary.totalInCents | amount | currency: "EUR" }}
-      </strong>
+        <span class="min-w-0 text-left">
+          <strong class="block truncate text-base">
+            {{ summary.category.name }}
+          </strong>
 
-      <tui-icon icon="@tui.chevron-right" class="text-(--tui-text-tertiary)" />
-    </button>
+          <span class="block text-sm text-(--tui-text-secondary)">
+            {{ summary.transactionCount }} {{ summary.transactionCount === 1 ?
+            "transaction" : "transactions" }}
+          </span>
+        </span>
+
+        <strong class="category-total" [attr.data-type]="selectedType()">
+          {{ summary.totalInCents | amount | currency: "EUR" }}
+        </strong>
+      </div>
+      <div tuiSwipeAction class="flex flex-row gap-2 px-2">
+        <button
+          tuiIconButton
+          type="button"
+          size="m"
+          appearance="secondary"
+          iconStart="@tui.square-pen"
+          aria-label="Edit {{ summary.category.name }}"
+          title="Edit"
+          (click)="editCategory(summary.category.id)"
+        ></button>
+
+        <button
+          tuiIconButton
+          type="button"
+          size="m"
+          appearance="secondary-destructive"
+          iconStart="@tui.trash-2"
+          aria-label="Delete {{ summary.category.name }}"
+          title="Delete"
+          (click)="requestDeleteCategory(summary.category.id)"
+        ></button>
+      </div>
+    </tui-swipe-actions>
     }
   </div>
 

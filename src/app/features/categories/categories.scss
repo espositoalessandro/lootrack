@@ -17,15 +17,6 @@
   transition:
     background-color var(--tui-duration),
     transform var(--tui-duration);
-
-  &:active {
-    transform: scale(0.985);
-  }
-
-  &:focus-visible {
-    outline: 0.125rem solid var(--tui-border-focus);
-    outline-offset: 0.125rem;
-  }
 }
 
 .category-symbol,

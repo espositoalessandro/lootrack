@@ -7,6 +7,11 @@ import { TuiSegmented } from "@taiga-ui/kit";
 import type { TransactionType } from "../../data/models";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { selectCategorySummariesByType } from "../../state/categories/categories.selector";
+import {
+  TuiSwipeActions,
+  TuiSwipeActionsAutoClose,
+} from "@taiga-ui/addon-mobile";
+import { deleteCategory } from "../../state/categories/categories.actions";
 
 @Component({
   selector: "app-categories",
@@ -17,6 +22,8 @@ import { selectCategorySummariesByType } from "../../state/categories/categories
     TuiIcon,
     TuiSegmented,
     TuiTitle,
+    TuiSwipeActions,
+    TuiSwipeActionsAutoClose,
   ],
   templateUrl: "./categories.html",
   styleUrl: "./categories.scss",
@@ -25,7 +32,9 @@ export class Categories {
   private readonly store = inject(Store);
 
   protected readonly selectedType = signal<TransactionType>("expense");
-
+  protected requestDeleteCategory(id: string): void {
+    this.store.dispatch(deleteCategory({ id }));
+  }
   protected readonly categorySummaries = computed(() =>
     this.store.selectSignal(
       selectCategorySummariesByType(this.selectedType()),
