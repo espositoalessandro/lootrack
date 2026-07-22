@@ -146,6 +146,7 @@ export class NewTransaction implements OnInit {
         this.close();
       });
 
+    // refresh category on type change
     this.form.controls.type.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((type) => {
@@ -156,9 +157,10 @@ export class NewTransaction implements OnInit {
         }
       });
 
-    if (this.transactionId) {
+    // prefill category in edit mode
+    if (this.isEditMode) {
       this.store
-        .select(selectTransactionById(this.transactionId))
+        .select(selectTransactionById(this.transactionId!))
         .pipe(
           filter(
             (transaction): transaction is Transaction =>

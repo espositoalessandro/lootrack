@@ -1,14 +1,25 @@
-<button
-  tuiButton
-  type="button"
-  (click)="expanded = !expanded"
-  [style.--t-bg]="
+<div class="grid grid-cols-6 items-center gap-2 p-4">
+  <button
+    tuiButton
+    type="button"
+    class="col-span-3"
+    (click)="expanded = !expanded"
+    [style.--t-bg]="
     transaction().type === 'income'
       ? 'var(--tui-status-positive)'
       : 'var(--tui-status-negative)'"
->
-  {{transaction().amountInCents | amount | currency: "EUR"}}
-</button>
+  >
+    {{transaction().amountInCents | amount | currency: "EUR"}}
+  </button>
+  @if (transaction().categoryId) {
+  <div class="col-span-3 flex justify-end">
+    <span appearance="primary" tuiChip class="justify-end">
+      {{category()?.name}}
+    </span>
+  </div>
+  }
+</div>
+
 <tui-expand [expanded]="expanded">
   <div class="flex flex-row items-center justify-between gap-2 p-4">
     <p>{{transaction().occurredOn}}</p>
