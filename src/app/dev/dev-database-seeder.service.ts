@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from "@angular/core";
+import { Injectable } from "@angular/core";
 
 import { lootrackDb } from "../data/database";
 import {
@@ -142,9 +142,9 @@ const MOCK_TRANSACTIONS = [
 })
 export class DevDatabaseSeeder {
   async seed(): Promise<void> {
-    if (!isDevMode()) {
-      return;
-    }
+    //    if (!isDevMode()) {
+    //      return;
+    //    }
 
     await lootrackDb.transaction(
       "rw",
