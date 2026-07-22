@@ -19,6 +19,18 @@ export const routes: Routes = [
       import("./features/transaction-list/transaction-list").then(
         (m) => m.TransactionList,
       ),
+    data: { header: { title: "Transactions" } },
+  },
+  {
+    path: "categories",
+    loadComponent: () =>
+      import("./features/categories/categories").then((m) => m.Categories),
+    data: {
+      header: {
+        title: "Categories",
+        leading: "back",
+      },
+    },
   },
   {
     path: "edit-transaction/:id",

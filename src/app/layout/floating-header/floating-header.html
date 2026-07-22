@@ -1,26 +1,47 @@
 <header
-  class="pointer-events-none absolute inset-x-0 z-20 top-0"
+  class="pointer-events-none absolute inset-x-0 top-0 z-20"
   [class.tui-liquid-glass_blur]="true"
 >
   <section tuiPlatform="ios" class="pointer-events-auto w-full">
     <tui-app-bar class="p-4">
+      @if (header().leading === "back") {
       <button
-        tuiIconButton
-        size="l"
+        tuiAppBarBack
         tuiSlot="start"
         type="button"
-        iconStart="@tui.ellipsis-vertical"
-        title="menu"
+        title="Back"
+        (click)="goBack()"
       ></button>
-      <h1 [tuiTitle]="'m'">Lootracker</h1>
+      } @else {
       <button
         tuiIconButton
+        tuiSlot="start"
+        type="button"
         size="l"
+        iconStart="@tui.menu"
+        title="Open menu"
+        [tuiDropdown]="menu"
+        [tuiDropdownOpen]="menuOpen()"
+        (tuiDropdownOpenChange)="menuOpen.set($event)"
+      ></button>
+      }
+
+      <h1 tuiTitle="m">{{ header().title }}</h1>
+
+      <button
+        tuiIconButton
         tuiSlot="end"
         type="button"
-        iconEnd="@tui.settings"
+        size="l"
+        iconStart="@tui.settings"
         title="Settings"
       ></button>
     </tui-app-bar>
   </section>
 </header>
+
+<ng-template #menu let-close>
+  <tui-data-list>
+    <a tuiOption routerLink="/categories" (click)="close()"> Categories </a>
+  </tui-data-list>
+</ng-template>

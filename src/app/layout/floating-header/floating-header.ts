@@ -1,16 +1,101 @@
-import { Component, signal } from "@angular/core";
-import { TUI_LIQUID_GLASS, TuiButton, TuiTitle } from "@taiga-ui/core";
+import { Location } from "@angular/common";
+import { Component, inject, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+  ActivatedRouteSnapshot,
+  NavigationEnd,
+  PRIMARY_OUTLET,
+  Router,
+  RouterLink,
+} from "@angular/router";
+import { filter } from "rxjs";
+import {
+  TUI_LIQUID_GLASS,
+  TuiButton,
+  TuiDataList,
+  TuiDropdown,
+  TuiOption,
+  TuiTitle,
+} from "@taiga-ui/core";
 import { TuiAppBar } from "@taiga-ui/layout";
 import { TuiPlatform } from "@taiga-ui/cdk";
 
+interface HeaderConfig {
+  readonly title: string;
+  readonly leading: "menu" | "back";
+}
+
+const DEFAULT_HEADER: HeaderConfig = {
+  title: "Lootrack",
+  leading: "menu",
+};
+
 @Component({
   selector: "app-floating-header",
-  imports: [TuiButton, TuiAppBar, TuiPlatform, TuiTitle],
+  imports: [
+    TuiButton,
+    TuiAppBar,
+    TuiPlatform,
+    TuiTitle,
+    TuiDropdown,
+    TuiOption,
+    TuiDataList,
+    RouterLink,
+  ],
   providers: [{ provide: TUI_LIQUID_GLASS, useValue: true }],
   templateUrl: "./floating-header.html",
   styleUrl: "./floating-header.scss",
 })
 export class FloatingHeader {
-  protected menuOpen = signal(false);
-  protected readonly blur = signal(false);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+
+  protected readonly menuOpen = signal(false);
+  protected readonly header = signal<HeaderConfig>(DEFAULT_HEADER);
+
+  constructor() {
+    this.updateHeader();
+
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.menuOpen.set(false);
+        this.updateHeader();
+      });
+  }
+
+  protected goBack(): void {
+    const previousNavigation =
+      this.router.lastSuccessfulNavigation()?.previousNavigation;
+
+    if (previousNavigation) {
+      this.location.back();
+      return;
+    }
+
+    void this.router.navigateByUrl("/");
+  }
+
+  private updateHeader(): void {
+    const route = this.getPrimaryLeaf(this.router.routerState.snapshot.root);
+
+    const config = route.data["header"] as HeaderConfig | undefined;
+
+    this.header.set(config ?? DEFAULT_HEADER);
+  }
+
+  private getPrimaryLeaf(
+    route: ActivatedRouteSnapshot,
+  ): ActivatedRouteSnapshot {
+    const primaryChild = route.children.find(
+      (child) => child.outlet === PRIMARY_OUTLET,
+    );
+
+    return primaryChild ? this.getPrimaryLeaf(primaryChild) : route;
+  }
 }

@@ -4,7 +4,7 @@ import {
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from "@angular/core";
-import { provideRouter } from "@angular/router";
+import { provideRouter, withViewTransitions } from "@angular/router";
 
 import { routes } from "./app.routes";
 import { provideHttpClient } from "@angular/common/http";
@@ -21,7 +21,7 @@ import { CategoriesEffects } from "./state/categories/categories.effects";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withViewTransitions()),
     provideTaiga({ apis: { liquidGlass: true } }),
     provideHttpClient(),
     provideStore({
