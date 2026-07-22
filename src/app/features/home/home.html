@@ -1,1 +1,39 @@
-<pre>{{ transactionsState$ | async | json }}</pre>
+<div class="flex flex-col w-full p-4 gap-3">
+  <header [tuiHeader]="'h3'">
+    <hgroup tuiTitle>
+      <h3>{{ currentMonth() + '-01' | date: 'MMMM yyyy' }}</h3>
+    </hgroup>
+    <aside tuiAccessories>
+      <button tuiButton type="button">Button</button>
+    </aside>
+  </header>
+  <br />
+  <br />
+  <div class="flex flex-col w-full justify-center gap-2">
+    <div class="flex flex-col items-center justify-center">
+      <span>Net this month</span>
+      <h1 [tuiTitle]="'l'" class="text-center align-center">
+        {{monthNet() | amount | currency: "EUR"}}
+      </h1>
+    </div>
+    <hr class="m-2" />
+    <div class="flex flex-row justify-around gap-2">
+      <span tuiStatus="var(--tui-status-positive)">
+        <div class="flex flex-col">
+          <span>Income</span>
+          <h1 [tuiTitle]="'m'">
+            {{monthIncomesExpenses().totalIncome | amount | currency: "EUR"}}
+          </h1>
+        </div>
+      </span>
+      <span tuiStatus="var(--tui-status-negative)">
+        <div class="flex flex-col">
+          <span>Expenses</span>
+          <h1 [tuiTitle]="'m'">
+            {{monthIncomesExpenses().totalExpense | amount | currency: "EUR"}}
+          </h1>
+        </div>
+      </span>
+    </div>
+  </div>
+</div>
