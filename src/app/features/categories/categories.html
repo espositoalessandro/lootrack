@@ -1,1 +1,116 @@
-<p>categories works!</p>
+<section class="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 pb-6">
+  <tui-segmented size="m" class="w-full">
+    <label class="flex-1">
+      <input
+        type="radio"
+        name="category-type"
+        value="expense"
+        [checked]="selectedType() === 'expense'"
+        (change)="selectedType.set('expense')"
+      />
+
+      Expenses
+    </label>
+
+    <label class="flex-1">
+      <input
+        type="radio"
+        name="category-type"
+        value="income"
+        [checked]="selectedType() === 'income'"
+        (change)="selectedType.set('income')"
+      />
+
+      Income
+    </label>
+  </tui-segmented>
+
+  <header class="flex items-center justify-between gap-4">
+    <div tuiTitle>
+      <h2 tuiTitle="m">{{ sectionTitle() }}</h2>
+
+      <span tuiSubtitle> {{ sectionDescription() }} </span>
+    </div>
+
+    <button
+      tuiIconButton
+      type="button"
+      size="m"
+      appearance="secondary"
+      iconStart="@tui.plus"
+      title="Add category"
+      (click)="addCategory()"
+    ></button>
+  </header>
+
+  @if (categorySummaries().length) {
+  <div class="flex flex-col gap-3">
+    @for ( summary of categorySummaries(); track summary.category.id ) {
+    <button
+      type="button"
+      class="category-row"
+      (click)="editCategory(summary.category.id)"
+    >
+      <span class="category-symbol" [attr.data-type]="selectedType()">
+        {{ summary.category.name.charAt(0).toUpperCase() }}
+      </span>
+
+      <span class="min-w-0 text-left">
+        <strong class="block truncate text-base">
+          {{ summary.category.name }}
+        </strong>
+
+        <span class="block text-sm text-(--tui-text-secondary)">
+          {{ summary.transactionCount }} {{ summary.transactionCount === 1 ?
+          "transaction" : "transactions" }}
+        </span>
+      </span>
+
+      <strong class="category-total" [attr.data-type]="selectedType()">
+        {{ summary.totalInCents | amount | currency: "EUR" }}
+      </strong>
+
+      <tui-icon icon="@tui.chevron-right" class="text-(--tui-text-tertiary)" />
+    </button>
+    }
+  </div>
+
+  <button type="button" class="add-category-row" (click)="addCategory()">
+    <span class="add-category-symbol">
+      <tui-icon icon="@tui.plus" />
+    </span>
+
+    <span class="text-left">
+      <strong class="block">Add category</strong>
+
+      <span class="text-sm text-(--tui-text-secondary)">
+        Create a new {{ selectedType() }} category
+      </span>
+    </span>
+  </button>
+  } @else {
+  <div class="empty-state">
+    <span class="empty-state__icon">
+      <tui-icon icon="@tui.tags" />
+    </span>
+
+    <div tuiTitle>
+      <h2 tuiTitle="s">No {{ selectedType() }} categories</h2>
+
+      <span tuiSubtitle>
+        Create your first category to start organizing transactions.
+      </span>
+    </div>
+
+    <button
+      tuiButton
+      type="button"
+      appearance="primary"
+      iconStart="@tui.plus"
+      (click)="addCategory()"
+    >
+      Add category
+    </button>
+  </div>
+  }
+</section>

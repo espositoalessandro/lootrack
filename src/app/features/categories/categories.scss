@@ -1,0 +1,101 @@
+:host {
+  display: block;
+}
+
+.category-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto 1.25rem;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.875rem;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: 1.25rem;
+  color: var(--tui-text-primary);
+  background: var(--tui-background-elevation-1);
+  cursor: pointer;
+  transition:
+    background-color var(--tui-duration),
+    transform var(--tui-duration);
+
+  &:active {
+    transform: scale(0.985);
+  }
+
+  &:focus-visible {
+    outline: 0.125rem solid var(--tui-border-focus);
+    outline-offset: 0.125rem;
+  }
+}
+
+.category-symbol,
+.add-category-symbol,
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.category-symbol[data-type="expense"] {
+  color: var(--tui-status-negative);
+  background: color-mix(in srgb, var(--tui-status-negative) 18%, transparent);
+}
+
+.category-symbol[data-type="income"] {
+  color: var(--tui-status-positive);
+  background: color-mix(in srgb, var(--tui-status-positive) 18%, transparent);
+}
+
+.category-total {
+  white-space: nowrap;
+  font-size: 0.9375rem;
+}
+
+.category-total[data-type="expense"] {
+  color: var(--tui-status-negative);
+}
+
+.category-total[data-type="income"] {
+  color: var(--tui-status-positive);
+}
+
+.add-category-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.875rem;
+  border: 1px dashed var(--tui-border-normal);
+  border-radius: 1.25rem;
+  color: var(--tui-text-primary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.add-category-symbol {
+  color: var(--tui-text-secondary);
+  border: 1px solid var(--tui-border-normal);
+}
+
+.empty-state {
+  display: flex;
+  min-height: 18rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  border: 1px dashed var(--tui-border-normal);
+  border-radius: 1.5rem;
+  text-align: center;
+}
+
+.empty-state__icon {
+  color: var(--tui-text-secondary);
+  background: var(--tui-background-elevation-1);
+}
