@@ -3,6 +3,7 @@ import { defer, Observable } from "rxjs";
 import { AddCategory, Category } from "./models";
 import { lootrackDb } from "./database";
 import { categoryNamesMatch, cleanCategoryName } from "./category-name";
+import { CategoryInUseError } from "../shared/error-handler";
 
 @Injectable({
   providedIn: "root",
@@ -59,24 +60,60 @@ export class CategoriesRepository {
     });
   }
 
+  // remove(id: string): Observable<string> {
+  //   return defer(async () => {
+  //     const existing = await lootrackDb.categories.get(id);
+  //
+  //     if (!existing) {
+  //       throw new Error("Category not found");
+  //     }
+  //
+  //     const deletedCategory: Category = {
+  //       ...existing,
+  //       deletedAt: new Date().toISOString(),
+  //       updatedAt: new Date().toISOString(),
+  //     };
+  //
+  //     await lootrackDb.categories.put(deletedCategory);
+  //
+  //     return deletedCategory.id;
+  //   });
+  // }
+
   remove(id: string): Observable<string> {
-    return defer(async () => {
-      const existing = await lootrackDb.categories.get(id);
+    return defer(() =>
+      lootrackDb.transaction(
+        "rw",
+        lootrackDb.categories,
+        lootrackDb.transactions,
+        async () => {
+          const category = await lootrackDb.categories.get(id);
 
-      if (!existing) {
-        throw new Error("Category not found");
-      }
+          if (!category || category.deletedAt !== null) {
+            throw new Error("Category not found");
+          }
 
-      const deletedCategory: Category = {
-        ...existing,
-        deletedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+          const activeTransactionCount = await lootrackDb.transactions
+            .where("categoryId")
+            .equals(id)
+            .and((transaction) => transaction.deletedAt === null)
+            .count();
 
-      await lootrackDb.categories.put(deletedCategory);
+          if (activeTransactionCount > 0) {
+            throw new CategoryInUseError(activeTransactionCount);
+          }
 
-      return deletedCategory.id;
-    });
+          const now = new Date().toISOString();
+
+          await lootrackDb.categories.update(id, {
+            deletedAt: now,
+            updatedAt: now,
+          });
+
+          return id;
+        },
+      ),
+    );
   }
 
   updateName(id: string, name: string): Observable<Category> {
