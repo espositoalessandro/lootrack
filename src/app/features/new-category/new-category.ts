@@ -180,8 +180,8 @@ export class NewCategory {
     );
   }
 
-  protected changeType(type: TransactionType): void {
-    this.form.controls.type.setValue(type);
+  protected onTypeChange(): void {
+    this.form.controls.search.setValue("");
     this.selectedTransactionIds.set([]);
   }
 

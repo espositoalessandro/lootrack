@@ -29,18 +29,18 @@
       size="m"
       class="flex w-full"
       [style.--tui-background-base]="
-        form.controls.type.value === 'income'
-          ? 'var(--tui-status-positive)'
-          : 'var(--tui-status-negative)'
-      "
+    form.controls.type.value === 'income'
+      ? 'var(--tui-status-positive)'
+      : 'var(--tui-status-negative)'
+  "
     >
       <label class="flex-1">
         <input
-          name="category-type"
+          name="type"
           type="radio"
           value="expense"
-          [checked]="form.controls.type.value === 'expense'"
-          (change)="changeType('expense')"
+          formControlName="type"
+          (change)="onTypeChange()"
         />
 
         {{ "newCategory.expense" | transloco }}
@@ -48,17 +48,16 @@
 
       <label class="flex-1">
         <input
-          name="category-type"
+          name="type"
           type="radio"
           value="income"
-          [checked]="form.controls.type.value === 'income'"
-          (change)="changeType('income')"
+          formControlName="type"
+          (change)="onTypeChange()"
         />
 
         {{ "newCategory.income" | transloco }}
       </label>
     </tui-segmented>
-
     <section class="assignment-section">
       <header class="flex items-start gap-3">
         <span class="assignment-section__icon">
