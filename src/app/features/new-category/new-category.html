@@ -1,0 +1,180 @@
+<ng-template
+  [tuiSheetDialog]="open"
+  [tuiSheetDialogOptions]="options"
+  (tuiSheetDialogChange)="onOpenChange($event)"
+>
+  <div class="flex w-full items-center justify-center">
+    <h1 tuiTitle="m" class="pb-4">{{ "newCategory.title" | transloco }}</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+    <tui-textfield tuiAnimated>
+      <label for="category-name-input" tuiLabel>
+        {{ "newCategory.name" | transloco }}
+      </label>
+
+      <input
+        id="category-name-input"
+        tuiInput
+        formControlName="name"
+        type="text"
+        autocomplete="off"
+        [placeholder]="
+          'newCategory.namePlaceholder' | transloco
+        "
+      />
+    </tui-textfield>
+
+    <tui-segmented
+      size="m"
+      class="flex w-full"
+      [style.--tui-background-base]="
+        form.controls.type.value === 'income'
+          ? 'var(--tui-status-positive)'
+          : 'var(--tui-status-negative)'
+      "
+    >
+      <label class="flex-1">
+        <input
+          name="category-type"
+          type="radio"
+          value="expense"
+          [checked]="form.controls.type.value === 'expense'"
+          (change)="changeType('expense')"
+        />
+
+        {{ "newCategory.expense" | transloco }}
+      </label>
+
+      <label class="flex-1">
+        <input
+          name="category-type"
+          type="radio"
+          value="income"
+          [checked]="form.controls.type.value === 'income'"
+          (change)="changeType('income')"
+        />
+
+        {{ "newCategory.income" | transloco }}
+      </label>
+    </tui-segmented>
+
+    <section
+      class="assignment-section"
+      (focusout)="onAssignmentFocusOut($event)"
+    >
+      <header class="flex gap-3">
+        <span class="assignment-section__icon">
+          <tui-icon icon="@tui.list" />
+        </span>
+
+        <span class="min-w-0">
+          <strong class="block">
+            {{ "newCategory.assignmentTitle" | transloco }}
+          </strong>
+
+          <span class="block text-sm text-(--tui-text-secondary)">
+            {{ (form.controls.type.value === "expense" ?
+            "newCategory.assignmentDescriptionExpense" :
+            "newCategory.assignmentDescriptionIncome") | transloco }}
+          </span>
+        </span>
+      </header>
+
+      <tui-textfield tuiAnimated>
+        <tui-icon icon="@tui.search" />
+
+        <input
+          tuiInput
+          formControlName="search"
+          type="search"
+          autocomplete="off"
+          [placeholder]="
+            'newCategory.searchPlaceholder' | transloco
+          "
+          (focus)="openTransactionList()"
+        />
+      </tui-textfield>
+
+      <div
+        class="transaction-results"
+        [class.transaction-results--expanded]="
+          transactionsExpanded()
+        "
+      >
+        <div class="transaction-results__content">
+          @if (filteredTransactions().length) {
+          <div class="transaction-list">
+            @for ( transaction of filteredTransactions(); track transaction.id )
+            {
+            <label class="transaction-row" [attr.data-type]="transaction.type">
+              <input
+                type="checkbox"
+                [checked]="isSelected(transaction.id)"
+                (change)="
+                      toggleTransaction(transaction.id)
+                    "
+              />
+
+              <span class="transaction-row__date">
+                {{ transaction.occurredOn.slice(8, 10) }}/{{
+                transaction.occurredOn.slice(5, 7) }}
+              </span>
+
+              <strong class="min-w-0 flex-1 truncate">
+                {{ transaction.description }}
+              </strong>
+
+              <strong class="transaction-row__amount">
+                {{ transaction.type === "expense" ? "-" : "+" }}{{
+                transaction.amountInCents | amount | currency: "EUR" }}
+              </strong>
+            </label>
+            }
+          </div>
+          } @else {
+          <p class="empty-results">
+            {{ (form.controls.type.value === "expense" ?
+            "newCategory.noResultsExpense" : "newCategory.noResultsIncome") |
+            transloco }}
+          </p>
+          }
+        </div>
+      </div>
+
+      @if (selectedTransactionIds().length) {
+      <footer class="selection-summary">
+        <div class="selection-summary__details">
+          <span>
+            {{ (selectedTransactionIds().length === 1 ?
+            "newCategory.transactionSelected" :
+            "newCategory.transactionsSelected") | transloco : { count:
+            selectedTransactionIds().length } }}
+          </span>
+
+          <button
+            type="button"
+            class="deselect-button"
+            (pointerdown)="preserveAccordion($event)"
+            (click)="deselectAll()"
+          >
+            {{ "buttons.deselectAll" | transloco }}
+          </button>
+        </div>
+
+        <strong>
+          {{ "newCategory.total" | transloco }}: {{ form.controls.type.value ===
+          "expense" ? "-" : "+" }}{{ selectedTotalInCents() / 100 | currency:
+          "EUR" }}
+        </strong>
+      </footer>
+      }
+    </section>
+
+    <footer tuiFloatingContainer class="footer">
+      <button size="m" tuiButton type="submit" [disabled]="form.invalid">
+        {{ "newCategory.create" | transloco }}
+      </button>
+    </footer>
+  </form>
+</ng-template>

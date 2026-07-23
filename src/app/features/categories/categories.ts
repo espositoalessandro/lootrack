@@ -12,6 +12,7 @@ import {
   TuiSwipeActionsAutoClose,
 } from "@taiga-ui/addon-mobile";
 import { deleteCategory } from "../../state/categories/categories.actions";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-categories",
@@ -30,6 +31,7 @@ import { deleteCategory } from "../../state/categories/categories.actions";
 })
 export class Categories {
   private readonly store = inject(Store);
+  private readonly router = inject(Router);
 
   protected readonly selectedType = signal<TransactionType>("expense");
   protected requestDeleteCategory(id: string): void {
@@ -54,9 +56,21 @@ export class Categories {
   );
 
   protected addCategory(): void {
-    // TODO: Open the create-category sheet.
+    void this.router.navigate(
+      [
+        {
+          outlets: {
+            sheet: ["new-category"],
+          },
+        },
+      ],
+      {
+        queryParams: {
+          type: this.selectedType(),
+        },
+      },
+    );
   }
-
   protected editCategory(id: string): void {
     // TODO: Open the edit-category sheet.
     console.debug("Edit category", id);

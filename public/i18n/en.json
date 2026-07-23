@@ -3,7 +3,8 @@
     "close": "Close",
     "confirm": "Confirm",
     "confirmEdit": "Confirm edit",
-    "add": "Add"
+    "add": "Add",
+    "deselectAll": "Deselect all"
   },
   "newTransaction": {
     "title": "Add transaction",
@@ -19,5 +20,22 @@
     "categoriesSelectHeader": "Choose a category",
     "date": "Date",
     "dateSelectHeader": "Choose a date"
+  },
+  "newCategory": {
+    "title": "Add category",
+    "name": "Category name",
+    "namePlaceholder": "e.g. Food & groceries",
+    "expense": "Expense",
+    "income": "Income",
+    "assignmentTitle": "Assign uncategorized transactions",
+    "assignmentDescriptionExpense": "Optional — select existing expense transactions without a category",
+    "assignmentDescriptionIncome": "Optional — select existing income transactions without a category",
+    "searchPlaceholder": "Search transactions",
+    "noResultsExpense": "No uncategorized expense transactions match your search.",
+    "noResultsIncome": "No uncategorized income transactions match your search.",
+    "transactionSelected": "{{count}} transaction selected",
+    "transactionsSelected": "{{count}} transactions selected",
+    "total": "Total",
+    "create": "Create category"
   }
 }

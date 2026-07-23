@@ -14,6 +14,12 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "new-category",
+    outlet: "sheet",
+    loadComponent: () =>
+      import("./features/new-category/new-category").then((m) => m.NewCategory),
+  },
+  {
     path: "list",
     loadComponent: () =>
       import("./features/transaction-list/transaction-list").then(
