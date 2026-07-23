@@ -59,16 +59,13 @@
       </label>
     </tui-segmented>
 
-    <section
-      class="assignment-section"
-      (focusout)="onAssignmentFocusOut($event)"
-    >
-      <header class="flex gap-3">
+    <section class="assignment-section">
+      <header class="flex items-start gap-3">
         <span class="assignment-section__icon">
           <tui-icon icon="@tui.list" />
         </span>
 
-        <span class="min-w-0">
+        <span class="min-w-0 flex-1">
           <strong class="block">
             {{ "newCategory.assignmentTitle" | transloco }}
           </strong>
@@ -79,6 +76,33 @@
             "newCategory.assignmentDescriptionIncome") | transloco }}
           </span>
         </span>
+
+        <button
+          tuiIconButton
+          type="button"
+          size="s"
+          appearance="secondary"
+          [iconStart]="
+            transactionsExpanded()
+              ? '@tui.chevron-up'
+              : '@tui.chevron-down'
+          "
+          [attr.aria-expanded]="transactionsExpanded()"
+          aria-controls="uncategorized-transactions"
+          [attr.aria-label]="
+            (transactionsExpanded()
+              ? 'newCategory.collapseAssignment'
+              : 'newCategory.expandAssignment')
+              | transloco
+          "
+          [title]="
+            (transactionsExpanded()
+              ? 'newCategory.collapseAssignment'
+              : 'newCategory.expandAssignment')
+              | transloco
+          "
+          (click)="toggleTransactionList()"
+        ></button>
       </header>
 
       <tui-textfield tuiAnimated>
@@ -95,12 +119,10 @@
           (focus)="openTransactionList()"
         />
       </tui-textfield>
-
       <div
+        id="uncategorized-transactions"
         class="transaction-results"
-        [class.transaction-results--expanded]="
-          transactionsExpanded()
-        "
+        [class.transaction-results--expanded]="transactionsExpanded()"
       >
         <div class="transaction-results__content">
           @if (filteredTransactions().length) {
@@ -152,12 +174,7 @@
             selectedTransactionIds().length } }}
           </span>
 
-          <button
-            type="button"
-            class="deselect-button"
-            (pointerdown)="preserveAccordion($event)"
-            (click)="deselectAll()"
-          >
+          <button type="button" class="deselect-button" (click)="deselectAll()">
             {{ "buttons.deselectAll" | transloco }}
           </button>
         </div>

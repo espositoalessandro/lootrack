@@ -36,6 +36,8 @@
     "transactionSelected": "{{count}} transaction selected",
     "transactionsSelected": "{{count}} transactions selected",
     "total": "Total",
-    "create": "Create category"
+    "create": "Create category",
+    "expandAssignment": "Show uncategorized transactions",
+    "collapseAssignment": "Hide uncategorized transactions"
   }
 }

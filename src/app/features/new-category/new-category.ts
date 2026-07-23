@@ -61,7 +61,6 @@ export class NewCategory {
     this.route.snapshot.queryParamMap.get("type") === "income"
       ? "income"
       : "expense";
-  private preserveExpansionOnFocusOut = false;
   protected open = true;
 
   protected readonly options: Partial<TuiSheetDialogOptions> = {
@@ -181,13 +180,6 @@ export class NewCategory {
     );
   }
 
-  protected preserveAccordion(event: PointerEvent): void {
-    this.preserveExpansionOnFocusOut = true;
-
-    // Prevent the button from taking focus away from the current element.
-    event.preventDefault();
-  }
-
   protected changeType(type: TransactionType): void {
     this.form.controls.type.setValue(type);
     this.selectedTransactionIds.set([]);
@@ -207,34 +199,12 @@ export class NewCategory {
     this.transactionsExpanded.set(true);
   }
 
-  protected deselectAll(): void {
-    this.selectedTransactionIds.set([]);
-    this.transactionsExpanded.set(true);
+  protected toggleTransactionList(): void {
+    this.transactionsExpanded.update((expanded) => !expanded);
   }
 
-  protected onAssignmentFocusOut(event: FocusEvent): void {
-    const section = event.currentTarget as HTMLElement;
-
-    window.setTimeout(() => {
-      if (this.preserveExpansionOnFocusOut) {
-        this.preserveExpansionOnFocusOut = false;
-        this.transactionsExpanded.set(true);
-        return;
-      }
-
-      if (this.selectedTransactionIds().length > 0) {
-        return;
-      }
-
-      const activeElement = document.activeElement;
-
-      if (
-        !(activeElement instanceof Node) ||
-        !section.contains(activeElement)
-      ) {
-        this.transactionsExpanded.set(false);
-      }
-    });
+  protected deselectAll(): void {
+    this.selectedTransactionIds.set([]);
   }
 
   protected onOpenChange(open: boolean): void {
