@@ -1,7 +1,6 @@
 import { provideTaiga } from "@taiga-ui/core";
 import {
   ApplicationConfig,
-  ErrorHandler,
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from "@angular/core";
@@ -18,11 +17,9 @@ import { provideEffects } from "@ngrx/effects";
 import { provideServiceWorker } from "@angular/service-worker";
 import { categoriesReducer } from "./state/categories/categories.reducer";
 import { CategoriesEffects } from "./state/categories/categories.effects";
-import { GlobalErrorHandler } from "./shared/error-handler";
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withViewTransitions()),
     provideTaiga({ apis: { liquidGlass: true } }),

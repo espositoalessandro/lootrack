@@ -2,6 +2,8 @@ import { createAction, props } from "@ngrx/store";
 
 import type { AddCategory, Category } from "../../data/models";
 
+// RETRIEVES
+
 export const loadCategories = createAction("[Categories Page] Load Requested");
 
 export const loadCategoriesSuccess = createAction(
@@ -13,6 +15,8 @@ export const loadCategoriesFailure = createAction(
   "[Categories Database] Load Failed",
   props<{ error: string }>(),
 );
+
+// ADD
 
 export const addCategory = createAction(
   "[New Category Page] Add Requested",
@@ -29,6 +33,8 @@ export const addCategoryFailure = createAction(
   props<{ error: string }>(),
 );
 
+// DELETES
+
 export const deleteCategory = createAction(
   "[Category Item] Delete Requested",
   props<{ id: string }>(),
@@ -44,6 +50,8 @@ export const deleteCategoryFailure = createAction(
   props<{ error: string }>(),
 );
 
+// UPDATES
+
 export const updateCategory = createAction(
   "[Category Item] Update Requested",
   props<{ id: string; name: string }>(),
@@ -57,4 +65,14 @@ export const updateCategorySuccess = createAction(
 export const updateCategoryFailure = createAction(
   "[Categories Database] Update Failed",
   props<{ error: string }>(),
+);
+
+// ERRORS
+
+export const deleteCategoryBlocked = createAction(
+  "[Categories Database] Delete Blocked",
+  props<{
+    id: string;
+    transactionCount: number;
+  }>(),
 );

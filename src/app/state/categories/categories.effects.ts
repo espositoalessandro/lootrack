@@ -1,12 +1,21 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, concatMap, map, of, switchMap } from "rxjs";
+import {
+  catchError,
+  concatMap,
+  EMPTY,
+  exhaustMap,
+  map,
+  of,
+  switchMap,
+} from "rxjs";
 
 import {
   addCategory,
   addCategoryFailure,
   addCategorySuccess,
   deleteCategory,
+  deleteCategoryBlocked,
   deleteCategoryFailure,
   deleteCategorySuccess,
   loadCategories,
@@ -17,11 +26,13 @@ import {
   updateCategorySuccess,
 } from "./categories.actions";
 import { CategoriesRepository } from "../../data/categories-repository";
+import { CategoryInUseError } from "../../shared/errors";
+import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()
 export class CategoriesEffects {
   private readonly actions$ = inject(Actions);
-
+  private readonly dialogs = inject(TuiDialogService);
   private readonly categoriesDatabase = inject(CategoriesRepository);
 
   readonly loadCategories$ = createEffect(() =>
@@ -76,16 +87,24 @@ export class CategoriesEffects {
       concatMap(({ id }) =>
         this.categoriesDatabase.remove(id).pipe(
           map(() => deleteCategorySuccess({ id })),
-          catchError((error: unknown) =>
-            of(
+          catchError((error: unknown) => {
+            if (error instanceof CategoryInUseError) {
+              return of(
+                deleteCategoryBlocked({
+                  id,
+                  transactionCount: error.transactionCount,
+                }),
+              );
+            }
+            return of(
               deleteCategoryFailure({
                 error:
                   error instanceof Error
                     ? error.message
                     : "Unable to delete category",
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
@@ -116,5 +135,27 @@ export class CategoriesEffects {
         ),
       ),
     ),
+  );
+
+  readonly showDeleteCategoryBlockedDialog$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(deleteCategoryBlocked),
+
+        exhaustMap(({ transactionCount }) =>
+          this.dialogs
+            .open(
+              `This category is linked to ${transactionCount} active ${
+                transactionCount === 1 ? "transaction" : "transactions"
+              }. Reassign or delete them before deleting the category.`,
+              {
+                label: "Category cannot be deleted",
+                size: "s",
+              },
+            )
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
   );
 }

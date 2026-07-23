@@ -3,7 +3,7 @@ import { defer, Observable } from "rxjs";
 import { AddCategory, Category } from "./models";
 import { lootrackDb } from "./database";
 import { categoryNamesMatch, cleanCategoryName } from "./category-name";
-import { CategoryInUseError } from "../shared/error-handler";
+import { CategoryInUseError } from "../shared/errors";
 
 @Injectable({
   providedIn: "root",
@@ -38,9 +38,9 @@ export class CategoriesRepository {
         );
       }
 
-      if (existing && existing.deletedAt !== null) {
+      if (existing) {
         throw new Error(
-          `A deleted ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
+          `An ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
         );
       }
 
@@ -60,26 +60,6 @@ export class CategoriesRepository {
       return category;
     });
   }
-
-  // remove(id: string): Observable<string> {
-  //   return defer(async () => {
-  //     const existing = await lootrackDb.categories.get(id);
-  //
-  //     if (!existing) {
-  //       throw new Error("Category not found");
-  //     }
-  //
-  //     const deletedCategory: Category = {
-  //       ...existing,
-  //       deletedAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     };
-  //
-  //     await lootrackDb.categories.put(deletedCategory);
-  //
-  //     return deletedCategory.id;
-  //   });
-  // }
 
   remove(id: string): Observable<string> {
     return defer(() =>
