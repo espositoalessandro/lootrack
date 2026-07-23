@@ -1,19 +1,16 @@
 import { Injectable } from "@angular/core";
 import { defer, Observable } from "rxjs";
-import { AddTransaction, Transaction } from "./models";
+import {
+  AddTransaction,
+  CategoryAssignment,
+  Transaction,
+  TransactionType,
+} from "./models";
 import { lootrackDb } from "./database";
 import {
   InvalidCategoryReferenceError,
   InvalidTransactionError,
 } from "./errors";
-
-function assertValidCategoryId(value: unknown): asserts value is string | null {
-  if (value !== null && typeof value !== "string") {
-    throw new InvalidTransactionError(
-      "categoryId must be a UUID string or null",
-    );
-  }
-}
 
 @Injectable({
   providedIn: "root",
@@ -28,26 +25,34 @@ export class TransactionsRepository {
   }
 
   add(input: AddTransaction): Observable<Transaction> {
-    return defer(async () => {
-      const categoryId =
-        input.category.kind === "categorized"
-          ? input.category.categoryId
-          : null;
+    return defer(() =>
+      lootrackDb.transaction(
+        "rw",
+        lootrackDb.categories,
+        lootrackDb.transactions,
+        async () => {
+          const categoryId = this.resolveCategoryId(input.category);
 
-      assertValidCategoryId(categoryId);
-      await this.validateCategoryReference(input);
+          await this.validateCategoryReference(categoryId, input.type);
 
-      const transaction: Transaction = {
-        ...input,
-        categoryId,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null,
-      };
-      await lootrackDb.transactions.add(transaction);
-      return transaction;
-    });
+          const transaction: Transaction = {
+            id: crypto.randomUUID(),
+            type: input.type,
+            amountInCents: input.amountInCents,
+            description: input.description,
+            occurredOn: input.occurredOn,
+            categoryId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null,
+          };
+
+          await lootrackDb.transactions.add(transaction);
+
+          return transaction;
+        },
+      ),
+    );
   }
 
   remove(id: string): Observable<string> {
@@ -71,62 +76,72 @@ export class TransactionsRepository {
   }
 
   update(id: string, changes: AddTransaction): Observable<Transaction> {
-    return defer(async () => {
-      const existing = await lootrackDb.transactions.get(id);
+    return defer(() =>
+      lootrackDb.transaction(
+        "rw",
+        lootrackDb.categories,
+        lootrackDb.transactions,
+        async () => {
+          const existing = await lootrackDb.transactions.get(id);
 
-      if (!existing || existing.deletedAt !== null) {
-        throw new Error("Transaction not found");
-      }
-      const categoryId =
-        changes.category.kind === "categorized"
-          ? changes.category.categoryId
-          : null;
+          if (!existing || existing.deletedAt !== null) {
+            throw new Error("Transaction not found");
+          }
 
-      assertValidCategoryId(categoryId);
-      await this.validateCategoryReference(changes);
+          const categoryId = this.resolveCategoryId(changes.category);
+          await this.validateCategoryReference(categoryId, changes.type);
 
-      const updatedTransaction: Transaction = {
-        ...existing,
-        ...changes,
-        updatedAt: new Date().toISOString(),
-      };
+          const updatedTransaction: Transaction = {
+            ...existing,
+            type: changes.type,
+            amountInCents: changes.amountInCents,
+            description: changes.description,
+            occurredOn: changes.occurredOn,
+            categoryId,
+            updatedAt: new Date().toISOString(),
+          };
 
-      await lootrackDb.transactions.put(updatedTransaction);
+          await lootrackDb.transactions.put(updatedTransaction);
 
-      return updatedTransaction;
-    });
+          return updatedTransaction;
+        },
+      ),
+    );
   }
 
-  // helpers
+  private resolveCategoryId(assignment: CategoryAssignment): string | null {
+    switch (assignment.kind) {
+      case "categorized":
+        return assignment.categoryId;
+
+      case "uncategorized":
+        return null;
+
+      default:
+        throw new InvalidTransactionError("Invalid category assignment");
+    }
+  }
 
   private async validateCategoryReference(
-    input: AddTransaction,
+    categoryId: string | null,
+    transactionType: TransactionType,
   ): Promise<void> {
-    if (input.category === null || input.category.kind !== "categorized") {
+    if (categoryId === null) {
       return;
     }
 
-    const category = await lootrackDb.categories.get(input.category.categoryId);
+    const category = await lootrackDb.categories.get(categoryId);
 
     if (!category) {
-      throw new InvalidCategoryReferenceError(
-        input.category.categoryId,
-        "not-found",
-      );
+      throw new InvalidCategoryReferenceError(categoryId, "not-found");
     }
 
     if (category.deletedAt !== null) {
-      throw new InvalidCategoryReferenceError(
-        input.category.categoryId,
-        "deleted",
-      );
+      throw new InvalidCategoryReferenceError(categoryId, "deleted");
     }
 
-    if (category.type !== input.type) {
-      throw new InvalidCategoryReferenceError(
-        input.category.categoryId,
-        "type-mismatch",
-      );
+    if (category.type !== transactionType) {
+      throw new InvalidCategoryReferenceError(categoryId, "type-mismatch");
     }
   }
 }

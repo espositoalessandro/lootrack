@@ -248,17 +248,14 @@ export class NewTransaction implements OnInit {
       String(occurred.day).padStart(2, "0"),
     ].join("-");
 
-    let category;
-    if (this.form.value.category?.id) {
-      category = {
-        kind: "categorized",
-        categoryId: this.form.value.category.id,
-      } as CategoryAssignment;
-    } else {
-      category = {
-        kind: "uncategorized",
-      } as CategoryAssignment;
-    }
+    const category: CategoryAssignment = this.form.controls.category.value?.id
+      ? {
+          kind: "categorized",
+          categoryId: this.form.controls.category.value.id,
+        }
+      : {
+          kind: "uncategorized",
+        };
 
     const transaction: AddTransaction = {
       category,
