@@ -28,7 +28,8 @@ export class CategoriesRepository {
       const existing = categories.find(
         (category) =>
           category.type === input.type &&
-          categoryNamesMatch(category.name, input.name),
+          categoryNamesMatch(category.name, input.name) &&
+          category.deletedAt === null,
       );
 
       if (existing && existing.deletedAt === null) {
