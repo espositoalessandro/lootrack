@@ -3,7 +3,7 @@ import { defer, Observable } from "rxjs";
 import { AddCategory, Category } from "./models";
 import { lootrackDb } from "./database";
 import { categoryNamesMatch, cleanCategoryName } from "./category-name";
-import { CategoryInUseError } from "../shared/errors";
+import { CategoryInUseError } from "./errors";
 
 @Injectable({
   providedIn: "root",

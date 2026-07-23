@@ -26,7 +26,7 @@ import {
   updateCategorySuccess,
 } from "./categories.actions";
 import { CategoriesRepository } from "../../data/categories-repository";
-import { CategoryInUseError } from "../../shared/errors";
+import { CategoryInUseError } from "../../data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()
