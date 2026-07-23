@@ -7,3 +7,21 @@ export class CategoryInUseError extends Error {
     );
   }
 }
+
+export class InvalidTransactionError extends Error {
+  constructor(override message: string) {
+    super(message);
+  }
+}
+
+export type InvalidCategoryReferenceReason =
+  "not-found" | "deleted" | "type-mismatch";
+
+export class InvalidCategoryReferenceError extends Error {
+  constructor(
+    readonly categoryId: string,
+    readonly reason: InvalidCategoryReferenceReason,
+  ) {
+    super(`Invalid category reference: ${reason}`);
+  }
+}

@@ -12,9 +12,18 @@ export interface Transaction {
   deletedAt: string | null;
 }
 
+export type CategoryAssignment =
+  | {
+      kind: "categorized";
+      categoryId: string;
+    }
+  | {
+      kind: "uncategorized";
+    };
+
 export interface AddTransaction {
   type: TransactionType;
-  categoryId: string | null;
+  category: CategoryAssignment;
   amountInCents: number;
   description: string;
   occurredOn: string;

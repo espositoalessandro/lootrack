@@ -32,12 +32,6 @@ export class CategoriesRepository {
           category.deletedAt === null,
       );
 
-      if (existing && existing.deletedAt === null) {
-        throw new Error(
-          `An ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
-        );
-      }
-
       if (existing) {
         throw new Error(
           `An ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,

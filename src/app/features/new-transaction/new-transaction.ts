@@ -35,6 +35,7 @@ import {
 import {
   AddTransaction,
   Category,
+  CategoryAssignment,
   Transaction,
   TransactionType,
 } from "../../data/models";
@@ -246,8 +247,21 @@ export class NewTransaction implements OnInit {
       String(occurred.month + 1).padStart(2, "0"),
       String(occurred.day).padStart(2, "0"),
     ].join("-");
+
+    let category;
+    if (this.form.value.category?.id) {
+      category = {
+        kind: "categorized",
+        categoryId: this.form.value.category.id,
+      } as CategoryAssignment;
+    } else {
+      category = {
+        kind: "uncategorized",
+      } as CategoryAssignment;
+    }
+
     const transaction: AddTransaction = {
-      categoryId: this.form.value.category?.id ?? null,
+      category,
       amountInCents: Math.round(amount * 100),
       description: this.form.value.description ?? "",
       occurredOn: occurredOn,
