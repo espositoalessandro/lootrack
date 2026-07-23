@@ -70,11 +70,13 @@
             {{ "newCategory.assignmentTitle" | transloco }}
           </strong>
 
+          @if (!transactionsExpanded()) {
           <span class="block text-sm text-(--tui-text-secondary)">
             {{ (form.controls.type.value === "expense" ?
             "newCategory.assignmentDescriptionExpense" :
             "newCategory.assignmentDescriptionIncome") | transloco }}
           </span>
+          }
         </span>
 
         <button
@@ -83,28 +85,54 @@
           size="s"
           appearance="secondary"
           [iconStart]="
-            transactionsExpanded()
-              ? '@tui.chevron-up'
-              : '@tui.chevron-down'
-          "
+      transactionsExpanded()
+        ? '@tui.chevron-up'
+        : '@tui.chevron-down'
+    "
           [attr.aria-expanded]="transactionsExpanded()"
           aria-controls="uncategorized-transactions"
           [attr.aria-label]="
-            (transactionsExpanded()
-              ? 'newCategory.collapseAssignment'
-              : 'newCategory.expandAssignment')
-              | transloco
-          "
+      (transactionsExpanded()
+        ? 'newCategory.collapseAssignment'
+        : 'newCategory.expandAssignment')
+        | transloco
+    "
           [title]="
-            (transactionsExpanded()
-              ? 'newCategory.collapseAssignment'
-              : 'newCategory.expandAssignment')
-              | transloco
-          "
+      (transactionsExpanded()
+        ? 'newCategory.collapseAssignment'
+        : 'newCategory.expandAssignment')
+        | transloco
+    "
           (click)="toggleTransactionList()"
         ></button>
       </header>
 
+      @if (transactionsExpanded()) {
+      <div class="assignment-status">
+        <div class="assignment-status__selection">
+          <span>
+            {{ "newCategory.selectedCount" | transloco : { count:
+            selectedTransactionIds().length } }}
+          </span>
+
+          <span aria-hidden="true">/</span>
+
+          <button
+            type="button"
+            class="deselect-button"
+            [disabled]="selectedTransactionIds().length === 0"
+            (click)="deselectAll()"
+          >
+            {{ "buttons.deselectAll" | transloco }}
+          </button>
+        </div>
+
+        <strong class="assignment-status__total">
+          {{ "newCategory.total" | transloco }}: {{ selectedTotalInCents() |
+          amount | currency: "EUR" }}
+        </strong>
+      </div>
+      }
       <tui-textfield tuiAnimated>
         <tui-icon icon="@tui.search" />
 
@@ -163,29 +191,6 @@
           }
         </div>
       </div>
-
-      @if (selectedTransactionIds().length) {
-      <footer class="selection-summary">
-        <div class="selection-summary__details">
-          <span>
-            {{ (selectedTransactionIds().length === 1 ?
-            "newCategory.transactionSelected" :
-            "newCategory.transactionsSelected") | transloco : { count:
-            selectedTransactionIds().length } }}
-          </span>
-
-          <button type="button" class="deselect-button" (click)="deselectAll()">
-            {{ "buttons.deselectAll" | transloco }}
-          </button>
-        </div>
-
-        <strong>
-          {{ "newCategory.total" | transloco }}: {{ form.controls.type.value ===
-          "expense" ? "-" : "+" }}{{ selectedTotalInCents() / 100 | currency:
-          "EUR" }}
-        </strong>
-      </footer>
-      }
     </section>
 
     <footer tuiFloatingContainer class="footer">

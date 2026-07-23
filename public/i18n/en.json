@@ -33,11 +33,10 @@
     "searchPlaceholder": "Search transactions",
     "noResultsExpense": "No uncategorized expense transactions match your search.",
     "noResultsIncome": "No uncategorized income transactions match your search.",
-    "transactionSelected": "{{count}} transaction selected",
-    "transactionsSelected": "{{count}} transactions selected",
     "total": "Total",
     "create": "Create category",
     "expandAssignment": "Show uncategorized transactions",
-    "collapseAssignment": "Hide uncategorized transactions"
+    "collapseAssignment": "Hide uncategorized transactions",
+    "selectedCount": "{{count}} selected"
   }
 }
