@@ -17,6 +17,7 @@ import { provideEffects } from "@ngrx/effects";
 import { provideServiceWorker } from "@angular/service-worker";
 import { categoriesReducer } from "./state/categories/categories.reducer";
 import { CategoriesEffects } from "./state/categories/categories.effects";
+import { provideStoreDevtools } from "@ngrx/store-devtools";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,6 +29,16 @@ export const appConfig: ApplicationConfig = {
       transactions: transactionsReducer,
       categories: categoriesReducer,
     }),
+    ...(isDevMode()
+      ? [
+          provideStoreDevtools({
+            name: "Lootrack",
+            maxAge: 25,
+            autoPause: true,
+            trace: false,
+          }),
+        ]
+      : []),
     provideEffects(TransactionsEffects, CategoriesEffects),
     provideTransloco({
       config: {
