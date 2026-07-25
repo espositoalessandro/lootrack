@@ -121,7 +121,5 @@ export const transactionsReducer = createReducer(
             return transaction ? transaction : item;
           })
         : state.items,
-    loading: false,
-    error: null,
   })),
 );

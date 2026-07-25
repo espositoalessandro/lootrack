@@ -26,13 +26,9 @@ import {
 import { TuiSheetDialog, TuiSheetDialogOptions } from "@taiga-ui/addon-mobile";
 import { TuiSegmented } from "@taiga-ui/kit";
 import { TuiFloatingContainer } from "@taiga-ui/layout";
-import { startWith, take } from "rxjs";
+import { startWith } from "rxjs";
 
-import type {
-  AddCategory,
-  Transaction,
-  TransactionType,
-} from "../../data/models";
+import type { AddCategory, TransactionType } from "../../data/models";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { Store } from "@ngrx/store";
@@ -72,7 +68,6 @@ export class NewCategory implements OnInit {
   private readonly actions$ = inject(Actions);
 
   protected readonly transactionsExpanded = signal(false);
-  private transactions: Transaction[] = [];
   private readonly initialType: TransactionType =
     this.route.snapshot.queryParamMap.get("type") === "income"
       ? "income"
@@ -118,10 +113,14 @@ export class NewCategory implements OnInit {
 
   protected readonly selectedTransactionIds = signal<string[]>([]);
 
+  private readonly transactionsWithoutCategories = this.store.selectSignal(
+    selectTransactionWithNoCategory(),
+  );
+
   protected readonly filteredTransactions = computed(() => {
     const query = this.search().trim().toLocaleLowerCase();
     const type = this.selectedType();
-    return this.transactions.filter(
+    return this.transactionsWithoutCategories().filter(
       (transaction) =>
         transaction.type === type &&
         (!query ||
@@ -130,13 +129,9 @@ export class NewCategory implements OnInit {
     );
   });
 
-  protected readonly transactionsWithoutCategories = this.store.select(
-    selectTransactionWithNoCategory(),
-  );
-
   protected readonly selectedTotalInCents = computed(() => {
     const selectedIds = new Set(this.selectedTransactionIds());
-    return this.transactions
+    return this.transactionsWithoutCategories()
       .filter((transaction) => selectedIds.has(transaction.id))
       .reduce((total, transaction) => total + transaction.amountInCents, 0);
   });
@@ -150,10 +145,6 @@ export class NewCategory implements OnInit {
       .subscribe(() => {
         this.close();
       });
-
-    this.transactionsWithoutCategories
-      .pipe(take(1))
-      .subscribe((transactions) => (this.transactions = transactions));
   }
 
   protected isSelected(id: string): boolean {
@@ -214,7 +205,5 @@ export class NewCategory implements OnInit {
     };
 
     this.store.dispatch(addCategory({ category: newCategory }));
-
-    this.close();
   }
 }

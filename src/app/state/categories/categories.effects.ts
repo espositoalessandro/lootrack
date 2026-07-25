@@ -69,10 +69,10 @@ export class CategoriesEffects {
 
       concatMap(({ category }) =>
         this.categoriesDatabase.add(category).pipe(
-          map((newCategory) =>
+          map((result) =>
             addCategorySuccess({
-              category: newCategory.category,
-              transactions: newCategory.transactions,
+              category: result.category,
+              transactions: result.transactions,
             }),
           ),
 
