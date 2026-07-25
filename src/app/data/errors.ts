@@ -25,3 +25,15 @@ export class InvalidCategoryReferenceError extends Error {
     super(`Invalid category reference: ${reason}`);
   }
 }
+
+export class CategoryAlreadyExistsError extends Error {
+  constructor(override readonly message: string) {
+    super(message ?? `Category of this type with this name already exists`);
+  }
+}
+
+export class EditTransactionOnCategoryCreateError extends Error {
+  constructor(message?: string) {
+    super(message ?? `Error while updating selected transactions`);
+  }
+}

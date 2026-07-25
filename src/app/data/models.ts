@@ -41,4 +41,5 @@ export interface Category {
 export interface AddCategory {
   name: string;
   type: TransactionType;
+  transactionIds?: string[];
 }

@@ -34,7 +34,7 @@ interface MockTransaction {
   type: TransactionType;
   amountInCents: number;
   description: string;
-  categoryName: string;
+  categoryName: string | null;
   day: number;
 }
 
@@ -44,7 +44,7 @@ const MOCK_TRANSACTIONS = [
     type: "income",
     amountInCents: 195_000,
     description: "Monthly salary",
-    categoryName: "Salary",
+    categoryName: null,
     day: 1,
   },
   {
@@ -52,7 +52,7 @@ const MOCK_TRANSACTIONS = [
     type: "expense",
     amountInCents: 6_345,
     description: "Weekly groceries",
-    categoryName: "Groceries",
+    categoryName: null,
     day: 3,
   },
   {
@@ -68,7 +68,7 @@ const MOCK_TRANSACTIONS = [
     type: "expense",
     amountInCents: 12_000,
     description: "Dog kindergarten",
-    categoryName: "Pets",
+    categoryName: null,
     day: 5,
   },
   {
@@ -132,7 +132,7 @@ const MOCK_TRANSACTIONS = [
     type: "income",
     amountInCents: 5_000,
     description: "Birthday gift",
-    categoryName: "Gifts",
+    categoryName: null,
     day: 20,
   },
 ] as const satisfies readonly MockTransaction[];
@@ -209,22 +209,19 @@ export class DevDatabaseSeeder {
     const missingTransactions: Transaction[] = MOCK_TRANSACTIONS.filter(
       (transaction) => !existingIds.has(transaction.id),
     ).map(({ categoryName, day, ...transaction }) => {
-      const category = categoriesByKey.get(
-        categoryKey({
-          name: categoryName,
-          type: transaction.type,
-        }),
-      );
-
-      if (!category) {
-        throw new Error(
-          `Mock category "${categoryName}" was not found for ${transaction.type}`,
+      let category: Category | undefined;
+      if (categoryName !== null) {
+        category = categoriesByKey.get(
+          categoryKey({
+            name: categoryName,
+            type: transaction.type,
+          }),
         );
       }
 
       return {
         ...transaction,
-        categoryId: category.id,
+        categoryId: category ? category.id : null,
         occurredOn: this.currentMonthDate(day),
         createdAt: timestamp,
         updatedAt: timestamp,

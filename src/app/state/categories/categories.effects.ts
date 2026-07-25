@@ -14,6 +14,7 @@ import {
   addCategory,
   addCategoryFailure,
   addCategorySuccess,
+  createCategoryBlocked,
   deleteCategory,
   deleteCategoryBlocked,
   deleteCategoryFailure,
@@ -26,7 +27,11 @@ import {
   updateCategorySuccess,
 } from "./categories.actions";
 import { CategoriesRepository } from "../../data/categories-repository";
-import { CategoryInUseError } from "../../data/errors";
+import {
+  CategoryAlreadyExistsError,
+  CategoryInUseError,
+  EditTransactionOnCategoryCreateError,
+} from "../../data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()
@@ -66,16 +71,26 @@ export class CategoriesEffects {
         this.categoriesDatabase.add(category).pipe(
           map((newCategory) => addCategorySuccess({ category: newCategory })),
 
-          catchError((error: unknown) =>
-            of(
+          catchError((error: Error) => {
+            if (
+              error instanceof EditTransactionOnCategoryCreateError ||
+              error instanceof CategoryAlreadyExistsError
+            ) {
+              return of(
+                createCategoryBlocked({
+                  message: error.message,
+                }),
+              );
+            }
+            return of(
               addCategoryFailure({
                 error:
                   error instanceof Error
                     ? error.message
                     : "Unable to add category",
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
@@ -153,6 +168,23 @@ export class CategoriesEffects {
                 size: "s",
               },
             )
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  readonly showCreateCategoryBlockedDialog$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(createCategoryBlocked),
+
+        exhaustMap((message) =>
+          this.dialogs
+            .open(message.message, {
+              label: "Category cannot be created",
+              size: "s",
+            })
             .pipe(catchError(() => EMPTY)),
         ),
       ),

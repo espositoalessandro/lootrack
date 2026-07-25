@@ -1,6 +1,13 @@
 import { CurrencyPipe } from "@angular/common";
-import { Component, computed, inject, signal } from "@angular/core";
-import { toSignal } from "@angular/core/rxjs-interop";
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from "@angular/core";
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
 import {
   FormControl,
   FormGroup,
@@ -19,19 +26,23 @@ import {
 import { TuiSheetDialog, TuiSheetDialogOptions } from "@taiga-ui/addon-mobile";
 import { TuiSegmented } from "@taiga-ui/kit";
 import { TuiFloatingContainer } from "@taiga-ui/layout";
-import { startWith } from "rxjs";
+import { startWith, take } from "rxjs";
 
-import type { TransactionType } from "../../data/models";
+import type {
+  AddCategory,
+  Transaction,
+  TransactionType,
+} from "../../data/models";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
-
-interface MockUncategorizedTransaction {
-  id: string;
-  type: TransactionType;
-  amountInCents: number;
-  description: string;
-  occurredOn: string;
-}
+import { Store } from "@ngrx/store";
+import { Actions, ofType } from "@ngrx/effects";
+import {
+  addCategory,
+  addCategorySuccess,
+  updateCategorySuccess,
+} from "../../state/categories/categories.actions";
+import { selectTransactionWithNoCategory } from "../../state/transactions/transactions.selector";
 
 @Component({
   selector: "app-new-category",
@@ -53,10 +64,15 @@ interface MockUncategorizedTransaction {
   templateUrl: "./new-category.html",
   styleUrl: "./new-category.scss",
 })
-export class NewCategory {
+export class NewCategory implements OnInit {
+  private readonly store = inject(Store);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly actions$ = inject(Actions);
+
   protected readonly transactionsExpanded = signal(false);
+  private transactions: Transaction[] = [];
   private readonly initialType: TransactionType =
     this.route.snapshot.queryParamMap.get("type") === "income"
       ? "income"
@@ -102,56 +118,10 @@ export class NewCategory {
 
   protected readonly selectedTransactionIds = signal<string[]>([]);
 
-  private readonly mockTransactions: readonly MockUncategorizedTransaction[] = [
-    {
-      id: "expense-supermarket",
-      type: "expense",
-      amountInCents: 3420,
-      description: "Supermarket",
-      occurredOn: "2026-07-22",
-    },
-    {
-      id: "expense-takeaway",
-      type: "expense",
-      amountInCents: 1800,
-      description: "Takeaway",
-      occurredOn: "2026-07-20",
-    },
-    {
-      id: "expense-grocery-store",
-      type: "expense",
-      amountInCents: 5135,
-      description: "Grocery store",
-      occurredOn: "2026-07-18",
-    },
-    {
-      id: "expense-coffee-shop",
-      type: "expense",
-      amountInCents: 450,
-      description: "Coffee shop",
-      occurredOn: "2026-07-15",
-    },
-    {
-      id: "income-refund",
-      type: "income",
-      amountInCents: 2499,
-      description: "Store refund",
-      occurredOn: "2026-07-21",
-    },
-    {
-      id: "income-freelance",
-      type: "income",
-      amountInCents: 15000,
-      description: "Freelance payment",
-      occurredOn: "2026-07-17",
-    },
-  ];
-
   protected readonly filteredTransactions = computed(() => {
     const query = this.search().trim().toLocaleLowerCase();
     const type = this.selectedType();
-
-    return this.mockTransactions.filter(
+    return this.transactions.filter(
       (transaction) =>
         transaction.type === type &&
         (!query ||
@@ -160,13 +130,31 @@ export class NewCategory {
     );
   });
 
+  protected readonly transactionsWithoutCategories = this.store.select(
+    selectTransactionWithNoCategory(),
+  );
+
   protected readonly selectedTotalInCents = computed(() => {
     const selectedIds = new Set(this.selectedTransactionIds());
-
-    return this.mockTransactions
+    return this.transactions
       .filter((transaction) => selectedIds.has(transaction.id))
       .reduce((total, transaction) => total + transaction.amountInCents, 0);
   });
+
+  ngOnInit() {
+    this.actions$
+      .pipe(
+        ofType(addCategorySuccess, updateCategorySuccess),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.close();
+      });
+
+    this.transactionsWithoutCategories
+      .pipe(take(1))
+      .subscribe((transactions) => (this.transactions = transactions));
+  }
 
   protected isSelected(id: string): boolean {
     return this.selectedTransactionIds().includes(id);
@@ -219,11 +207,13 @@ export class NewCategory {
       return;
     }
 
-    console.debug("New category UI payload", {
-      name: this.form.controls.name.value,
-      type: this.form.controls.type.value,
+    const newCategory: AddCategory = {
+      name: this.form.value.name!,
+      type: this.form.value.type!,
       transactionIds: this.selectedTransactionIds(),
-    });
+    };
+
+    this.store.dispatch(addCategory({ category: newCategory }));
 
     this.close();
   }

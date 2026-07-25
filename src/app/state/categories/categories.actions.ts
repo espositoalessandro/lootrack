@@ -76,3 +76,8 @@ export const deleteCategoryBlocked = createAction(
     transactionCount: number;
   }>(),
 );
+
+export const createCategoryBlocked = createAction(
+  "[Categories Database] Create Blocked",
+  props<{ message: string }>(),
+);

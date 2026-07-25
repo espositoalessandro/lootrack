@@ -25,6 +25,11 @@ export const selectTransactionById = (id: string) =>
     transactions.find((transaction) => transaction.id === id),
   );
 
+export const selectTransactionWithNoCategory = () =>
+  createSelector(selectTransactions, (transactions) =>
+    transactions.filter((transaction) => transaction.categoryId === null),
+  );
+
 export const selectNetTotalByMonth = (month: string) =>
   createSelector(selectTransactions, (transactions) =>
     transactions

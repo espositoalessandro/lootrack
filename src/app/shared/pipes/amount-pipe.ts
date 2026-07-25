@@ -12,4 +12,8 @@ export class AmountPipe implements PipeTransform {
 
     return amountInCents / 100;
   }
+
+  convert(amount: number): number | null {
+    return this.transform(amount);
+  }
 }
