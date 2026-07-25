@@ -28,6 +28,7 @@
     <tui-segmented
       size="m"
       class="flex w-full"
+      [disabled]="form.controls.type.disabled"
       [style.--tui-background-base]="
       form.controls.type.value === 'income'
         ? 'var(--tui-status-positive)'

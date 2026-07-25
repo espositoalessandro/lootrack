@@ -294,6 +294,7 @@ export class NewCategory implements OnInit {
       this.close();
     }
   }
+
   protected onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

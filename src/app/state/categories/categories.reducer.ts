@@ -5,7 +5,6 @@ import {
   addCategory,
   addCategoryFailure,
   addCategorySuccess,
-  createCategoryBlocked,
   deleteCategory,
   deleteCategoryBlocked,
   deleteCategoryFailure,
@@ -13,6 +12,7 @@ import {
   loadCategories,
   loadCategoriesFailure,
   loadCategoriesSuccess,
+  saveCategoryBlocked,
   updateCategory,
   updateCategoryFailure,
   updateCategorySuccess,
@@ -117,7 +117,7 @@ export const categoriesReducer = createReducer(
     error: null,
   })),
 
-  on(createCategoryBlocked, (state) => ({
+  on(saveCategoryBlocked, (state) => ({
     ...state,
     loading: false,
     error: null,

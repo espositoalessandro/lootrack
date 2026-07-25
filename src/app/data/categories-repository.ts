@@ -12,8 +12,8 @@ import { categoryNamesMatch, cleanCategoryName } from "./category-name";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
+  CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-  EditTransactionOnCategoryCreateError,
 } from "./errors";
 
 @Injectable({
@@ -38,7 +38,6 @@ export class CategoriesRepository {
         lootrackDb.transactions,
         async () => {
           const categories = await lootrackDb.categories.toArray();
-
           const existing = categories.find(
             (category) =>
               category.type === input.type &&
@@ -54,47 +53,11 @@ export class CategoriesRepository {
             );
           }
 
-          // remove duplicates
-          const transactionIds = [...new Set(input.transactionIds ?? [])];
-
-          const transactionResults =
-            await lootrackDb.transactions.bulkGet(transactionIds);
-
-          if (
-            transactionResults.some((transaction) => transaction === undefined)
-          ) {
-            throw new EditTransactionOnCategoryCreateError(
-              "Some selected transactions were not found",
-            );
-          }
-
-          const transactions = transactionResults.filter(
-            (transaction): transaction is Transaction =>
-              transaction !== undefined,
+          const transactions = await this.getAssignableTransactions(
+            input.transactionIds,
+            input.type,
           );
-
-          for (const transaction of transactions) {
-            if (transaction.deletedAt !== null) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} has been deleted`,
-              );
-            }
-
-            if (transaction.categoryId !== null) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} already has a category`,
-              );
-            }
-
-            if (transaction.type !== input.type) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} has a different type`,
-              );
-            }
-          }
-
           const now = new Date().toISOString();
-
           const category: Category = {
             id: crypto.randomUUID(),
             name: cleanCategoryName(input.name),
@@ -103,7 +66,6 @@ export class CategoriesRepository {
             updatedAt: now,
             deletedAt: null,
           };
-
           const updatedTransactions = transactions.map((transaction) => ({
             ...transaction,
             categoryId: category.id,
@@ -197,49 +159,28 @@ export class CategoriesRepository {
 
           if (duplicate) {
             throw new CategoryAlreadyExistsError(
-              `An ${existing.type} category named "${cleanCategoryName(
+              `An ${input.type} category named "${cleanCategoryName(
                 input.name,
               )}" already exists`,
             );
           }
 
           const transactionIds = [...new Set(input.transactionIds ?? [])];
-
           const transactionResults =
             await lootrackDb.transactions.bulkGet(transactionIds);
 
           if (
             transactionResults.some((transaction) => transaction === undefined)
           ) {
-            throw new EditTransactionOnCategoryCreateError(
+            throw new CategoryTransactionAssignmentError(
               "Some selected transactions were not found",
             );
           }
 
-          const transactions = transactionResults.filter(
-            (transaction): transaction is Transaction =>
-              transaction !== undefined,
+          const transactions = await this.getAssignableTransactions(
+            input.transactionIds,
+            input.type,
           );
-
-          for (const transaction of transactions) {
-            if (transaction.deletedAt !== null) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} has been deleted`,
-              );
-            }
-
-            if (transaction.categoryId !== null) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} already has a category`,
-              );
-            }
-
-            if (transaction.type !== input.type) {
-              throw new EditTransactionOnCategoryCreateError(
-                `Transaction of ${transaction.occurredOn} has a different type`,
-              );
-            }
-          }
 
           const now = new Date().toISOString();
 
@@ -271,5 +212,51 @@ export class CategoriesRepository {
         },
       ),
     );
+  }
+
+  private async getAssignableTransactions(
+    transactionIds: readonly string[] | undefined,
+    targetType: Category["type"],
+  ): Promise<Transaction[]> {
+    const uniqueTransactionIds = [...new Set(transactionIds ?? [])];
+
+    if (uniqueTransactionIds.length === 0) {
+      return [];
+    }
+
+    const transactionResults =
+      await lootrackDb.transactions.bulkGet(uniqueTransactionIds);
+
+    if (transactionResults.some((transaction) => transaction === undefined)) {
+      throw new CategoryTransactionAssignmentError(
+        "Some selected transactions were not found",
+      );
+    }
+
+    const transactions = transactionResults.filter(
+      (transaction): transaction is Transaction => transaction !== undefined,
+    );
+
+    for (const transaction of transactions) {
+      if (transaction.deletedAt !== null) {
+        throw new CategoryTransactionAssignmentError(
+          `Transaction of ${transaction.occurredOn} has been deleted`,
+        );
+      }
+
+      if (transaction.categoryId !== null) {
+        throw new CategoryTransactionAssignmentError(
+          `Transaction of ${transaction.occurredOn} already has a category`,
+        );
+      }
+
+      if (transaction.type !== targetType) {
+        throw new CategoryTransactionAssignmentError(
+          `Transaction of ${transaction.occurredOn} has a different type`,
+        );
+      }
+    }
+
+    return transactions;
   }
 }

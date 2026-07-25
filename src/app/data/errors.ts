@@ -32,7 +32,7 @@ export class CategoryAlreadyExistsError extends Error {
   }
 }
 
-export class EditTransactionOnCategoryCreateError extends Error {
+export class CategoryTransactionAssignmentError extends Error {
   constructor(message?: string) {
     super(message ?? `Error while updating selected transactions`);
   }

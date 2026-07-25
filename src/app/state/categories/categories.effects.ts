@@ -14,7 +14,6 @@ import {
   addCategory,
   addCategoryFailure,
   addCategorySuccess,
-  createCategoryBlocked,
   deleteCategory,
   deleteCategoryBlocked,
   deleteCategoryFailure,
@@ -22,6 +21,7 @@ import {
   loadCategories,
   loadCategoriesFailure,
   loadCategoriesSuccess,
+  saveCategoryBlocked,
   updateCategory,
   updateCategoryFailure,
   updateCategorySuccess,
@@ -30,8 +30,8 @@ import { CategoriesRepository } from "../../data/categories-repository";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
+  CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-  EditTransactionOnCategoryCreateError,
 } from "../../data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
 
@@ -79,12 +79,11 @@ export class CategoriesEffects {
 
           catchError((error: Error) => {
             if (
-              error instanceof EditTransactionOnCategoryCreateError ||
-              error instanceof CategoryAlreadyExistsError ||
-              error instanceof CategoryTypeChangeBlockedError
+              error instanceof CategoryTransactionAssignmentError ||
+              error instanceof CategoryAlreadyExistsError
             ) {
               return of(
-                createCategoryBlocked({
+                saveCategoryBlocked({
                   message: error.message,
                 }),
               );
@@ -147,11 +146,12 @@ export class CategoriesEffects {
 
           catchError((error: unknown) => {
             if (
-              error instanceof EditTransactionOnCategoryCreateError ||
-              error instanceof CategoryAlreadyExistsError
+              error instanceof CategoryTransactionAssignmentError ||
+              error instanceof CategoryAlreadyExistsError ||
+              error instanceof CategoryTypeChangeBlockedError
             ) {
               return of(
-                createCategoryBlocked({
+                saveCategoryBlocked({
                   message: error.message,
                 }),
               );
@@ -196,7 +196,7 @@ export class CategoriesEffects {
   readonly showCreateCategoryBlockedDialog$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(createCategoryBlocked),
+        ofType(saveCategoryBlocked),
 
         exhaustMap((message) =>
           this.dialogs
