@@ -37,3 +37,15 @@ export class EditTransactionOnCategoryCreateError extends Error {
     super(message ?? `Error while updating selected transactions`);
   }
 }
+
+export class CategoryTypeChangeBlockedError extends Error {
+  constructor(readonly transactionCount: number) {
+    super(
+      `Category type cannot be changed because it is assigned to ${
+        transactionCount === 1
+          ? "1 active transaction"
+          : `${transactionCount} active transactions`
+      }`,
+    );
+  }
+}

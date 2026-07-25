@@ -47,6 +47,7 @@ import {
   updateCategorySuccess,
 } from "../../state/categories/categories.actions";
 import {
+  selectTransactions,
   selectTransactionsLoading,
   selectTransactionWithNoCategory,
 } from "../../state/transactions/transactions.selector";
@@ -139,7 +140,17 @@ export class NewCategory implements OnInit {
   private readonly transactionsWithoutCategories = this.store.selectSignal(
     selectTransactionWithNoCategory(),
   );
+  private readonly transactions = this.store.selectSignal(selectTransactions);
 
+  protected readonly categoryHasTransactions = computed(() => {
+    if (!this.categoryId) {
+      return false;
+    }
+
+    return this.transactions().some(
+      (transaction) => transaction.categoryId === this.categoryId,
+    );
+  });
   protected readonly filteredTransactions = computed(() => {
     const query = this.search().trim().toLocaleLowerCase();
     return this.availableTransactions().filter(
@@ -170,6 +181,29 @@ export class NewCategory implements OnInit {
   protected readonly categoriesLoading = this.store.selectSignal(
     selectCategoryLoading,
   );
+
+  private readonly categoryTypeDisabledEffect = effect(() => {
+    if (!this.isEditMode) {
+      return;
+    }
+
+    const typeControl = this.form.controls.type;
+
+    const shouldDisable =
+      this.transactionsLoading() || this.categoryHasTransactions();
+
+    if (shouldDisable && typeControl.enabled) {
+      typeControl.disable({
+        emitEvent: false,
+      });
+    }
+
+    if (!shouldDisable && typeControl.disabled) {
+      typeControl.enable({
+        emitEvent: false,
+      });
+    }
+  });
 
   private readonly searchDisabledEffect = effect(() => {
     const searchControl = this.form.controls.search;
@@ -213,10 +247,6 @@ export class NewCategory implements OnInit {
       .subscribe((category) => {
         this.form.controls.name.setValue(category.name);
         this.form.controls.type.setValue(category.type);
-
-        this.form.controls.type.disable({
-          emitEvent: false,
-        });
       });
   }
 
@@ -276,9 +306,9 @@ export class NewCategory implements OnInit {
     if (this.categoryId) {
       const changes: UpdateCategory = {
         name: formValue.name,
+        type: formValue.type,
         transactionIds,
       };
-
       this.store.dispatch(
         updateCategory({
           id: this.categoryId,

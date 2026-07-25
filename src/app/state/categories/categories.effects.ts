@@ -30,6 +30,7 @@ import { CategoriesRepository } from "../../data/categories-repository";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
+  CategoryTypeChangeBlockedError,
   EditTransactionOnCategoryCreateError,
 } from "../../data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
@@ -79,7 +80,8 @@ export class CategoriesEffects {
           catchError((error: Error) => {
             if (
               error instanceof EditTransactionOnCategoryCreateError ||
-              error instanceof CategoryAlreadyExistsError
+              error instanceof CategoryAlreadyExistsError ||
+              error instanceof CategoryTypeChangeBlockedError
             ) {
               return of(
                 createCategoryBlocked({

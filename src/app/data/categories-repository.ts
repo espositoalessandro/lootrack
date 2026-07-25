@@ -12,6 +12,7 @@ import { categoryNamesMatch, cleanCategoryName } from "./category-name";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
+  CategoryTypeChangeBlockedError,
   EditTransactionOnCategoryCreateError,
 } from "./errors";
 
@@ -166,16 +167,29 @@ export class CategoriesRepository {
         lootrackDb.transactions,
         async () => {
           const existing = await lootrackDb.categories.get(id);
-
           if (!existing || existing.deletedAt !== null) {
             throw new Error("Category not found");
+          }
+
+          const typeChanged = input.type !== existing.type;
+
+          if (typeChanged) {
+            const activeTransactionCount = await lootrackDb.transactions
+              .where("categoryId")
+              .equals(id)
+              .and((transaction) => transaction.deletedAt === null)
+              .count();
+
+            if (activeTransactionCount > 0) {
+              throw new CategoryTypeChangeBlockedError(activeTransactionCount);
+            }
           }
 
           const duplicate = await lootrackDb.categories
             .filter(
               (category) =>
                 category.id !== id &&
-                category.type === existing.type &&
+                category.type === input.type &&
                 category.deletedAt === null &&
                 categoryNamesMatch(category.name, input.name),
             )
@@ -220,7 +234,7 @@ export class CategoriesRepository {
               );
             }
 
-            if (transaction.type !== existing.type) {
+            if (transaction.type !== input.type) {
               throw new EditTransactionOnCategoryCreateError(
                 `Transaction of ${transaction.occurredOn} has a different type`,
               );
@@ -232,6 +246,7 @@ export class CategoriesRepository {
           const updatedCategory: Category = {
             ...existing,
             name: cleanCategoryName(input.name),
+            type: input.type,
             updatedAt: now,
           };
 
