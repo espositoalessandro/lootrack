@@ -28,9 +28,7 @@ export class CategoriesRepository {
     );
   }
 
-  add(
-    input: AddCategory,
-  ): Observable<{ category: Category; transactions: Transaction[] }> {
+  add(input: AddCategory): Observable<CategoryMutationResult> {
     return defer(() =>
       lootrackDb.transaction(
         "rw",
@@ -162,18 +160,6 @@ export class CategoriesRepository {
               `An ${input.type} category named "${cleanCategoryName(
                 input.name,
               )}" already exists`,
-            );
-          }
-
-          const transactionIds = [...new Set(input.transactionIds ?? [])];
-          const transactionResults =
-            await lootrackDb.transactions.bulkGet(transactionIds);
-
-          if (
-            transactionResults.some((transaction) => transaction === undefined)
-          ) {
-            throw new CategoryTransactionAssignmentError(
-              "Some selected transactions were not found",
             );
           }
 

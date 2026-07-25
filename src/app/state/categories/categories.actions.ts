@@ -89,6 +89,6 @@ export const deleteCategoryBlocked = createAction(
 );
 
 export const saveCategoryBlocked = createAction(
-  "[Categories Database] Create Blocked",
+  "[Categories Database] Save Blocked",
   props<{ message: string }>(),
 );
