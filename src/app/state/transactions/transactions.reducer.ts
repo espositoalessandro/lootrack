@@ -15,7 +15,10 @@ import {
   updateTransactionFailure,
   updateTransactionSuccess,
 } from "./transactions.actions";
-import { addCategorySuccess } from "../categories/categories.actions";
+import {
+  addCategorySuccess,
+  updateCategorySuccess,
+} from "../categories/categories.actions";
 
 export interface TransactionsState {
   items: Transaction[];
@@ -110,15 +113,16 @@ export const transactionsReducer = createReducer(
     error,
   })),
 
-  on(addCategorySuccess, (state, { transactions }) => ({
+  on(addCategorySuccess, updateCategorySuccess, (state, { transactions }) => ({
     ...state,
     items:
       transactions.length > 0
         ? state.items.map((item) => {
-            const transaction = transactions.find(
-              (transaction) => item.id === transaction.id,
+            const updatedTransaction = transactions.find(
+              (transaction) => transaction.id === item.id,
             );
-            return transaction ? transaction : item;
+
+            return updatedTransaction ?? item;
           })
         : state.items,
   })),

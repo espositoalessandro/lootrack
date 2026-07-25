@@ -37,6 +37,8 @@
     "create": "Create category",
     "expandAssignment": "Show uncategorized transactions",
     "collapseAssignment": "Hide uncategorized transactions",
-    "selectedCount": "{{count}} selected"
+    "selectedCount": "{{count}} selected",
+    "titleEdit": "Edit category",
+    "save": "Save changes"
   }
 }

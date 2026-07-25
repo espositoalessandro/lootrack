@@ -1,6 +1,12 @@
 import { Injectable } from "@angular/core";
 import { defer, Observable } from "rxjs";
-import { AddCategory, Category, Transaction } from "./models";
+import {
+  AddCategory,
+  Category,
+  CategoryMutationResult,
+  Transaction,
+  UpdateCategory,
+} from "./models";
 import { lootrackDb } from "./database";
 import { categoryNamesMatch, cleanCategoryName } from "./category-name";
 import {
@@ -149,39 +155,106 @@ export class CategoriesRepository {
     );
   }
 
-  updateName(id: string, name: string): Observable<Category> {
-    return defer(async () => {
-      const existing = await lootrackDb.categories.get(id);
+  update(
+    id: string,
+    input: UpdateCategory,
+  ): Observable<CategoryMutationResult> {
+    return defer(() =>
+      lootrackDb.transaction(
+        "rw",
+        lootrackDb.categories,
+        lootrackDb.transactions,
+        async () => {
+          const existing = await lootrackDb.categories.get(id);
 
-      if (!existing || existing.deletedAt !== null) {
-        throw new Error("Category not found");
-      }
+          if (!existing || existing.deletedAt !== null) {
+            throw new Error("Category not found");
+          }
 
-      const duplicate = await lootrackDb.categories
-        .filter(
-          (category) =>
-            category.id !== id &&
-            category.type === existing.type &&
-            category.deletedAt === null &&
-            categoryNamesMatch(category.name, name),
-        )
-        .first();
+          const duplicate = await lootrackDb.categories
+            .filter(
+              (category) =>
+                category.id !== id &&
+                category.type === existing.type &&
+                category.deletedAt === null &&
+                categoryNamesMatch(category.name, input.name),
+            )
+            .first();
 
-      if (duplicate) {
-        throw new Error(
-          `An ${existing.type} category named "${cleanCategoryName(name)}" already exists`,
-        );
-      }
+          if (duplicate) {
+            throw new CategoryAlreadyExistsError(
+              `An ${existing.type} category named "${cleanCategoryName(
+                input.name,
+              )}" already exists`,
+            );
+          }
 
-      const updatedCategory: Category = {
-        ...existing,
-        name: cleanCategoryName(name),
-        updatedAt: new Date().toISOString(),
-      };
+          const transactionIds = [...new Set(input.transactionIds ?? [])];
 
-      await lootrackDb.categories.put(updatedCategory);
+          const transactionResults =
+            await lootrackDb.transactions.bulkGet(transactionIds);
 
-      return updatedCategory;
-    });
+          if (
+            transactionResults.some((transaction) => transaction === undefined)
+          ) {
+            throw new EditTransactionOnCategoryCreateError(
+              "Some selected transactions were not found",
+            );
+          }
+
+          const transactions = transactionResults.filter(
+            (transaction): transaction is Transaction =>
+              transaction !== undefined,
+          );
+
+          for (const transaction of transactions) {
+            if (transaction.deletedAt !== null) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} has been deleted`,
+              );
+            }
+
+            if (transaction.categoryId !== null) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} already has a category`,
+              );
+            }
+
+            if (transaction.type !== existing.type) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} has a different type`,
+              );
+            }
+          }
+
+          const now = new Date().toISOString();
+
+          const updatedCategory: Category = {
+            ...existing,
+            name: cleanCategoryName(input.name),
+            updatedAt: now,
+          };
+
+          const updatedTransactions: Transaction[] = transactions.map(
+            (transaction) => ({
+              ...transaction,
+              categoryId: updatedCategory.id,
+              updatedAt: now,
+            }),
+          );
+
+          await lootrackDb.categories.put(updatedCategory);
+
+          if (updatedTransactions.length > 0) {
+            await lootrackDb.transactions.bulkPut(updatedTransactions);
+          }
+
+          return {
+            category: updatedCategory,
+            transactions: updatedTransactions,
+          };
+        },
+      ),
+    );
   }
 }

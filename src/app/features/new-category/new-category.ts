@@ -28,9 +28,14 @@ import {
 import { TuiSheetDialog, TuiSheetDialogOptions } from "@taiga-ui/addon-mobile";
 import { TuiSegmented } from "@taiga-ui/kit";
 import { TuiFloatingContainer } from "@taiga-ui/layout";
-import { startWith } from "rxjs";
+import { filter, startWith, take } from "rxjs";
 
-import type { AddCategory, TransactionType } from "../../data/models";
+import type {
+  AddCategory,
+  Category,
+  TransactionType,
+  UpdateCategory,
+} from "../../data/models";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { Store } from "@ngrx/store";
@@ -38,13 +43,17 @@ import { Actions, ofType } from "@ngrx/effects";
 import {
   addCategory,
   addCategorySuccess,
+  updateCategory,
   updateCategorySuccess,
 } from "../../state/categories/categories.actions";
 import {
   selectTransactionsLoading,
   selectTransactionWithNoCategory,
 } from "../../state/transactions/transactions.selector";
-import { selectCategoryLoading } from "../../state/categories/categories.selector";
+import {
+  selectCategoryById,
+  selectCategoryLoading,
+} from "../../state/categories/categories.selector";
 
 @Component({
   selector: "app-new-category",
@@ -73,7 +82,14 @@ export class NewCategory implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
-
+  protected readonly categoryId = this.route.snapshot.paramMap.get("id");
+  protected readonly isEditMode = this.categoryId !== null;
+  protected readonly titleKey = this.isEditMode
+    ? "newCategory.titleEdit"
+    : "newCategory.title";
+  protected readonly submitLabelKey = this.isEditMode
+    ? "newCategory.save"
+    : "newCategory.create";
   protected readonly transactionsExpanded = signal(false);
   private readonly initialType: TransactionType =
     this.route.snapshot.queryParamMap.get("type") === "income"
@@ -126,21 +142,26 @@ export class NewCategory implements OnInit {
 
   protected readonly filteredTransactions = computed(() => {
     const query = this.search().trim().toLocaleLowerCase();
-    const type = this.selectedType();
-    return this.transactionsWithoutCategories().filter(
+    return this.availableTransactions().filter(
       (transaction) =>
-        transaction.type === type &&
-        (!query ||
-          transaction.description.toLocaleLowerCase().includes(query) ||
-          transaction.occurredOn.includes(query)),
+        !query ||
+        transaction.description.toLocaleLowerCase().includes(query) ||
+        transaction.occurredOn.includes(query),
     );
   });
 
   protected readonly selectedTotalInCents = computed(() => {
     const selectedIds = new Set(this.selectedTransactionIds());
-    return this.transactionsWithoutCategories()
+    return this.availableTransactions()
       .filter((transaction) => selectedIds.has(transaction.id))
       .reduce((total, transaction) => total + transaction.amountInCents, 0);
+  });
+
+  private readonly availableTransactions = computed(() => {
+    const type = this.selectedType();
+    return this.transactionsWithoutCategories().filter(
+      (transaction) => transaction.type === type,
+    );
   });
 
   protected readonly transactionsLoading = this.store.selectSignal(
@@ -152,7 +173,7 @@ export class NewCategory implements OnInit {
 
   private readonly searchDisabledEffect = effect(() => {
     const searchControl = this.form.controls.search;
-    const hasTransactions = this.transactionsWithoutCategories().length > 0;
+    const hasTransactions = this.availableTransactions().length > 0;
 
     if (hasTransactions && searchControl.disabled) {
       searchControl.enable({ emitEvent: false });
@@ -163,14 +184,39 @@ export class NewCategory implements OnInit {
     }
   });
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.actions$
       .pipe(
         ofType(addCategorySuccess, updateCategorySuccess),
+        filter((action) =>
+          this.isEditMode
+            ? action.type === updateCategorySuccess.type
+            : action.type === addCategorySuccess.type,
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.close();
+      });
+
+    if (!this.categoryId) {
+      return;
+    }
+
+    this.store
+      .select(selectCategoryById(this.categoryId))
+      .pipe(
+        filter((category): category is Category => category !== undefined),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((category) => {
+        this.form.controls.name.setValue(category.name);
+        this.form.controls.type.setValue(category.type);
+
+        this.form.controls.type.disable({
+          emitEvent: false,
+        });
       });
   }
 
@@ -218,19 +264,40 @@ export class NewCategory implements OnInit {
       this.close();
     }
   }
-
   protected onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    // getRawValue includes the disabled type control in edit mode.
+    const formValue = this.form.getRawValue();
+    const transactionIds = this.selectedTransactionIds();
+
+    if (this.categoryId) {
+      const changes: UpdateCategory = {
+        name: formValue.name,
+        transactionIds,
+      };
+
+      this.store.dispatch(
+        updateCategory({
+          id: this.categoryId,
+          changes,
+        }),
+      );
+      return;
+    }
 
     const newCategory: AddCategory = {
-      name: this.form.value.name!,
-      type: this.form.value.type!,
-      transactionIds: this.selectedTransactionIds(),
+      name: formValue.name,
+      type: formValue.type,
+      transactionIds,
     };
 
-    this.store.dispatch(addCategory({ category: newCategory }));
+    this.store.dispatch(
+      addCategory({
+        category: newCategory,
+      }),
+    );
   }
 }

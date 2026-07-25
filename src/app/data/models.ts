@@ -43,3 +43,13 @@ export interface AddCategory {
   type: TransactionType;
   transactionIds?: string[];
 }
+
+export interface UpdateCategory {
+  name: string;
+  transactionIds?: string[];
+}
+
+export interface CategoryMutationResult {
+  category: Category;
+  transactions: Transaction[];
+}

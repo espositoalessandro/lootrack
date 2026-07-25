@@ -1,6 +1,11 @@
 import { createAction, props } from "@ngrx/store";
 
-import type { AddCategory, Category, Transaction } from "../../data/models";
+import type {
+  AddCategory,
+  Category,
+  Transaction,
+  UpdateCategory,
+} from "../../data/models";
 
 // RETRIEVES
 
@@ -53,13 +58,19 @@ export const deleteCategoryFailure = createAction(
 // UPDATES
 
 export const updateCategory = createAction(
-  "[Category Item] Update Requested",
-  props<{ id: string; name: string }>(),
+  "[Category Sheet] Update Requested",
+  props<{
+    id: string;
+    changes: UpdateCategory;
+  }>(),
 );
 
 export const updateCategorySuccess = createAction(
   "[Categories Database] Update Succeeded",
-  props<{ updatedCategory: Category }>(),
+  props<{
+    updatedCategory: Category;
+    transactions: Transaction[];
+  }>(),
 );
 
 export const updateCategoryFailure = createAction(

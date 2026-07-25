@@ -4,7 +4,7 @@
   (tuiSheetDialogChange)="onOpenChange($event)"
 >
   <div class="flex w-full items-center justify-center">
-    <h1 tuiTitle="m" class="pb-4">{{ "newCategory.title" | transloco }}</h1>
+    <h1 tuiTitle="m" class="pb-4">{{ titleKey | transloco }}</h1>
   </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
@@ -188,7 +188,7 @@
       >
         @if (categoriesLoading()) {
         <tui-loader [loading]="true" />
-        }@else { {{ "newCategory.create" | transloco }} }
+        } @else { {{ submitLabelKey | transloco }} }
       </button>
     </footer>
   </form>

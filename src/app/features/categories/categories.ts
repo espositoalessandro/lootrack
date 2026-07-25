@@ -71,8 +71,14 @@ export class Categories {
       },
     );
   }
+
   protected editCategory(id: string): void {
-    // TODO: Open the edit-category sheet.
-    console.debug("Edit category", id);
+    void this.router.navigate([
+      {
+        outlets: {
+          sheet: ["edit-category", id],
+        },
+      },
+    ]);
   }
 }

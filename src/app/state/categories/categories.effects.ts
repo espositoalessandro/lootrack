@@ -134,24 +134,36 @@ export class CategoriesEffects {
     this.actions$.pipe(
       ofType(updateCategory),
 
-      concatMap(({ id, name }) =>
-        this.categoriesDatabase.updateName(id, name).pipe(
-          map((category) =>
+      concatMap(({ id, changes }) =>
+        this.categoriesDatabase.update(id, changes).pipe(
+          map((result) =>
             updateCategorySuccess({
-              updatedCategory: category,
+              updatedCategory: result.category,
+              transactions: result.transactions,
             }),
           ),
 
-          catchError((error: unknown) =>
-            of(
+          catchError((error: unknown) => {
+            if (
+              error instanceof EditTransactionOnCategoryCreateError ||
+              error instanceof CategoryAlreadyExistsError
+            ) {
+              return of(
+                createCategoryBlocked({
+                  message: error.message,
+                }),
+              );
+            }
+
+            return of(
               updateCategoryFailure({
                 error:
                   error instanceof Error
                     ? error.message
                     : "Unable to update category",
               }),
-            ),
-          ),
+            );
+          }),
         ),
       ),
     ),
@@ -187,7 +199,7 @@ export class CategoriesEffects {
         exhaustMap((message) =>
           this.dialogs
             .open(message.message, {
-              label: "Category cannot be created",
+              label: "Category cannot be saved",
               size: "s",
             })
             .pipe(catchError(() => EMPTY)),
