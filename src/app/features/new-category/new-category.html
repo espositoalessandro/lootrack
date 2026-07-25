@@ -29,10 +29,10 @@
       size="m"
       class="flex w-full"
       [style.--tui-background-base]="
-    form.controls.type.value === 'income'
-      ? 'var(--tui-status-positive)'
-      : 'var(--tui-status-negative)'
-  "
+      form.controls.type.value === 'income'
+        ? 'var(--tui-status-positive)'
+        : 'var(--tui-status-negative)'
+      "
     >
       <label class="flex-1">
         <input
@@ -83,25 +83,11 @@
           type="button"
           size="s"
           appearance="secondary"
-          [iconStart]="
-      transactionsExpanded()
-        ? '@tui.chevron-up'
-        : '@tui.chevron-down'
-    "
+          [iconStart]="transactionsExpanded() ? '@tui.chevron-up' : '@tui.chevron-down'"
           [attr.aria-expanded]="transactionsExpanded()"
           aria-controls="uncategorized-transactions"
-          [attr.aria-label]="
-      (transactionsExpanded()
-        ? 'newCategory.collapseAssignment'
-        : 'newCategory.expandAssignment')
-        | transloco
-    "
-          [title]="
-      (transactionsExpanded()
-        ? 'newCategory.collapseAssignment'
-        : 'newCategory.expandAssignment')
-        | transloco
-    "
+          [attr.aria-label]="(transactionsExpanded() ? 'newCategory.collapseAssignment': 'newCategory.expandAssignment')| transloco"
+          [title]="(transactionsExpanded() ? 'newCategory.collapseAssignment' : 'newCategory.expandAssignment')| transloco"
           (click)="toggleTransactionList()"
         ></button>
       </header>
@@ -152,7 +138,9 @@
         [class.transaction-results--expanded]="transactionsExpanded()"
       >
         <div class="transaction-results__content">
-          @if (filteredTransactions().length) {
+          @if (transactionsLoading()){
+          <tui-loader [loading]="true" />
+          } @else { @if (filteredTransactions().length) {
           <div class="transaction-list">
             @for ( transaction of filteredTransactions(); track transaction.id )
             {
@@ -174,9 +162,8 @@
                 {{ transaction.description }}
               </strong>
 
-              <strong class="transaction-row__amount">
-                {{ transaction.type === "expense" ? "-" : "+" }}{{
-                transaction.amountInCents | amount | currency: "EUR" }}
+              <strong class="transaction-row__amount"
+                >{{ transaction.amountInCents | amount | currency: "EUR" }}
               </strong>
             </label>
             }
@@ -187,14 +174,21 @@
             "newCategory.noResultsExpense" : "newCategory.noResultsIncome") |
             transloco }}
           </p>
-          }
+          } }
         </div>
       </div>
     </section>
 
     <footer tuiFloatingContainer class="footer">
-      <button size="m" tuiButton type="submit" [disabled]="form.invalid">
-        {{ "newCategory.create" | transloco }}
+      <button
+        size="m"
+        tuiButton
+        type="submit"
+        [disabled]="form.invalid || categoriesLoading()"
+      >
+        @if (categoriesLoading()) {
+        <tui-loader [loading]="true" />
+        }@else { {{ "newCategory.create" | transloco }} }
       </button>
     </footer>
   </form>

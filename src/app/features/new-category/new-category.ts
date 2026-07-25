@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   OnInit,
   signal,
@@ -20,6 +21,7 @@ import {
   TuiButton,
   TuiIcon,
   TuiInput,
+  TuiLoader,
   TuiTextfield,
   TuiTitle,
 } from "@taiga-ui/core";
@@ -38,7 +40,11 @@ import {
   addCategorySuccess,
   updateCategorySuccess,
 } from "../../state/categories/categories.actions";
-import { selectTransactionWithNoCategory } from "../../state/transactions/transactions.selector";
+import {
+  selectTransactionsLoading,
+  selectTransactionWithNoCategory,
+} from "../../state/transactions/transactions.selector";
+import { selectCategoryLoading } from "../../state/categories/categories.selector";
 
 @Component({
   selector: "app-new-category",
@@ -56,6 +62,7 @@ import { selectTransactionWithNoCategory } from "../../state/transactions/transa
     TuiTitle,
     TranslocoPipe,
     AmountPipe,
+    TuiLoader,
   ],
   templateUrl: "./new-category.html",
   styleUrl: "./new-category.scss",
@@ -134,6 +141,26 @@ export class NewCategory implements OnInit {
     return this.transactionsWithoutCategories()
       .filter((transaction) => selectedIds.has(transaction.id))
       .reduce((total, transaction) => total + transaction.amountInCents, 0);
+  });
+
+  protected readonly transactionsLoading = this.store.selectSignal(
+    selectTransactionsLoading,
+  );
+  protected readonly categoriesLoading = this.store.selectSignal(
+    selectCategoryLoading,
+  );
+
+  private readonly searchDisabledEffect = effect(() => {
+    const searchControl = this.form.controls.search;
+    const hasTransactions = this.transactionsWithoutCategories().length > 0;
+
+    if (hasTransactions && searchControl.disabled) {
+      searchControl.enable({ emitEvent: false });
+    }
+
+    if (!hasTransactions && searchControl.enabled) {
+      searchControl.disable({ emitEvent: false });
+    }
   });
 
   ngOnInit() {

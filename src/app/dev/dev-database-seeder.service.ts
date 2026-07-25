@@ -135,6 +135,30 @@ const MOCK_TRANSACTIONS = [
     categoryName: null,
     day: 20,
   },
+  {
+    id: "10000000-0000-4000-8000-000000000013",
+    type: "income",
+    amountInCents: 5_000,
+    description: "Birthday gift1",
+    categoryName: null,
+    day: 21,
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000014",
+    type: "income",
+    amountInCents: 5_000,
+    description: "Birthday gift2",
+    categoryName: null,
+    day: 22,
+  },
+  {
+    id: "10000000-0000-4000-8000-000000000015",
+    type: "income",
+    amountInCents: 5_000,
+    description: "Birthday gift3",
+    categoryName: null,
+    day: 23,
+  },
 ] as const satisfies readonly MockTransaction[];
 
 @Injectable({
