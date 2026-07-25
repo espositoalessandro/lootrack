@@ -1,6 +1,6 @@
 import { createAction, props } from "@ngrx/store";
 
-import type { AddCategory, Category } from "../../data/models";
+import type { AddCategory, Category, Transaction } from "../../data/models";
 
 // RETRIEVES
 
@@ -25,7 +25,7 @@ export const addCategory = createAction(
 
 export const addCategorySuccess = createAction(
   "[Categories Database] Add Succeeded",
-  props<{ category: Category }>(),
+  props<{ category: Category; transactions: Transaction[] }>(),
 );
 
 export const addCategoryFailure = createAction(

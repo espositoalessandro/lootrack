@@ -1,6 +1,6 @@
-import { inject, Injectable } from "@angular/core";
-import { catchError, concatMap, defer, from, Observable, of } from "rxjs";
-import { AddCategory, Category } from "./models";
+import { Injectable } from "@angular/core";
+import { defer, Observable } from "rxjs";
+import { AddCategory, Category, Transaction } from "./models";
 import { lootrackDb } from "./database";
 import { categoryNamesMatch, cleanCategoryName } from "./category-name";
 import {
@@ -8,14 +8,11 @@ import {
   CategoryInUseError,
   EditTransactionOnCategoryCreateError,
 } from "./errors";
-import { TransactionsRepository } from "./transactions-repository";
 
 @Injectable({
   providedIn: "root",
 })
 export class CategoriesRepository {
-  private readonly transactionRepo = inject(TransactionsRepository);
-
   getActive(): Observable<Category[]> {
     return defer(() =>
       lootrackDb.categories
@@ -24,11 +21,9 @@ export class CategoriesRepository {
     );
   }
 
-  getAllIncludingDeleted(): Observable<Category[]> {
-    return defer(() => lootrackDb.categories.toArray());
-  }
-
-  add(input: AddCategory): Observable<Category> {
+  add(
+    input: AddCategory,
+  ): Observable<{ category: Category; transactions: Transaction[] }> {
     return defer(() =>
       lootrackDb.transaction(
         "rw",
@@ -46,8 +41,49 @@ export class CategoriesRepository {
 
           if (existing) {
             throw new CategoryAlreadyExistsError(
-              `An ${input.type} category named "${cleanCategoryName(input.name)}" already exists`,
+              `An ${input.type} category named "${cleanCategoryName(
+                input.name,
+              )}" already exists`,
             );
+          }
+
+          // remove duplicates
+          const transactionIds = [...new Set(input.transactionIds ?? [])];
+
+          const transactionResults =
+            await lootrackDb.transactions.bulkGet(transactionIds);
+
+          if (
+            transactionResults.some((transaction) => transaction === undefined)
+          ) {
+            throw new EditTransactionOnCategoryCreateError(
+              "Some selected transactions were not found",
+            );
+          }
+
+          const transactions = transactionResults.filter(
+            (transaction): transaction is Transaction =>
+              transaction !== undefined,
+          );
+
+          for (const transaction of transactions) {
+            if (transaction.deletedAt !== null) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} has been deleted`,
+              );
+            }
+
+            if (transaction.categoryId !== null) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} already has a category`,
+              );
+            }
+
+            if (transaction.type !== input.type) {
+              throw new EditTransactionOnCategoryCreateError(
+                `Transaction of ${transaction.occurredOn} has a different type`,
+              );
+            }
           }
 
           const now = new Date().toISOString();
@@ -61,45 +97,22 @@ export class CategoriesRepository {
             deletedAt: null,
           };
 
+          const updatedTransactions = transactions.map((transaction) => ({
+            ...transaction,
+            categoryId: category.id,
+            updatedAt: now,
+          }));
+
           await lootrackDb.categories.add(category);
 
-          if (input.transactionIds && input.transactionIds.length > 0) {
-            let transactions = await lootrackDb.transactions.toArray();
-            transactions = transactions.filter((transaction) => {
-              return input.transactionIds!.includes(transaction.id);
-            });
-            if (transactions.length !== input.transactionIds!.length) {
-              throw new EditTransactionOnCategoryCreateError(
-                "Some transactions were not found",
-              );
-            }
-            transactions.forEach((transaction) => {
-              if (transaction.categoryId !== null) {
-                throw new EditTransactionOnCategoryCreateError(
-                  `Transaction of ${transaction.occurredOn} already has a category`,
-                );
-              }
-            });
-
-            from(transactions).pipe(
-              concatMap((transaction) =>
-                this.transactionRepo.update(transaction.id, {
-                  category: { categoryId: category.id, kind: "categorized" },
-                  type: transaction.type,
-                  amountInCents: transaction.amountInCents,
-                  description: transaction.description,
-                  occurredOn: transaction.occurredOn,
-                }),
-              ),
-              catchError(() => of(new EditTransactionOnCategoryCreateError())),
-            );
+          if (updatedTransactions.length > 0) {
+            await lootrackDb.transactions.bulkPut(updatedTransactions);
           }
-          return category;
+          return { category, transactions: updatedTransactions };
         },
       ),
     );
   }
-
   remove(id: string): Observable<string> {
     return defer(() =>
       lootrackDb.transaction(
