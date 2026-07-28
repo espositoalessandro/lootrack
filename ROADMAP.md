@@ -19,9 +19,9 @@ The application is designed to work primarily as an installable Progressive Web 
 
 **Goal:** Deliver a usable mobile budgeting app that stores all data locally.
 
-### Application foundation
+### ~~Application foundation~~
 
-* [ ] Define the design system
+* [x] Define the design system
 * [x] Add floating header and bottom navigation
 * [x] Configure Angular application structure
 * [x] Configure Angular PWA support
@@ -45,19 +45,17 @@ The application is designed to work primarily as an installable Progressive Web 
 * [x] Define feature state boundaries
 * [x] Keep persistence logic outside components
 
-### Local persistence
+### ~~Local persistence~~
 
-* [ ] Add migrations for future schema changes
-* [ ] Request persistent browser storage when supported
 * [x] Configure IndexedDB with Dexie
 * [x] Implement local repositories
 * [x] Add database schema versioning
 * [x] Load persisted data when the application starts
 
-### Initial features
+### ~~Initial features~~
 
 * [x] Dashboard
-* [ ] Category management
+* [x] Category management
 * [x] Basic monthly totals
 * [x] Basic category breakdown
 * [x] Transaction list
@@ -70,8 +68,6 @@ The application is designed to work primarily as an installable Progressive Web 
 * [ ] Empty states
 * [ ] Error handling
 * [ ] Basic accessibility
-* [ ] Unit tests for domain and persistence logic
-* [ ] End-to-end test for transaction CRUD
 * [x] Form validation
 
 ---
@@ -129,6 +125,7 @@ The application is designed to work primarily as an installable Progressive Web 
 
 ### Synchronization behaviour
 
+* [ ] Request persistent browser storage when supported
 - [ ] Push local outbox operations
 - [ ] Pull remote changes
 - [ ] Apply remote changes to IndexedDB
@@ -143,6 +140,7 @@ The application is designed to work primarily as an installable Progressive Web 
 - [ ] Add one-time contextual onboarding for gesture-based interactions
 - [ ] Demonstrate category swipe actions the first time they are available
 - [ ] Persist dismissed onboarding hints locally
+- [ ] End-to-end test for transaction CRUD
 
 ---
 
