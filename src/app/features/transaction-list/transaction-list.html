@@ -91,7 +91,7 @@
                 type="button"
                 class="transaction-row"
                 [attr.aria-label]="
-                          'Edit ' + transactionTitle(item)
+                          'Edit ' + item.title
                         "
                 (click)="
                           editTransaction(item.transaction.id)
@@ -101,13 +101,11 @@
                   class="transaction-symbol"
                   [attr.data-type]="item.transaction.type"
                 >
-                  {{ categoryInitial(item) }}
+                  {{ item.symbol }}
                 </span>
 
                 <span class="transaction-copy">
-                  <strong class="transaction-title">
-                    {{ transactionTitle(item) }}
-                  </strong>
+                  <strong class="transaction-title"> {{ item.title }} </strong>
 
                   <span class="transaction-meta">
                     {{ item.categoryName }}
@@ -138,7 +136,7 @@
                   iconStart="@tui.square-pen"
                   title="Edit"
                   [attr.aria-label]="
-                            'Edit ' + transactionTitle(item)
+                            'Edit ' + item.title
                           "
                   (click)="
                             editTransaction(item.transaction.id)
@@ -154,7 +152,7 @@
                   title="Delete"
                   [disabled]="loading()"
                   [attr.aria-label]="
-                            'Delete ' + transactionTitle(item)
+                            'Delete ' + item.title
                           "
                   (click)="
                             requestDeleteTransaction(
