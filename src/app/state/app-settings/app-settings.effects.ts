@@ -50,29 +50,25 @@ export class AppSettingsEffects {
     ),
   );
 
-  readonly createSettingsDefaults$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(createSettingsDefaults),
-        switchMap(() =>
-          this.appSettingsDatabase
-            .add(DEFAULT_SETTINGS)
-            .pipe(
-              map((settings) => createSettingsDefaultsSuccess({ settings })),
+  readonly createSettingsDefaults$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(createSettingsDefaults),
+      switchMap(() =>
+        this.appSettingsDatabase.add(DEFAULT_SETTINGS).pipe(
+          map((settings) => createSettingsDefaultsSuccess({ settings })),
+          catchError((error) =>
+            of(
+              createSettingsDefaultsFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to create default settings",
+              }),
             ),
-        ),
-        catchError((error) =>
-          of(
-            createSettingsDefaultsFailure({
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to create default settings",
-            }),
           ),
         ),
       ),
-    { dispatch: false },
+    ),
   );
 
   readonly createSettingsDefaultFailure$ = createEffect(

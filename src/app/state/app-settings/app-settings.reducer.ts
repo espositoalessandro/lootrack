@@ -34,8 +34,9 @@ export const appSettingsReducer = createReducer(
     error: null,
   })),
 
-  on(loadAppSettingsSuccess, (state) => ({
+  on(loadAppSettingsSuccess, (state, { settings }) => ({
     ...state,
+    settings: { ...settings },
     loading: false,
     error: null,
   })),
@@ -54,7 +55,7 @@ export const appSettingsReducer = createReducer(
 
   on(createSettingsDefaultsSuccess, (state, { settings }) => ({
     ...state,
-    ...settings,
+    settings: { ...settings },
     loading: false,
     error: null,
   })),

@@ -2,7 +2,7 @@ import { createFeatureSelector, createSelector } from "@ngrx/store";
 import { AppSettingsState } from "./app-settings.reducer";
 
 export const selectAppSettingsState =
-  createFeatureSelector<AppSettingsState>("transactions");
+  createFeatureSelector<AppSettingsState>("appSettings");
 
 export const selectAppSettings = createSelector(
   selectAppSettingsState,
