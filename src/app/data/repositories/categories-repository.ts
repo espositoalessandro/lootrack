@@ -6,15 +6,15 @@ import {
   CategoryMutationResult,
   Transaction,
   UpdateCategory,
-} from "./models";
-import { lootrackDb } from "./database";
-import { categoryNamesMatch, cleanCategoryName } from "./category-name";
+} from "../models";
+import { lootrackDb } from "../database";
+import { categoryNamesMatch, cleanCategoryName } from "../category-name";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-} from "./errors";
+} from "../errors";
 
 @Injectable({
   providedIn: "root",

@@ -18,16 +18,19 @@ import { provideServiceWorker } from "@angular/service-worker";
 import { categoriesReducer } from "./state/categories/categories.reducer";
 import { CategoriesEffects } from "./state/categories/categories.effects";
 import { provideStoreDevtools } from "@ngrx/store-devtools";
+import { appSettingsReducer } from "./state/app-settings/app-settings.reducer";
+import { AppSettingsEffects } from "./state/app-settings/app-settings.effects";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withViewTransitions()),
-    provideTaiga({ mode: "light", apis: { liquidGlass: true } }),
+    provideTaiga({ apis: { liquidGlass: true } }),
     provideHttpClient(),
     provideStore({
       transactions: transactionsReducer,
       categories: categoriesReducer,
+      appSettings: appSettingsReducer,
     }),
     ...(isDevMode()
       ? [
@@ -39,12 +42,11 @@ export const appConfig: ApplicationConfig = {
           }),
         ]
       : []),
-    provideEffects(TransactionsEffects, CategoriesEffects),
+    provideEffects(TransactionsEffects, CategoriesEffects, AppSettingsEffects),
     provideTransloco({
       config: {
         availableLangs: ["en"],
         defaultLang: "en",
-        // Remove this option if your application doesn't support changing language in runtime.
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
       },

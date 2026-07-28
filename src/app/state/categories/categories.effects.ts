@@ -26,7 +26,7 @@ import {
   updateCategoryFailure,
   updateCategorySuccess,
 } from "./categories.actions";
-import { CategoriesRepository } from "../../data/categories-repository";
+import { CategoriesRepository } from "../../data/repositories/categories-repository";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,

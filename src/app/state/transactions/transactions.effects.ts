@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, concatMap, map, of, switchMap } from "rxjs";
 
-import { TransactionsRepository } from "../../data/transactions-repository";
+import { TransactionsRepository } from "../../data/repositories/transactions-repository";
 import {
   addTransaction,
   addTransactionFailure,

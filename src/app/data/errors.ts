@@ -1,3 +1,9 @@
+export class AppSettingsNotFoundError extends Error {
+  constructor() {
+    super(`Error while retrieving app settings`);
+  }
+}
+
 export class CategoryInUseError extends Error {
   constructor(readonly transactionCount: number) {
     super(

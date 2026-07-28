@@ -1,3 +1,11 @@
+export interface AppSettings {
+  id: "app";
+  currency: string;
+  locale: string;
+  theme: "light" | "dark";
+  language: string;
+}
+
 export type TransactionType = "expense" | "income";
 
 export interface Transaction {

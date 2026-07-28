@@ -5,12 +5,12 @@ import {
   CategoryAssignment,
   Transaction,
   TransactionType,
-} from "./models";
-import { lootrackDb } from "./database";
+} from "../models";
+import { lootrackDb } from "../database";
 import {
   InvalidCategoryReferenceError,
   InvalidTransactionError,
-} from "./errors";
+} from "../errors";
 
 @Injectable({
   providedIn: "root",
