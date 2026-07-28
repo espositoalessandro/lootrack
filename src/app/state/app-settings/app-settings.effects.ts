@@ -15,6 +15,7 @@ import {
 } from "./app-settings.actions";
 import { TuiDialogService } from "@taiga-ui/core";
 import { DEFAULT_SETTINGS } from "../../data/CONST";
+import { AppSettingsNotFoundError } from "../../data/errors";
 
 @Injectable()
 export class AppSettingsEffects {
@@ -30,23 +31,19 @@ export class AppSettingsEffects {
           .get()
           .pipe(map((settings) => loadAppSettingsSuccess({ settings }))),
       ),
-      catchError((error) =>
-        of(
+      catchError((error) => {
+        if (error instanceof AppSettingsNotFoundError) {
+          return of(createSettingsDefaults());
+        }
+        return of(
           loadAppSettingsFailure({
             error:
               error instanceof Error
                 ? error.message
                 : "Unable to load settings",
           }),
-        ),
-      ),
-    ),
-  );
-
-  readonly loadAppSettingsFailure$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(loadAppSettingsFailure),
-      exhaustMap(() => of(createSettingsDefaults())),
+        );
+      }),
     ),
   );
 
@@ -112,6 +109,22 @@ export class AppSettingsEffects {
     () =>
       this.actions$.pipe(
         ofType(updateAppSettingsFailure),
+        exhaustMap((message) =>
+          this.dialogs
+            .open(message.error, {
+              label: "Fatal error",
+              size: "s",
+            })
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  readonly loadAppSettingsFailure$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(loadAppSettingsFailure),
         exhaustMap((message) =>
           this.dialogs
             .open(message.error, {
