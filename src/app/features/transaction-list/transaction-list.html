@@ -1,6 +1,205 @@
-<div class="flex flex-col gap-4 p-3">
-  @for (transaction of (transactionsState$ | async)?.items; track
-  transaction.id){
-  <app-transaction-item [transaction]="transaction"></app-transaction-item>
+<section class="transaction-page">
+  <div class="transaction-toolbar">
+    <tui-segmented size="m" class="w-full">
+      <label class="flex-1">
+        <input
+          type="radio"
+          name="transaction-filter"
+          value="all"
+          [checked]="selectedFilter() === 'all'"
+          (change)="setFilter('all')"
+        />
+
+        All
+      </label>
+
+      <label class="flex-1">
+        <input
+          type="radio"
+          name="transaction-filter"
+          value="expense"
+          [checked]="selectedFilter() === 'expense'"
+          (change)="setFilter('expense')"
+        />
+
+        Expenses
+      </label>
+
+      <label class="flex-1">
+        <input
+          type="radio"
+          name="transaction-filter"
+          value="income"
+          [checked]="selectedFilter() === 'income'"
+          (change)="setFilter('income')"
+        />
+
+        Income
+      </label>
+    </tui-segmented>
+
+    <label class="search-field">
+      <tui-icon icon="@tui.search" />
+
+      <input
+        type="search"
+        aria-label="Search transactions"
+        placeholder="Search transactions..."
+        autocomplete="off"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+      />
+
+      @if (searchQuery()) {
+      <button
+        type="button"
+        class="search-clear"
+        aria-label="Clear search"
+        title="Clear search"
+        (click)="clearSearch()"
+      >
+        <tui-icon icon="@tui.x" />
+      </button>
+      }
+    </label>
+  </div>
+
+  @if (transactionGroups().length) {
+  <div class="month-list">
+    @for (month of transactionGroups(); track month.monthKey) {
+    <section class="month-section">
+      <header class="month-header">
+        <h2 class="month-title">{{ month.label }}</h2>
+
+        <strong
+          class="month-total"
+          [attr.data-positive]="month.netInCents >= 0"
+        >
+          {{ month.netInCents | amount | currency: settings().currency }}
+        </strong>
+      </header>
+
+      <div class="day-list">
+        @for (day of month.days; track day.dateKey) {
+        <section class="day-group">
+          <p class="day-label">{{ day.label }}</p>
+
+          <div class="day-card">
+            @for ( item of day.items; track item.transaction.id ) {
+            <tui-swipe-actions [autoClose]="true">
+              <button
+                type="button"
+                class="transaction-row"
+                [attr.aria-label]="
+                          'Edit ' + transactionTitle(item)
+                        "
+                (click)="
+                          editTransaction(item.transaction.id)
+                        "
+              >
+                <span
+                  class="transaction-symbol"
+                  [attr.data-type]="item.transaction.type"
+                >
+                  {{ categoryInitial(item) }}
+                </span>
+
+                <span class="transaction-copy">
+                  <strong class="transaction-title">
+                    {{ transactionTitle(item) }}
+                  </strong>
+
+                  <span class="transaction-meta">
+                    {{ item.categoryName }}
+                  </span>
+                </span>
+
+                <strong
+                  class="transaction-amount"
+                  [attr.data-type]="item.transaction.type"
+                >
+                  {{ item.transaction.type === "income" ? "+" : "−" }}{{
+                  item.transaction.amountInCents | amount | currency:
+                  settings().currency }}
+                </strong>
+
+                <tui-icon
+                  class="transaction-chevron"
+                  icon="@tui.chevron-right"
+                />
+              </button>
+
+              <div tuiSwipeAction class="transaction-actions">
+                <button
+                  tuiIconButton
+                  type="button"
+                  size="m"
+                  appearance="secondary"
+                  iconStart="@tui.square-pen"
+                  title="Edit"
+                  [attr.aria-label]="
+                            'Edit ' + transactionTitle(item)
+                          "
+                  (click)="
+                            editTransaction(item.transaction.id)
+                          "
+                ></button>
+
+                <button
+                  tuiIconButton
+                  type="button"
+                  size="m"
+                  appearance="secondary-destructive"
+                  iconStart="@tui.trash-2"
+                  title="Delete"
+                  [disabled]="loading()"
+                  [attr.aria-label]="
+                            'Delete ' + transactionTitle(item)
+                          "
+                  (click)="
+                            requestDeleteTransaction(
+                              item.transaction.id
+                            )
+                          "
+                ></button>
+              </div>
+            </tui-swipe-actions>
+            }
+          </div>
+        </section>
+        }
+      </div>
+    </section>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <span class="empty-state__icon">
+      <tui-icon icon="@tui.receipt-text" />
+    </span>
+
+    @if (transactions().length) {
+    <div>
+      <h2>No matching transactions</h2>
+
+      <p>Try changing the search text or transaction filter.</p>
+    </div>
+
+    <button
+      tuiButton
+      type="button"
+      appearance="secondary"
+      (click)="clearSearch(); setFilter('all')"
+    >
+      Clear filters
+    </button>
+    } @else {
+    <div>
+      <h2>No transactions yet</h2>
+
+      <p>Use the plus button below to record your first transaction.</p>
+    </div>
+    }
+  </div>
   }
-</div>
+</section>
