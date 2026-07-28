@@ -1,5 +1,5 @@
 import { createAction, props } from "@ngrx/store";
-import { AppSettings } from "../../data/models";
+import { AppSettings, AppSettingsPatch } from "../../data/models";
 
 // RETRIEVES
 
@@ -21,7 +21,7 @@ export const loadAppSettingsFailure = createAction(
 
 export const updateAppSettings = createAction(
   "[AppSettings Database] Update Requested",
-  props<{ newSettings: Partial<AppSettings> }>(),
+  props<{ newSettings: AppSettingsPatch }>(),
 );
 
 export const updateAppSettingsSuccess = createAction(

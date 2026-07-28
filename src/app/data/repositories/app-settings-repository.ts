@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { defer, Observable } from "rxjs";
-import { AppSettings } from "../models";
+import { AppSettings, AppSettingsPatch } from "../models";
 import { lootrackDb } from "../database";
 import { AppSettingsNotFoundError } from "../errors";
 
@@ -10,26 +10,31 @@ import { AppSettingsNotFoundError } from "../errors";
 export class AppSettingsRepository {
   get(): Observable<AppSettings> {
     return defer(async () => {
-      const settings = await lootrackDb.appSettings.toArray();
-      if (settings && settings.length === 1) {
-        return settings[0];
-      } else {
+      const settings = await lootrackDb.appSettings.get("app");
+      if (!settings) {
         throw new AppSettingsNotFoundError();
       }
+      return settings;
     });
   }
 
-  update(newSettings: Partial<AppSettings>): Observable<AppSettings> {
+  update(newSettings: AppSettingsPatch): Observable<AppSettings> {
     return defer(async () => {
-      if (await lootrackDb.appSettings.update("app", { ...newSettings })) {
-        const settings = await lootrackDb.appSettings.toArray();
-        return settings[0];
-      } else {
-        throw new Error("Failed to update app settings");
+      const updated = await lootrackDb.appSettings.update("app", newSettings);
+
+      if (!updated) {
+        throw new AppSettingsNotFoundError();
       }
+
+      const settings = await lootrackDb.appSettings.get("app");
+
+      if (!settings) {
+        throw new AppSettingsNotFoundError();
+      }
+
+      return settings;
     });
   }
-
   add(settings: AppSettings): Observable<AppSettings> {
     return defer(async () => {
       const currentSettings = await lootrackDb.appSettings.toArray();

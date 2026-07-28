@@ -6,6 +6,8 @@ export interface AppSettings {
   language: string;
 }
 
+export type AppSettingsPatch = Partial<Omit<AppSettings, "id">>;
+
 export type TransactionType = "expense" | "income";
 
 export interface Transaction {

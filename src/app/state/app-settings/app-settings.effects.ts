@@ -1,7 +1,15 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { AppSettingsRepository } from "../../data/repositories/app-settings-repository";
-import { catchError, EMPTY, exhaustMap, map, of, switchMap } from "rxjs";
+import {
+  catchError,
+  concatMap,
+  EMPTY,
+  exhaustMap,
+  map,
+  of,
+  switchMap,
+} from "rxjs";
 import {
   createSettingsDefaults,
   createSettingsDefaultsFailure,
@@ -87,7 +95,7 @@ export class AppSettingsEffects {
   readonly updateAppSettings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateAppSettings),
-      switchMap((input) =>
+      concatMap((input) =>
         this.appSettingsDatabase.update(input.newSettings).pipe(
           map((settings) => updateAppSettingsSuccess({ settings })),
           catchError((error) =>
