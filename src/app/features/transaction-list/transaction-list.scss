@@ -144,10 +144,6 @@
   background: var(--tui-background-elevation-1);
 }
 
-.day-card tui-swipe-actions {
-  display: block;
-}
-
 .day-card tui-swipe-actions + tui-swipe-actions {
   border-top: 1px solid var(--tui-border-normal);
 }
