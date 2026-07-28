@@ -20,6 +20,7 @@ import {
   selectTransactions,
   selectTransactionsLoading,
 } from "../../state/transactions/transactions.selector";
+import { TranslocoPipe } from "@jsverse/transloco";
 
 @Component({
   selector: "app-transaction-list",
@@ -31,6 +32,7 @@ import {
     TuiSegmented,
     TuiSwipeActions,
     TuiSwipeActionsAutoClose,
+    TranslocoPipe,
   ],
   templateUrl: "./transaction-list.html",
   styleUrl: "./transaction-list.scss",

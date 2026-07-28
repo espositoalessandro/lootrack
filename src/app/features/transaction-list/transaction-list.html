@@ -10,7 +10,7 @@
           (change)="setFilter('all')"
         />
 
-        All
+        {{ "transactionList.filters.all" | transloco }}
       </label>
 
       <label class="flex-1">
@@ -22,7 +22,7 @@
           (change)="setFilter('expense')"
         />
 
-        Expenses
+        {{ "transactionList.filters.expenses" | transloco }}
       </label>
 
       <label class="flex-1">
@@ -34,7 +34,7 @@
           (change)="setFilter('income')"
         />
 
-        Income
+        {{ "transactionList.filters.income" | transloco }}
       </label>
     </tui-segmented>
 
@@ -43,9 +43,9 @@
 
       <input
         type="search"
-        aria-label="Search transactions"
-        placeholder="Search transactions..."
         autocomplete="off"
+        [attr.aria-label]="'transactionList.search.label' | transloco"
+        [placeholder]="'transactionList.search.placeholder' | transloco"
         [value]="searchQuery()"
         (input)="onSearchInput($event)"
       />
@@ -54,8 +54,8 @@
       <button
         type="button"
         class="search-clear"
-        aria-label="Clear search"
-        title="Clear search"
+        [attr.aria-label]="'transactionList.search.clear' | transloco"
+        [title]="'transactionList.search.clear' | transloco"
         (click)="clearSearch()"
       >
         <tui-icon icon="@tui.x" />
@@ -91,11 +91,10 @@
                 type="button"
                 class="transaction-row"
                 [attr.aria-label]="
-                          'Edit ' + item.title
+                          'transactionList.actions.editTransaction'
+                            | transloco: { title: item.title }
                         "
-                (click)="
-                          editTransaction(item.transaction.id)
-                        "
+                (click)="editTransaction(item.transaction.id)"
               >
                 <span
                   class="transaction-symbol"
@@ -134,13 +133,12 @@
                   size="m"
                   appearance="secondary"
                   iconStart="@tui.square-pen"
-                  title="Edit"
+                  [title]="'transactionList.actions.edit' | transloco"
                   [attr.aria-label]="
-                            'Edit ' + item.title
+                            'transactionList.actions.editTransaction'
+                              | transloco: { title: item.title }
                           "
-                  (click)="
-                            editTransaction(item.transaction.id)
-                          "
+                  (click)="editTransaction(item.transaction.id)"
                 ></button>
 
                 <button
@@ -149,10 +147,11 @@
                   size="m"
                   appearance="secondary-destructive"
                   iconStart="@tui.trash-2"
-                  title="Delete"
+                  [title]="'transactionList.actions.delete' | transloco"
                   [disabled]="loading()"
                   [attr.aria-label]="
-                            'Delete ' + item.title
+                            'transactionList.actions.deleteTransaction'
+                              | transloco: { title: item.title }
                           "
                   (click)="
                             requestDeleteTransaction(
@@ -178,9 +177,9 @@
 
     @if (transactions().length) {
     <div>
-      <h2>No matching transactions</h2>
+      <h2>{{ "transactionList.empty.noMatchesTitle" | transloco }}</h2>
 
-      <p>Try changing the search text or transaction filter.</p>
+      <p>{{ "transactionList.empty.noMatchesDescription" | transloco }}</p>
     </div>
 
     <button
@@ -189,13 +188,13 @@
       appearance="secondary"
       (click)="clearSearch(); setFilter('all')"
     >
-      Clear filters
+      {{ "transactionList.empty.clearFilters" | transloco }}
     </button>
     } @else {
     <div>
-      <h2>No transactions yet</h2>
+      <h2>{{ "transactionList.empty.noTransactionsTitle" | transloco }}</h2>
 
-      <p>Use the plus button below to record your first transaction.</p>
+      <p>{{ "transactionList.empty.noTransactionsDescription" | transloco }}</p>
     </div>
     }
   </div>

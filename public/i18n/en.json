@@ -48,5 +48,30 @@
     "selectedCount": "{{count}} selected",
     "titleEdit": "Edit category",
     "save": "Save changes"
+  },
+  "transactionList": {
+    "filters": {
+      "all": "All",
+      "expenses": "Expenses",
+      "income": "Income"
+    },
+    "search": {
+      "label": "Search transactions",
+      "placeholder": "Search transactions...",
+      "clear": "Clear search"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "editTransaction": "Edit {{title}}",
+      "deleteTransaction": "Delete {{title}}"
+    },
+    "empty": {
+      "noMatchesTitle": "No matching transactions",
+      "noMatchesDescription": "Try changing the search text or transaction filter.",
+      "clearFilters": "Clear filters",
+      "noTransactionsTitle": "No transactions yet",
+      "noTransactionsDescription": "Use the plus button below to record your first transaction."
+    }
   }
 }
