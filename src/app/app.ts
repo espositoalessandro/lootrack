@@ -1,4 +1,4 @@
-import { TuiLoader, TuiRoot } from "@taiga-ui/core";
+import { TUI_DARK_MODE, TuiLoader, TuiRoot } from "@taiga-ui/core";
 import { AsyncPipe } from "@angular/common";
 import { Component, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
@@ -27,6 +27,7 @@ import { FloatingHeader } from "./layout/floating-header/floating-header";
 export class App implements OnInit {
   private readonly store = inject(Store);
   private readonly databaseSeeder = inject(DevDatabaseSeeder);
+  protected readonly darkMode = inject(TUI_DARK_MODE);
 
   protected readonly transactionsLoading$ = this.store.select(
     selectTransactionsLoading,
@@ -34,6 +35,10 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     void this.initializeApp();
+  }
+
+  protected toggleDarkMode(): void {
+    this.darkMode.update((dark) => !dark);
   }
 
   private async initializeApp(): Promise<void> {

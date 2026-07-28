@@ -1,5 +1,5 @@
 import { Location } from "@angular/common";
-import { Component, inject, signal } from "@angular/core";
+import { Component, inject, output, signal } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
   ActivatedRouteSnapshot,
@@ -10,10 +10,12 @@ import {
 } from "@angular/router";
 import { filter } from "rxjs";
 import {
+  TUI_DARK_MODE,
   TUI_LIQUID_GLASS,
   TuiButton,
   TuiDataList,
   TuiDropdown,
+  TuiIcon,
   TuiOption,
   TuiTitle,
 } from "@taiga-ui/core";
@@ -41,6 +43,7 @@ const DEFAULT_HEADER: HeaderConfig = {
     TuiOption,
     TuiDataList,
     RouterLink,
+    TuiIcon,
   ],
   providers: [{ provide: TUI_LIQUID_GLASS, useValue: true }],
   templateUrl: "./floating-header.html",
@@ -52,7 +55,10 @@ export class FloatingHeader {
 
   protected readonly menuOpen = signal(false);
   protected readonly header = signal<HeaderConfig>(DEFAULT_HEADER);
+  protected readonly menuSettingsOpen = signal(false);
+  protected readonly darkMode = inject(TUI_DARK_MODE);
 
+  protected readonly toggleDarkMode = output();
   constructor() {
     this.updateHeader();
 
@@ -67,6 +73,10 @@ export class FloatingHeader {
         this.menuOpen.set(false);
         this.updateHeader();
       });
+  }
+
+  protected enableDarkMode() {
+    this.toggleDarkMode.emit();
   }
 
   protected goBack(): void {

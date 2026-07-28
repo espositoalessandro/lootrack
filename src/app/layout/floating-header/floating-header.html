@@ -33,6 +33,9 @@
         type="button"
         iconStart="@tui.settings"
         title="Settings"
+        [tuiDropdown]="settingsMenu"
+        [tuiDropdownOpen]="menuSettingsOpen()"
+        (tuiDropdownOpenChange)="menuSettingsOpen.set($event)"
       ></button>
     </tui-app-bar>
   </section>
@@ -41,5 +44,17 @@
 <ng-template #menu let-close>
   <tui-data-list>
     <a tuiOption routerLink="/categories" (click)="close()"> Categories </a>
+  </tui-data-list>
+</ng-template>
+
+<ng-template #settingsMenu>
+  <tui-data-list>
+    <button tuiOption (click)="enableDarkMode()">
+      @if (darkMode()) {
+      <tui-icon icon="@tui.sun"></tui-icon>
+      } @else {
+      <tui-icon icon="@tui.moon"></tui-icon>
+      }
+    </button>
   </tui-data-list>
 </ng-template>
