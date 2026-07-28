@@ -6,6 +6,14 @@
     "add": "Add",
     "deselectAll": "Deselect all"
   },
+  "header": {
+    "switchTheme": "Switch theme",
+    "back": "Back",
+    "openMenu": "Open menu",
+    "categories": "Categories",
+    "transactions": "Transactions",
+    "settings": "Settings"
+  },
   "newTransaction": {
     "title": "Add transaction",
     "titleEdit": "Edit transaction",

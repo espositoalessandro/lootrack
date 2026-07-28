@@ -21,6 +21,7 @@ import {
 } from "@taiga-ui/core";
 import { TuiAppBar } from "@taiga-ui/layout";
 import { TuiPlatform } from "@taiga-ui/cdk";
+import { TranslocoPipe } from "@jsverse/transloco";
 
 interface HeaderConfig {
   readonly title: string;
@@ -44,6 +45,7 @@ const DEFAULT_HEADER: HeaderConfig = {
     TuiDataList,
     RouterLink,
     TuiIcon,
+    TranslocoPipe,
   ],
   providers: [{ provide: TUI_LIQUID_GLASS, useValue: true }],
   templateUrl: "./floating-header.html",

@@ -9,7 +9,7 @@
         tuiAppBarBack
         tuiSlot="start"
         type="button"
-        title="Back"
+        title="{{'header.back' | transloco}}"
         (click)="goBack()"
       ></button>
       } @else {
@@ -18,7 +18,7 @@
         tuiSlot="start"
         type="button"
         iconStart="@tui.menu"
-        title="Open menu"
+        title="{{'header.openMenu' | transloco}}"
         [tuiDropdown]="menu"
         [tuiDropdownOpen]="menuOpen()"
         (tuiDropdownOpenChange)="menuOpen.set($event)"
@@ -32,7 +32,7 @@
         tuiSlot="end"
         type="button"
         iconStart="@tui.settings"
-        title="Settings"
+        title="{{'header.settings'| transloco}}"
         [tuiDropdown]="settingsMenu"
         [tuiDropdownOpen]="menuSettingsOpen()"
         (tuiDropdownOpenChange)="menuSettingsOpen.set($event)"
@@ -43,14 +43,16 @@
 
 <ng-template #menu let-close>
   <tui-data-list>
-    <a tuiOption routerLink="/categories" (click)="close()"> Categories </a>
+    <a tuiOption routerLink="/categories" (click)="close()">
+      {{'header.categories'| transloco}}
+    </a>
   </tui-data-list>
 </ng-template>
 
 <ng-template #settingsMenu>
   <tui-data-list>
     <button tuiOption (click)="enableDarkMode()">
-      @if (darkMode()) {
+      {{'header.switchTheme'| transloco}} @if (darkMode()) {
       <tui-icon icon="@tui.sun"></tui-icon>
       } @else {
       <tui-icon icon="@tui.moon"></tui-icon>
