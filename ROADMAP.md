@@ -31,7 +31,6 @@ The application is designed to work primarily as an installable Progressive Web 
 ### ~~Domain model~~
 
 * [x] Define category model
-* [x] Define budget model
 * [x] Add creation and modification timestamps
 * [x] Define repository interfaces independently from IndexedDB
 * [x] Define transaction model
@@ -49,7 +48,6 @@ The application is designed to work primarily as an installable Progressive Web 
 
 * [x] Configure IndexedDB with Dexie
 * [x] Implement local repositories
-* [x] Add database schema versioning
 * [x] Load persisted data when the application starts
 
 ### ~~Initial features~~
@@ -66,7 +64,7 @@ The application is designed to work primarily as an installable Progressive Web 
 ### Quality baseline
 
 * [ ] Empty states
-* [ ] Error handling
+* [x] Error handling
 * [ ] Basic accessibility
 * [x] Form validation
 
