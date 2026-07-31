@@ -12,18 +12,15 @@ import {
 
 import {
   addCategory,
-  addCategoryFailure,
   addCategorySuccess,
   deleteCategory,
   deleteCategoryBlocked,
-  deleteCategoryFailure,
   deleteCategorySuccess,
+  generalCategoriesFailure,
   loadCategories,
-  loadCategoriesFailure,
   loadCategoriesSuccess,
   saveCategoryBlocked,
   updateCategory,
-  updateCategoryFailure,
   updateCategorySuccess,
 } from "./categories.actions";
 import { CategoriesRepository } from "../../data/repositories/categories-repository";
@@ -51,7 +48,7 @@ export class CategoriesEffects {
 
           catchError((error: unknown) =>
             of(
-              loadCategoriesFailure({
+              generalCategoriesFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -89,7 +86,7 @@ export class CategoriesEffects {
               );
             }
             return of(
-              addCategoryFailure({
+              generalCategoriesFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -118,7 +115,7 @@ export class CategoriesEffects {
               );
             }
             return of(
-              deleteCategoryFailure({
+              generalCategoriesFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -158,7 +155,7 @@ export class CategoriesEffects {
             }
 
             return of(
-              updateCategoryFailure({
+              generalCategoriesFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -202,6 +199,23 @@ export class CategoriesEffects {
           this.dialogs
             .open(message.message, {
               label: "Category cannot be saved",
+              size: "s",
+            })
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  readonly showGeneralCategoryError$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(generalCategoriesFailure),
+
+        exhaustMap((error) =>
+          this.dialogs
+            .open(error, {
+              label: "Error in category operation",
               size: "s",
             })
             .pipe(catchError(() => EMPTY)),

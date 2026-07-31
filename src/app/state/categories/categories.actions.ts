@@ -21,6 +21,11 @@ export const loadCategoriesFailure = createAction(
   props<{ error: string }>(),
 );
 
+export const generalCategoriesFailure = createAction(
+  "[Categories Database] Categories error",
+  props<{ error: string }>(),
+);
+
 // ADD
 
 export const addCategory = createAction(

@@ -1,6 +1,14 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, concatMap, map, of, switchMap } from "rxjs";
+import {
+  catchError,
+  concatMap,
+  EMPTY,
+  exhaustMap,
+  map,
+  of,
+  switchMap,
+} from "rxjs";
 
 import { TransactionsRepository } from "../../data/repositories/transactions-repository";
 import {
@@ -10,6 +18,7 @@ import {
   deleteTransaction,
   deleteTransactionFailure,
   deleteTransactionSuccess,
+  generalTransactionFailure,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -17,11 +26,12 @@ import {
   updateTransactionFailure,
   updateTransactionSuccess,
 } from "./transactions.actions";
+import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()
 export class TransactionsEffects {
   private readonly actions$ = inject(Actions);
-
+  private readonly dialogs = inject(TuiDialogService);
   private readonly transactionsDatabase = inject(TransactionsRepository);
 
   readonly loadTransactions$ = createEffect(() =>
@@ -118,5 +128,21 @@ export class TransactionsEffects {
         ),
       ),
     ),
+  );
+
+  readonly showGeneralTransactionError$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(generalTransactionFailure),
+        exhaustMap((error) =>
+          this.dialogs
+            .open(error, {
+              label: "Error in transaction operation",
+              size: "s",
+            })
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
   );
 }

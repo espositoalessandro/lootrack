@@ -76,22 +76,6 @@ export class AppSettingsEffects {
     ),
   );
 
-  readonly createSettingsDefaultFailure$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(createSettingsDefaultsFailure),
-        exhaustMap((message) =>
-          this.dialogs
-            .open(message.error, {
-              label: "Fatal error",
-              size: "s",
-            })
-            .pipe(catchError(() => EMPTY)),
-        ),
-      ),
-    { dispatch: false },
-  );
-
   readonly updateAppSettings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateAppSettings),
@@ -116,27 +100,15 @@ export class AppSettingsEffects {
   readonly updateAppSettingsFailure$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(updateAppSettingsFailure),
-        exhaustMap((message) =>
-          this.dialogs
-            .open(message.error, {
-              label: "Fatal error",
-              size: "s",
-            })
-            .pipe(catchError(() => EMPTY)),
+        ofType(
+          updateAppSettingsFailure,
+          loadAppSettingsFailure,
+          createSettingsDefaultsFailure,
         ),
-      ),
-    { dispatch: false },
-  );
-
-  readonly loadAppSettingsFailure$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(loadAppSettingsFailure),
         exhaustMap((message) =>
           this.dialogs
             .open(message.error, {
-              label: "Fatal error",
+              label: "Settings error",
               size: "s",
             })
             .pipe(catchError(() => EMPTY)),

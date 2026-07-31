@@ -60,3 +60,8 @@ export const updateTransactionFailure = createAction(
   "[Transactions Database] Update Failed",
   props<{ error: string }>(),
 );
+
+export const generalTransactionFailure = createAction(
+  "[Categories Database] Transaction error",
+  props<{ error: string }>(),
+);
