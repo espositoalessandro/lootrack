@@ -109,9 +109,7 @@ export class NewTransaction implements OnInit {
         Validators.pattern(/^\d+(?:[.,]\d{1,2})?$/),
       ],
     }),
-    category: new FormControl<Category | null>(null, {
-      validators: Validators.required,
-    }),
+    category: new FormControl<Category | null>(null),
     occurred: new FormControl<TuiDay>(TuiDay.currentLocal(), {
       nonNullable: true,
       validators: Validators.required,
@@ -172,7 +170,7 @@ export class NewTransaction implements OnInit {
             if (!transaction.categoryId) {
               return of({
                 transaction,
-                category: undefined,
+                category: null,
               });
             }
             return this.store
@@ -198,15 +196,14 @@ export class NewTransaction implements OnInit {
 
   private prefillForm(
     transaction: Transaction,
-    category: Category | undefined,
+    category: Category | null,
   ): void {
     const [year, month, day] = transaction.occurredOn.split("-").map(Number);
 
     this.form.setValue({
       amount: (transaction.amountInCents / 100).toFixed(2),
-
       occurred: new TuiDay(year, month - 1, day),
-      category: category ? category : null,
+      category: category,
       description: transaction.description,
       type: transaction.type,
     });
