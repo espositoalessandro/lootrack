@@ -86,7 +86,7 @@ export class AppSettingsEffects {
                 error:
                   error instanceof Error
                     ? error.message
-                    : "Unable to load settings",
+                    : "Unable to update settings",
               }),
             ),
           ),

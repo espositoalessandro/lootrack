@@ -13,17 +13,13 @@ import {
 import { TransactionsRepository } from "../../data/repositories/transactions-repository";
 import {
   addTransaction,
-  addTransactionFailure,
   addTransactionSuccess,
   deleteTransaction,
-  deleteTransactionFailure,
   deleteTransactionSuccess,
   generalTransactionFailure,
   loadTransactions,
-  loadTransactionsFailure,
   loadTransactionsSuccess,
   updateTransaction,
-  updateTransactionFailure,
   updateTransactionSuccess,
 } from "./transactions.actions";
 import { TuiDialogService } from "@taiga-ui/core";
@@ -44,7 +40,7 @@ export class TransactionsEffects {
 
           catchError((error: unknown) =>
             of(
-              loadTransactionsFailure({
+              generalTransactionFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -69,7 +65,7 @@ export class TransactionsEffects {
 
           catchError((error: unknown) =>
             of(
-              addTransactionFailure({
+              generalTransactionFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -90,7 +86,7 @@ export class TransactionsEffects {
           map(() => deleteTransactionSuccess({ id })),
           catchError((error: unknown) =>
             of(
-              deleteTransactionFailure({
+              generalTransactionFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -117,7 +113,7 @@ export class TransactionsEffects {
 
           catchError((error: unknown) =>
             of(
-              updateTransactionFailure({
+              generalTransactionFailure({
                 error:
                   error instanceof Error
                     ? error.message

@@ -74,7 +74,7 @@ export class CategoriesEffects {
             }),
           ),
 
-          catchError((error: Error) => {
+          catchError((error: unknown) => {
             if (
               error instanceof CategoryTransactionAssignmentError ||
               error instanceof CategoryAlreadyExistsError
