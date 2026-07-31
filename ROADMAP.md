@@ -61,11 +61,10 @@ The application is designed to work primarily as an installable Progressive Web 
 * [x] Edit transaction
 * [x] Delete transaction
 
-### Quality baseline
+### ~~Quality baseline~~
 
-* [ ] Empty states
+* [x] Empty states
 * [x] Error handling
-* [ ] Basic accessibility
 * [x] Form validation
 
 ---
@@ -200,9 +199,9 @@ The application is designed to work primarily as an installable Progressive Web 
 
 ---
 
-## v0.4 — Daily-driver features
+## v0.4 — Daily-driver features, testing and accessibility
 
-**Goal:** Make Lootrack practical for continuous personal use.
+**Goal:** Make Lootrack practical for continuous personal use. Define tests and make the app WADC compliant
 
 - [ ] Search transactions
 - [ ] Advanced filters
