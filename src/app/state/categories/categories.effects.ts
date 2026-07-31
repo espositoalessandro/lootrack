@@ -212,7 +212,7 @@ export class CategoriesEffects {
       this.actions$.pipe(
         ofType(generalCategoriesFailure),
 
-        exhaustMap((error) =>
+        exhaustMap(({ error }) =>
           this.dialogs
             .open(error, {
               label: "Error in category operation",

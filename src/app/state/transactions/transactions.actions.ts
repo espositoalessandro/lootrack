@@ -62,6 +62,6 @@ export const updateTransactionFailure = createAction(
 );
 
 export const generalTransactionFailure = createAction(
-  "[Categories Database] Transaction error",
+  "[Transaction Database] Transaction error",
   props<{ error: string }>(),
 );

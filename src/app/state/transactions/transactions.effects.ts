@@ -134,7 +134,7 @@ export class TransactionsEffects {
     () =>
       this.actions$.pipe(
         ofType(generalTransactionFailure),
-        exhaustMap((error) =>
+        exhaustMap(({ error }) =>
           this.dialogs
             .open(error, {
               label: "Error in transaction operation",

@@ -49,3 +49,8 @@ export const createSettingsDefaultsFailure = createAction(
   "[AppSettings Database] Create Defaults Failed",
   props<{ error: string }>(),
 );
+
+export const generalAppSettingsFailure = createAction(
+  "[AppSettings Database] Settings error",
+  props<{ error: string }>(),
+);

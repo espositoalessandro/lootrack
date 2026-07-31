@@ -8,6 +8,7 @@ import {
   deleteTransaction,
   deleteTransactionFailure,
   deleteTransactionSuccess,
+  generalTransactionFailure,
   loadTransactions,
   loadTransactionsFailure,
   loadTransactionsSuccess,
@@ -125,5 +126,11 @@ export const transactionsReducer = createReducer(
             return updatedTransaction ?? item;
           })
         : state.items,
+  })),
+
+  on(generalTransactionFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
   })),
 );

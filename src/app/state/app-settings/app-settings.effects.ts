@@ -12,13 +12,11 @@ import {
 } from "rxjs";
 import {
   createSettingsDefaults,
-  createSettingsDefaultsFailure,
   createSettingsDefaultsSuccess,
+  generalAppSettingsFailure,
   loadAppSettings,
-  loadAppSettingsFailure,
   loadAppSettingsSuccess,
   updateAppSettings,
-  updateAppSettingsFailure,
   updateAppSettingsSuccess,
 } from "./app-settings.actions";
 import { TuiDialogService } from "@taiga-ui/core";
@@ -42,7 +40,7 @@ export class AppSettingsEffects {
               return of(createSettingsDefaults());
             }
             return of(
-              loadAppSettingsFailure({
+              generalAppSettingsFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -63,7 +61,7 @@ export class AppSettingsEffects {
           map((settings) => createSettingsDefaultsSuccess({ settings })),
           catchError((error) =>
             of(
-              createSettingsDefaultsFailure({
+              generalAppSettingsFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -84,7 +82,7 @@ export class AppSettingsEffects {
           map((settings) => updateAppSettingsSuccess({ settings })),
           catchError((error) =>
             of(
-              updateAppSettingsFailure({
+              generalAppSettingsFailure({
                 error:
                   error instanceof Error
                     ? error.message
@@ -97,17 +95,13 @@ export class AppSettingsEffects {
     ),
   );
 
-  readonly updateAppSettingsFailure$ = createEffect(
+  readonly generalAppSettingsFailure$ = createEffect(
     () =>
       this.actions$.pipe(
-        ofType(
-          updateAppSettingsFailure,
-          loadAppSettingsFailure,
-          createSettingsDefaultsFailure,
-        ),
-        exhaustMap((message) =>
+        ofType(generalAppSettingsFailure),
+        exhaustMap(({ error }) =>
           this.dialogs
-            .open(message.error, {
+            .open(error, {
               label: "Settings error",
               size: "s",
             })

@@ -4,6 +4,7 @@ import {
   createSettingsDefaults,
   createSettingsDefaultsFailure,
   createSettingsDefaultsSuccess,
+  generalAppSettingsFailure,
   loadAppSettings,
   loadAppSettingsFailure,
   loadAppSettingsSuccess,
@@ -83,5 +84,11 @@ export const appSettingsReducer = createReducer(
     ...state,
     loading: false,
     error: error,
+  })),
+
+  on(generalAppSettingsFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
   })),
 );
