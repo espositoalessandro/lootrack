@@ -4,7 +4,7 @@ import {
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from "@angular/core";
-import { provideRouter, withViewTransitions } from "@angular/router";
+import { provideRouter } from "@angular/router";
 
 import { routes } from "./app.routes";
 import { provideHttpClient } from "@angular/common/http";
@@ -25,7 +25,7 @@ import { Capacitor } from "@capacitor/core";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withViewTransitions()),
+    provideRouter(routes),
     provideTaiga({ apis: { liquidGlass: true } }),
     provideHttpClient(),
     provideStore({

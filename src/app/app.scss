@@ -1,5 +1,6 @@
 :host {
-  --app-top-chrome-space: 8rem;
+  --app-header-lift: 1rem;
+  --app-top-chrome-space: calc(8rem - var(--app-header-lift));
   --app-bottom-chrome-space: 6rem;
 
   display: block;
