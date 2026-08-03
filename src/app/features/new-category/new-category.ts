@@ -58,6 +58,7 @@ import {
   selectCategoryById,
   selectCategoryLoading,
 } from "../../state/categories/categories.selector";
+import { AmountPipe } from "../../shared/pipes/amount-pipe";
 
 @Component({
   selector: "app-new-category",
@@ -77,6 +78,7 @@ import {
     TuiLoader,
     TuiAccordionComponent,
     TuiAccordion,
+    AmountPipe,
   ],
   templateUrl: "./new-category.html",
   styleUrl: "./new-category.scss",
