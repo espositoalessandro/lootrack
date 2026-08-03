@@ -10,13 +10,10 @@
       </main>
     </tui-loader>
 
-    <app-floating-header
-      class="app-header"
-      (toggleDarkMode)="toggleDarkMode()"
-    />
+    <app-floating-header (toggleDarkMode)="toggleDarkMode()" />
 
     <router-outlet name="sheet" />
 
-    <app-floating-footer class="app-footer" />
+    <app-floating-footer />
   </div>
 </tui-root>
