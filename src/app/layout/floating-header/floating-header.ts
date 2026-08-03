@@ -22,6 +22,7 @@ import {
 import { TuiAppBar } from "@taiga-ui/layout";
 import { TuiPlatform } from "@taiga-ui/cdk";
 import { TranslocoPipe } from "@jsverse/transloco";
+import { BUILD_INFO } from "../../core/generated/build-info";
 
 interface HeaderConfig {
   readonly title: string;
@@ -59,6 +60,7 @@ export class FloatingHeader {
   protected readonly header = signal<HeaderConfig>(DEFAULT_HEADER);
   protected readonly menuSettingsOpen = signal(false);
   protected readonly darkMode = inject(TUI_DARK_MODE);
+  protected readonly buildInfo = BUILD_INFO;
 
   protected readonly toggleDarkMode = output();
   constructor() {
