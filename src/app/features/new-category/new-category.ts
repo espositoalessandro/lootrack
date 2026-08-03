@@ -26,7 +26,11 @@ import {
   TuiTitle,
 } from "@taiga-ui/core";
 import { TuiSheetDialog, TuiSheetDialogOptions } from "@taiga-ui/addon-mobile";
-import { TuiSegmented } from "@taiga-ui/kit";
+import {
+  TuiAccordion,
+  TuiAccordionComponent,
+  TuiSegmented,
+} from "@taiga-ui/kit";
 import { TuiFloatingContainer } from "@taiga-ui/layout";
 import { filter, startWith, take } from "rxjs";
 
@@ -37,7 +41,6 @@ import type {
   UpdateCategory,
 } from "../../data/models";
 import { TranslocoPipe } from "@jsverse/transloco";
-import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { Store } from "@ngrx/store";
 import { Actions, ofType } from "@ngrx/effects";
 import {
@@ -71,8 +74,9 @@ import {
     TuiTextfield,
     TuiTitle,
     TranslocoPipe,
-    AmountPipe,
     TuiLoader,
+    TuiAccordionComponent,
+    TuiAccordion,
   ],
   templateUrl: "./new-category.html",
   styleUrl: "./new-category.scss",
@@ -91,7 +95,6 @@ export class NewCategory implements OnInit {
   protected readonly submitLabelKey = this.isEditMode
     ? "newCategory.save"
     : "newCategory.create";
-  protected readonly transactionsExpanded = signal(false);
   private readonly initialType: TransactionType =
     this.route.snapshot.queryParamMap.get("type") === "income"
       ? "income"
@@ -275,14 +278,6 @@ export class NewCategory implements OnInit {
         },
       },
     ]);
-  }
-
-  protected openTransactionList(): void {
-    this.transactionsExpanded.set(true);
-  }
-
-  protected toggleTransactionList(): void {
-    this.transactionsExpanded.update((expanded) => !expanded);
   }
 
   protected deselectAll(): void {

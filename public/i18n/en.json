@@ -35,7 +35,7 @@
     "namePlaceholder": "e.g. Food & groceries",
     "expense": "Expense",
     "income": "Income",
-    "assignmentTitle": "Assign uncategorized transactions",
+    "assignmentTitle": "Add transactions",
     "assignmentDescriptionExpense": "Optional — select existing expense transactions without a category",
     "assignmentDescriptionIncome": "Optional — select existing income transactions without a category",
     "searchPlaceholder": "Search transactions",
