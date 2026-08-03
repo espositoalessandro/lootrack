@@ -9,6 +9,8 @@
     "test": "ng test",
     "test:ci": "ng test --no-watch",
     "lint": "ng lint",
+    "prestart": "npm run generate:build-info",
+    "prebuild": "npm run generate:build-info",
     "generate:build-info": "node scripts/generate-build-info.mjs"
   },
   "private": true,

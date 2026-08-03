@@ -29,4 +29,4 @@ yarn-error.log*
 # Ide
 /.idea
 
-src/app/core/generated/build-info.ts
+src/app/core/generated/*
