@@ -20,6 +20,7 @@ import { CategoriesEffects } from "./state/categories/categories.effects";
 import { provideStoreDevtools } from "@ngrx/store-devtools";
 import { appSettingsReducer } from "./state/app-settings/app-settings.reducer";
 import { AppSettingsEffects } from "./state/app-settings/app-settings.effects";
+import { Capacitor } from "@capacitor/core";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -52,9 +53,13 @@ export const appConfig: ApplicationConfig = {
       },
       loader: TranslocoHttpLoader,
     }),
-    provideServiceWorker("ngsw-worker.js", {
-      enabled: !isDevMode(),
-      registrationStrategy: "registerWhenStable:30000",
-    }),
+    ...(!Capacitor.isNativePlatform()
+      ? [
+          provideServiceWorker("ngsw-worker.js", {
+            enabled: !isDevMode(),
+            registrationStrategy: "registerWhenStable:30000",
+          }),
+        ]
+      : []),
   ],
 };
