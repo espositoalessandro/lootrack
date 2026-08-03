@@ -7,9 +7,9 @@
     <h1 tuiTitle="m" class="pb-4">{{ titleKey | transloco }}</h1>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
     <tui-textfield tuiAnimated>
-      <label for="category-name-input" tuiLabel>
+      <label tuiLabel for="category-name-input">
         {{ "newCategory.name" | transloco }}
       </label>
 
@@ -19,9 +19,7 @@
         formControlName="name"
         type="text"
         autocomplete="off"
-        [placeholder]="
-          'newCategory.namePlaceholder' | transloco
-        "
+        [placeholder]="'newCategory.namePlaceholder' | transloco"
       />
     </tui-textfield>
 
@@ -30,9 +28,9 @@
       class="flex w-full"
       [disabled]="form.controls.type.disabled"
       [style.--tui-background-base]="
-      form.controls.type.value === 'income'
-        ? 'var(--tui-status-positive)'
-        : 'var(--tui-status-negative)'
+        form.controls.type.value === 'income'
+          ? 'var(--tui-status-positive)'
+          : 'var(--tui-status-negative)'
       "
     >
       <label class="flex-1">
@@ -59,100 +57,123 @@
         {{ "newCategory.income" | transloco }}
       </label>
     </tui-segmented>
-    <section>
-      <tui-accordion>
-        <button tuiAccordion class="flex items-center gap-3">
-          <tui-icon icon="@tui.list" />
-          <span> {{ "newCategory.assignmentTitle" | transloco }} </span>
-        </button>
-        <tui-expand>
-          <div class="flex flex-col gap-4">
-            <div class="assignment-status">
-              <div class="assignment-status__selection">
-                <span>
-                  {{ "newCategory.selectedCount" | transloco : { count:
-                  selectedTransactionIds().length } }}
-                </span>
 
-                <span aria-hidden="true">/</span>
+    <tui-accordion class="w-full">
+      <button tuiAccordion type="button" class="flex w-full items-center gap-3">
+        <tui-icon icon="@tui.list" />
 
-                <button
-                  type="button"
-                  class="deselect-button"
-                  [disabled]="selectedTransactionIds().length === 0"
-                  (click)="deselectAll()"
-                >
-                  {{ "buttons.deselectAll" | transloco }}
-                </button>
-              </div>
+        <span> {{ "newCategory.assignmentTitle" | transloco }} </span>
+      </button>
 
-              <strong class="assignment-status__total">
-                {{ "newCategory.total" | transloco }}: {{ selectedTotalInCents()
-                | amount | currency: "EUR" }}
-              </strong>
+      <tui-expand>
+        <div class="flex flex-col gap-4">
+          <div
+            class="flex min-h-6 flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm text-(--tui-text-secondary)"
+          >
+            <div class="flex min-w-0 items-center gap-1.5">
+              <span>
+                {{ "newCategory.selectedCount" | transloco : { count:
+                selectedTransactionIds().length, } }}
+              </span>
+
+              <span aria-hidden="true">/</span>
+
+              <button
+                type="button"
+                class="border-0 bg-transparent p-0 font-[inherit] text-(--tui-text-action) hover:underline disabled:cursor-default disabled:no-underline"
+                [disabled]="selectedTransactionIds().length === 0"
+                (click)="deselectAll()"
+              >
+                {{ "buttons.deselectAll" | transloco }}
+              </button>
             </div>
-            <tui-textfield tuiAnimated>
-              <tui-icon icon="@tui.search" />
-              <input
-                tuiInput
-                formControlName="search"
-                type="search"
-                autocomplete="off"
-                [placeholder]="'newCategory.searchPlaceholder' | transloco"
-              />
-            </tui-textfield>
-            <div class="transaction-results__content">
-              @if (transactionsLoading()){
-              <tui-loader [loading]="true" />
-              } @else { @if (filteredTransactions().length) {
-              <div class="transaction-list">
-                @for ( transaction of filteredTransactions(); track
-                transaction.id ) {
-                <label
-                  class="transaction-row"
-                  [attr.data-type]="transaction.type"
-                >
-                  <input
-                    type="checkbox"
-                    [checked]="isSelected(transaction.id)"
-                    (change)="
-                      toggleTransaction(transaction.id)
-                    "
-                  />
 
-                  <span class="transaction-row__date">
-                    {{ transaction.occurredOn.slice(8, 10) }}/{{
-                    transaction.occurredOn.slice(5, 7) }}
-                  </span>
-
-                  <strong class="min-w-0 flex-1 truncate">
-                    {{ transaction.description }}
-                  </strong>
-
-                  <strong class="transaction-row__amount"
-                    >{{ transaction.amountInCents | amount | currency: "EUR" }}
-                  </strong>
-                </label>
-                }
-              </div>
-              } @else {
-              <p class="empty-results">
-                {{ (form.controls.type.value === "expense" ?
-                "newCategory.noResultsExpense" : "newCategory.noResultsIncome")
-                | transloco }}
-              </p>
-              } }
-            </div>
+            <strong class="shrink-0 text-(--tui-text-primary)">
+              {{ "newCategory.total" | transloco }}: {{ selectedTotalInCents() |
+              amount | currency: "EUR" }}
+            </strong>
           </div>
-        </tui-expand>
-      </tui-accordion>
-    </section>
 
-    <footer tuiFloatingContainer class="footer">
+          <tui-textfield tuiAnimated>
+            <tui-icon icon="@tui.search" />
+
+            <input
+              tuiInput
+              formControlName="search"
+              type="search"
+              autocomplete="off"
+              [placeholder]="
+                'newCategory.searchPlaceholder' | transloco
+              "
+            />
+          </tui-textfield>
+
+          @if (transactionsLoading()) {
+          <div class="flex h-60 items-center justify-center">
+            <tui-loader [loading]="true" />
+          </div>
+          } @else if (filteredTransactions().length) {
+          <div
+            class="h-60 overflow-y-auto overscroll-contain rounded-(--tui-radius-l) border border-(--tui-border-normal)"
+          >
+            @for ( transaction of filteredTransactions(); track transaction.id )
+            {
+            <label
+              class="flex min-h-15 cursor-pointer items-center gap-3 border-(--tui-border-normal) px-4 py-3 last:border-b-0"
+            >
+              <input
+                type="checkbox"
+                class="h-5 w-5 shrink-0"
+                [checked]="isSelected(transaction.id)"
+                [style.accent-color]="
+                      transaction.type === 'income'
+                        ? 'var(--tui-status-positive)'
+                        : 'var(--tui-status-negative)'
+                    "
+                (change)="toggleTransaction(transaction.id)"
+              />
+
+              <span class="shrink-0 text-sm text-(--tui-text-secondary)">
+                {{ transaction.occurredOn.slice(8, 10) }}/{{
+                transaction.occurredOn.slice(5, 7) }}
+              </span>
+
+              <strong class="min-w-0 flex-1 truncate">
+                {{ transaction.description }}
+              </strong>
+
+              <strong
+                class="shrink-0"
+                [style.color]="
+                      transaction.type === 'income'
+                        ? 'var(--tui-status-positive)'
+                        : 'var(--tui-status-negative)'
+                    "
+              >
+                {{ transaction.amountInCents | amount | currency: "EUR" }}
+              </strong>
+            </label>
+            }
+          </div>
+          } @else {
+          <p
+            class="m-0 flex h-60 items-center justify-center px-4 text-center text-(--tui-text-secondary)"
+          >
+            {{ (form.controls.type.value === "expense" ?
+            "newCategory.noResultsExpense" : "newCategory.noResultsIncome" ) |
+            transloco }}
+          </p>
+          }
+        </div>
+      </tui-expand>
+    </tui-accordion>
+
+    <footer tuiFloatingContainer>
       <button
-        size="m"
         tuiButton
         type="submit"
+        size="m"
+        class="w-full"
         [disabled]="form.invalid || categoriesLoading()"
       >
         @if (categoriesLoading()) {
