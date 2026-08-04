@@ -8,6 +8,19 @@ export interface AppSettings {
 
 export type AppSettingsPatch = Partial<Omit<AppSettings, "id">>;
 
+export type SyncEntityType = "transaction" | "category" | "settings";
+
+export type SyncOperation = "upsert" | "delete";
+
+export interface Mutation {
+  mutationId: string;
+  entityType: SyncEntityType;
+  entityId: string;
+  operation: SyncOperation;
+  payloadJson: string;
+  createdAt: string;
+}
+
 export type TransactionType = "expense" | "income";
 
 export interface Transaction {

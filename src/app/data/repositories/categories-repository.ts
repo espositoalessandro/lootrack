@@ -4,6 +4,7 @@ import {
   AddCategory,
   Category,
   CategoryMutationResult,
+  Mutation,
   Transaction,
   UpdateCategory,
 } from "../models";
@@ -34,6 +35,7 @@ export class CategoriesRepository {
         "rw",
         lootrackDb.categories,
         lootrackDb.transactions,
+        lootrackDb.mutations,
         async () => {
           const categories = await lootrackDb.categories.toArray();
           const existing = categories.find(
@@ -72,9 +74,32 @@ export class CategoriesRepository {
 
           await lootrackDb.categories.add(category);
 
+          const mutations: Mutation[] = [
+            {
+              mutationId: crypto.randomUUID(),
+              entityType: "category",
+              entityId: category.id,
+              operation: "upsert",
+              payloadJson: JSON.stringify(category),
+              createdAt: now,
+            },
+          ];
+
           if (updatedTransactions.length > 0) {
             await lootrackDb.transactions.bulkPut(updatedTransactions);
+            updatedTransactions.forEach((transaction) => {
+              mutations.push({
+                mutationId: crypto.randomUUID(),
+                entityType: "transaction",
+                entityId: transaction.id,
+                operation: "upsert",
+                payloadJson: JSON.stringify(transaction),
+                createdAt: now,
+              });
+            });
           }
+          await lootrackDb.mutations.bulkPut(mutations);
+
           return { category, transactions: updatedTransactions };
         },
       ),
@@ -86,6 +111,7 @@ export class CategoriesRepository {
         "rw",
         lootrackDb.categories,
         lootrackDb.transactions,
+        lootrackDb.mutations,
         async () => {
           const category = await lootrackDb.categories.get(id);
 
@@ -109,7 +135,14 @@ export class CategoriesRepository {
             deletedAt: now,
             updatedAt: now,
           });
-
+          await lootrackDb.mutations.add({
+            mutationId: crypto.randomUUID(),
+            entityType: "category",
+            entityId: id,
+            operation: "delete",
+            payloadJson: JSON.stringify(category),
+            createdAt: now,
+          });
           return id;
         },
       ),
@@ -186,10 +219,32 @@ export class CategoriesRepository {
           );
 
           await lootrackDb.categories.put(updatedCategory);
+          const mutations: Mutation[] = [
+            {
+              mutationId: crypto.randomUUID(),
+              entityType: "category",
+              entityId: updatedCategory.id,
+              operation: "upsert",
+              payloadJson: JSON.stringify(updatedCategory),
+              createdAt: now,
+            },
+          ];
 
           if (updatedTransactions.length > 0) {
             await lootrackDb.transactions.bulkPut(updatedTransactions);
+            updatedTransactions.forEach((transaction) => {
+              mutations.push({
+                mutationId: crypto.randomUUID(),
+                entityType: "transaction",
+                entityId: transaction.id,
+                operation: "upsert",
+                payloadJson: JSON.stringify(transaction),
+                createdAt: now,
+              });
+            });
           }
+
+          await lootrackDb.mutations.bulkAdd(mutations);
 
           return {
             category: updatedCategory,

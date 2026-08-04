@@ -30,11 +30,13 @@ export class TransactionsRepository {
         "rw",
         lootrackDb.categories,
         lootrackDb.transactions,
+        lootrackDb.mutations,
         async () => {
           const categoryId = this.resolveCategoryId(input.category);
 
           await this.validateCategoryReference(categoryId, input.type);
 
+          const now = new Date().toISOString();
           const transaction: Transaction = {
             id: crypto.randomUUID(),
             type: input.type,
@@ -42,13 +44,20 @@ export class TransactionsRepository {
             description: input.description,
             occurredOn: input.occurredOn,
             categoryId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            createdAt: now,
+            updatedAt: now,
             deletedAt: null,
           };
 
           await lootrackDb.transactions.add(transaction);
-
+          await lootrackDb.mutations.add({
+            mutationId: crypto.randomUUID(),
+            entityType: "transaction",
+            entityId: transaction.id,
+            operation: "upsert",
+            payloadJson: JSON.stringify(transaction),
+            createdAt: now,
+          });
           return transaction;
         },
       ),
@@ -56,23 +65,39 @@ export class TransactionsRepository {
   }
 
   remove(id: string): Observable<string> {
-    return defer(async () => {
-      const existing = await lootrackDb.transactions.get(id);
+    return defer(() =>
+      lootrackDb.transaction(
+        "rw",
+        lootrackDb.transactions,
+        lootrackDb.mutations,
+        async () => {
+          const existing = await lootrackDb.transactions.get(id);
 
-      if (!existing || existing.deletedAt !== null) {
-        throw new Error("Transaction not found");
-      }
+          if (!existing || existing.deletedAt !== null) {
+            throw new Error("Transaction not found");
+          }
 
-      const deletedTransaction: Transaction = {
-        ...existing,
-        deletedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+          const now = new Date().toISOString();
+          const deletedTransaction: Transaction = {
+            ...existing,
+            deletedAt: now,
+            updatedAt: now,
+          };
 
-      await lootrackDb.transactions.put(deletedTransaction);
+          await lootrackDb.transactions.put(deletedTransaction);
+          await lootrackDb.mutations.add({
+            mutationId: crypto.randomUUID(),
+            entityType: "transaction",
+            entityId: id,
+            operation: "delete",
+            payloadJson: JSON.stringify(deletedTransaction),
+            createdAt: now,
+          });
 
-      return deletedTransaction.id;
-    });
+          return deletedTransaction.id;
+        },
+      ),
+    );
   }
 
   update(id: string, changes: AddTransaction): Observable<Transaction> {
@@ -81,6 +106,7 @@ export class TransactionsRepository {
         "rw",
         lootrackDb.categories,
         lootrackDb.transactions,
+        lootrackDb.mutations,
         async () => {
           const existing = await lootrackDb.transactions.get(id);
 
@@ -90,7 +116,7 @@ export class TransactionsRepository {
 
           const categoryId = this.resolveCategoryId(changes.category);
           await this.validateCategoryReference(categoryId, changes.type);
-
+          const now = new Date().toISOString();
           const updatedTransaction: Transaction = {
             ...existing,
             type: changes.type,
@@ -98,10 +124,18 @@ export class TransactionsRepository {
             description: changes.description,
             occurredOn: changes.occurredOn,
             categoryId,
-            updatedAt: new Date().toISOString(),
+            updatedAt: now,
           };
 
           await lootrackDb.transactions.put(updatedTransaction);
+          await lootrackDb.mutations.add({
+            mutationId: crypto.randomUUID(),
+            entityType: "transaction",
+            entityId: id,
+            operation: "upsert",
+            payloadJson: JSON.stringify(updatedTransaction),
+            createdAt: now,
+          });
 
           return updatedTransaction;
         },
