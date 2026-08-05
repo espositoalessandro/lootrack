@@ -36,6 +36,8 @@ interface MockTransaction {
   description: string;
   categoryName: string | null;
   day: number;
+  revision: null;
+  lastMutationId: null;
 }
 
 const MOCK_TRANSACTIONS = [
@@ -46,6 +48,8 @@ const MOCK_TRANSACTIONS = [
     description: "Monthly salary",
     categoryName: null,
     day: 1,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000002",
@@ -54,6 +58,8 @@ const MOCK_TRANSACTIONS = [
     description: "Weekly groceries",
     categoryName: null,
     day: 3,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000003",
@@ -62,6 +68,8 @@ const MOCK_TRANSACTIONS = [
     description: "Internet bill",
     categoryName: "Bills",
     day: 4,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000004",
@@ -70,6 +78,8 @@ const MOCK_TRANSACTIONS = [
     description: "Dog kindergarten",
     categoryName: null,
     day: 5,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000005",
@@ -78,6 +88,8 @@ const MOCK_TRANSACTIONS = [
     description: "Dinner out",
     categoryName: "Going out",
     day: 7,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000006",
@@ -86,6 +98,8 @@ const MOCK_TRANSACTIONS = [
     description: "Pharmacy",
     categoryName: "Health",
     day: 9,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000007",
@@ -94,6 +108,8 @@ const MOCK_TRANSACTIONS = [
     description: "Train tickets",
     categoryName: "Travel",
     day: 11,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000008",
@@ -102,6 +118,8 @@ const MOCK_TRANSACTIONS = [
     description: "Home supplies",
     categoryName: "Home",
     day: 12,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000009",
@@ -110,6 +128,8 @@ const MOCK_TRANSACTIONS = [
     description: "Software subscription",
     categoryName: "Subscriptions",
     day: 14,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000010",
@@ -118,6 +138,8 @@ const MOCK_TRANSACTIONS = [
     description: "ETF contribution",
     categoryName: "Investments",
     day: 16,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000011",
@@ -126,6 +148,8 @@ const MOCK_TRANSACTIONS = [
     description: "New jacket",
     categoryName: "Clothes",
     day: 18,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000012",
@@ -134,6 +158,8 @@ const MOCK_TRANSACTIONS = [
     description: "Birthday gift",
     categoryName: null,
     day: 20,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000013",
@@ -142,6 +168,8 @@ const MOCK_TRANSACTIONS = [
     description: "Birthday gift1",
     categoryName: null,
     day: 21,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000014",
@@ -150,6 +178,8 @@ const MOCK_TRANSACTIONS = [
     description: "Birthday gift2",
     categoryName: null,
     day: 22,
+    revision: null,
+    lastMutationId: null,
   },
   {
     id: "10000000-0000-4000-8000-000000000015",
@@ -158,6 +188,8 @@ const MOCK_TRANSACTIONS = [
     description: "Birthday gift3",
     categoryName: null,
     day: 23,
+    revision: null,
+    lastMutationId: null,
   },
 ] as const satisfies readonly MockTransaction[];
 
@@ -199,6 +231,8 @@ export class DevDatabaseSeeder {
       createdAt: timestamp,
       updatedAt: timestamp,
       deletedAt: null,
+      revision: null,
+      lastMutationId: null,
     }));
 
     if (missingCategories.length > 0) {

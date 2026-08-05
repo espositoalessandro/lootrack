@@ -117,7 +117,7 @@ export const transactionsReducer = createReducer(
   on(addCategorySuccess, updateCategorySuccess, (state, { transactions }) => ({
     ...state,
     items:
-      transactions.length > 0
+      transactions && transactions.length > 0
         ? state.items.map((item) => {
             const updatedTransaction = transactions.find(
               (transaction) => transaction.id === item.id,

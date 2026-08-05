@@ -35,7 +35,7 @@ export const addCategory = createAction(
 
 export const addCategorySuccess = createAction(
   "[Categories Database] Add Succeeded",
-  props<{ category: Category; transactions: Transaction[] }>(),
+  props<{ category: Category; transactions?: Transaction[] }>(),
 );
 
 export const addCategoryFailure = createAction(
@@ -74,7 +74,7 @@ export const updateCategorySuccess = createAction(
   "[Categories Database] Update Succeeded",
   props<{
     updatedCategory: Category;
-    transactions: Transaction[];
+    transactions?: Transaction[];
   }>(),
 );
 
