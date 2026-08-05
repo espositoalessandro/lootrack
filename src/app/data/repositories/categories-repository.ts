@@ -129,10 +129,13 @@ export class CategoriesRepository {
           }
 
           const now = new Date().toISOString();
-          const deletedCategory: Category = {
-            ...category,
-            deletedAt: now,
+          const deletedCategory: Omit<Category, keyof SyncMetadata> = {
+            id: category.id,
+            name: category.name,
+            type: category.type,
+            createdAt: category.createdAt,
             updatedAt: now,
+            deletedAt: now,
           };
 
           const { entity } = await firstValueFrom(

@@ -63,6 +63,12 @@ function createMutation<T extends Entity>(
   providedIn: "root",
 })
 export class MutationsRepository {
+  getPending(): Observable<SyncMutation[]> {
+    return defer(async () => {
+      return await lootrackDb.mutations.orderBy("localSequence").toArray();
+    });
+  }
+
   add<T extends Entity>(
     payload: CreateMutationPayload<T>,
   ): Observable<MutationResult<T>> {

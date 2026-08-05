@@ -48,14 +48,6 @@ interface SyncMetadata {
 
 * [x] Add synchronization metadata to `Category`.
 
-* [x] Decide whether app settings should be synchronized.
-
-* [x] Keep device-specific settings local where appropriate.
-
-synchronized settings:
-
-* [x] Currency
-
 ---
 
 ## Mutation model
@@ -65,8 +57,7 @@ synchronized settings:
 ```ts
 type SyncEntityType =
   | "transaction"
-  | "category"
-  | "settings";
+  | "category";
 ```
 
 * [x] Create the synchronization operation type.
@@ -160,139 +151,100 @@ interface SyncConflict {
 
 ## Mutation factory
 
-* [ ] Create a central mutation factory.
+* [x] Generate one `mutationId` per mutation.
 
-```ts
-function createMutation<T extends SyncMetadata>(
-  entityType: SyncEntityType,
-  operation: SyncOperation,
-  previousEntity: T | null,
-  nextEntity: Omit<T, keyof SyncMetadata>,
-  timestamp: string,
-): {
-  entity: T;
-  mutation: OutboxMutation;
-}
-```
+* [x] Store the previous `revision` as `baseRevision`.
 
-* [ ] Generate one `mutationId` per mutation.
+* [x] Store the previous `lastMutationId` as `baseMutationId`.
 
-* [ ] Store the previous `revision` as `baseRevision`.
+* [x] Increment the entity revision.
 
-* [ ] Store the previous `lastMutationId` as `baseMutationId`.
+* [x] Set the entity `lastMutationId` to the new mutation ID.
 
-* [ ] Increment the entity revision.
+* [x] Serialize the final entity into `payloadJson`.
 
-* [ ] Set the entity `lastMutationId` to the new mutation ID.
-
-* [ ] Serialize the final entity into `payloadJson`.
-
-* [ ] Use the same timestamp for the entity and its mutation.
-
-* [ ] Rename the existing generic `SyncMutation` type to `OutboxMutation` or `SyncMutation`.
+* [x] Use the same timestamp for the entity and its mutation.
 
 ---
 
 ## Transaction repository integration
 
-* [ ] Update transaction creation.
+* [x] Update transaction creation.
 
 Inside one Dexie transaction:
 
-* [ ] Generate the mutation ID.
+* [x] Generate the mutation ID.
 
-* [ ] Create the transaction with revision `1`.
+* [x] Create the transaction with revision `1`.
 
-* [ ] Set `lastMutationId`.
+* [x] Set `lastMutationId`.
 
-* [ ] Save the transaction.
+* [x] Save the transaction.
 
-* [ ] Add the outbox mutation.
+* [x] Add the outbox mutation.
 
-* [ ] Update transaction editing.
-
-Inside one Dexie transaction:
-
-* [ ] Read the existing transaction.
-
-* [ ] Save its current revision as the mutation base.
-
-* [ ] Save its current `lastMutationId` as the mutation base ID.
-
-* [ ] Increment the revision.
-
-* [ ] Update the transaction fields.
-
-* [ ] Save the transaction.
-
-* [ ] Add the mutation.
-
-* [ ] Update transaction deletion.
+* [x] Update transaction editing.
 
 Inside one Dexie transaction:
 
-* [ ] Read the current transaction.
-* [ ] Create a complete tombstone.
-* [ ] Set `deletedAt`.
-* [ ] Increment the revision.
-* [ ] Update `lastMutationId`.
-* [ ] Save the tombstone.
-* [ ] Add a delete mutation containing the tombstone payload.
+* [x] Read the existing transaction.
+
+* [x] Save its current revision as the mutation base.
+
+* [x] Save its current `lastMutationId` as the mutation base ID.
+
+* [x] Increment the revision.
+
+* [x] Update the transaction fields.
+
+* [x] Save the transaction.
+
+* [x] Add the mutation.
+
+* [x] Update transaction deletion.
+
+Inside one Dexie transaction:
+
+* [x] Read the current transaction.
+* [x] Create a complete tombstone.
+* [x] Set `deletedAt`.
+* [x] Increment the revision.
+* [x] Update `lastMutationId`.
+* [x] Save the tombstone.
+* [x] Add a delete mutation containing the tombstone payload.
 
 ---
 
 ## Category repository integration
 
-* [ ] Update category creation.
+* [x] Update category creation.
 
-* [ ] Update category editing.
+* [x] Update category editing.
 
-* [ ] Update category deletion.
+* [x] Update category deletion.
 
-* [ ] Ensure category deletion serializes the updated tombstone, not the old entity.
+* [x] Ensure category deletion serializes the updated tombstone, not the old entity.
 
-* [ ] Add `lootrackDb.mutations` to every Dexie transaction that writes mutations.
+* [x] Add `lootrackDb.mutations` to every Dexie transaction that writes mutations.
 
-* [ ] Generate transaction mutations when category creation assigns existing transactions.
+* [x] Generate transaction mutations when category creation assigns existing transactions.
 
-* [ ] Generate transaction mutations when category editing assigns existing transactions.
+* [x] Generate transaction mutations when category editing assigns existing transactions.
 
-* [ ] Preserve the exact order in which related mutations are added.
+* [x] Preserve the exact order in which related mutations are added.
 
-Example:
-
-```text
-1. Category created
-2. Transaction assigned to category
-3. Another transaction assigned to category
-```
-
-* [ ] Commit the category, affected transactions, and all mutations atomically.
+* [x] Commit the category, affected transactions, and all mutations atomically.
 
 ---
 
 ## Mutations repository
 
-* [ ] Rename `getAll()` to `getPending()`.
-
-* [ ] Return `OutboxMutation[]`, never `null`.
-
-```ts
-getPending(): Observable<OutboxMutation[]>
-```
-
-* [ ] Read mutations ordered by `localSequence`.
+* [x] Read mutations ordered by `localSequence`.
 
 ```ts
 lootrackDb.mutations
   .orderBy("localSequence")
   .toArray();
-```
-
-* [ ] Add batch retrieval.
-
-```ts
-getPendingBatch(limit: number)
 ```
 
 * [ ] Add acknowledgement deletion by mutation ID.
@@ -306,36 +258,6 @@ removeAcknowledged(mutationIds: readonly string[])
 * [ ] Do not clear the entire outbox after sync.
 
 * [ ] Preserve mutations created while synchronization is already running.
-
----
-
-## Local tests
-
-* [ ] Test transaction creation plus mutation creation.
-
-* [ ] Test transaction update plus mutation creation.
-
-* [ ] Test transaction deletion plus mutation creation.
-
-* [ ] Test category creation plus mutation creation.
-
-* [ ] Test category editing plus mutation creation.
-
-* [ ] Test category deletion plus mutation creation.
-
-* [ ] Test category operations that also modify transactions.
-
-* [ ] Verify entity writes roll back if mutation insertion fails.
-
-* [ ] Verify mutation writes roll back if entity insertion fails.
-
-* [ ] Verify local sequence order.
-
-* [ ] Verify two rapid edits generate two ordered mutations.
-
-* [ ] Verify a delete after an update preserves both operations in order.
-
-* [ ] Verify mutations added during sync are not accidentally acknowledged.
 
 ---
 
