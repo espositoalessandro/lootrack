@@ -1,11 +1,11 @@
 import Dexie, { type EntityTable } from "dexie";
-import { AppSettings, Category, Mutation, Transaction } from "./models";
+import { AppSettings, Category, SyncMutation, Transaction } from "./models";
 
 export class Database extends Dexie {
   transactions!: EntityTable<Transaction, "id">;
   categories!: EntityTable<Category, "id">;
   appSettings!: EntityTable<AppSettings, "id">;
-  mutations!: EntityTable<Mutation, "mutationId">;
+  mutations!: EntityTable<SyncMutation, "localSequence">;
 
   constructor() {
     super("lootrack");
@@ -15,7 +15,8 @@ export class Database extends Dexie {
         "id, type, occurredOn, categoryId, createdAt, updatedAt, deletedAt",
       categories: "id, name, createdAt, updatedAt, deletedAt",
       appSettings: "id",
-      mutations: "mutationId, entityId, createdAt",
+      mutations:
+        "++localSequence, &mutationId, entityType, entityId, createdAt",
     });
   }
 }

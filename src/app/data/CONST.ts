@@ -6,4 +6,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   locale: "en",
   theme: "dark",
   language: "en",
+  lastMutationId: null,
+  revision: null,
 };

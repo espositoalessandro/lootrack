@@ -1,3 +1,27 @@
+export type SyncEntityType = "transaction" | "category" | "settings";
+export type SyncOperation = "upsert" | "delete";
+
+export interface SyncMetadata {
+  revision: number | null;
+  lastMutationId: string | null;
+}
+
+export interface SyncMutation {
+  localSequence?: number;
+  mutationId: string;
+
+  entityType: SyncEntityType;
+  entityId: string;
+  operation: SyncOperation;
+  // expected remote values
+  expectedRevision: number | null;
+  expectedMutationId: string | null;
+  basePayloadJson: string | null;
+
+  payloadJson: string;
+  createdAt: string;
+}
+
 export interface AppSettings {
   id: "app";
   currency: string;
@@ -8,31 +32,21 @@ export interface AppSettings {
 
 export type AppSettingsPatch = Partial<Omit<AppSettings, "id">>;
 
-export type SyncEntityType = "transaction" | "category" | "settings";
-
-export type SyncOperation = "upsert" | "delete";
-
-export interface Mutation {
-  mutationId: string;
-  entityType: SyncEntityType;
-  entityId: string;
-  operation: SyncOperation;
-  payloadJson: string;
-  createdAt: string;
-}
-
 export type TransactionType = "expense" | "income";
 
-export interface Transaction {
+export interface Entity extends SyncMetadata {
   id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Transaction extends Entity {
   type: TransactionType;
   amountInCents: number;
   description: string;
   occurredOn: string;
   categoryId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
 }
 
 export type CategoryAssignment =
@@ -51,14 +65,11 @@ export interface AddTransaction {
   description: string;
   occurredOn: string;
 }
+export type UpdateTransaction = AddTransaction;
 
-export interface Category {
-  id: string;
+export interface Category extends Entity {
   type: TransactionType;
   name: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
 }
 
 export interface AddCategory {
@@ -75,5 +86,5 @@ export interface UpdateCategory {
 
 export interface CategoryMutationResult {
   category: Category;
-  transactions: Transaction[];
+  transactions?: Transaction[];
 }

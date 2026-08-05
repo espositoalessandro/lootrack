@@ -1,10 +1,10 @@
-import { Injectable } from "@angular/core";
-import { defer, Observable } from "rxjs";
+import { inject, Injectable } from "@angular/core";
+import { defer, firstValueFrom, Observable } from "rxjs";
 import {
   AddCategory,
   Category,
   CategoryMutationResult,
-  Mutation,
+  SyncMetadata,
   Transaction,
   UpdateCategory,
 } from "../models";
@@ -16,11 +16,17 @@ import {
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
 } from "../errors";
+import {
+  CreateMutationPayload,
+  MutationsRepository,
+} from "./mutations-repository";
 
 @Injectable({
   providedIn: "root",
 })
 export class CategoriesRepository {
+  private readonly mutationsRepository = inject(MutationsRepository);
+
   getActive(): Observable<Category[]> {
     return defer(() =>
       lootrackDb.categories
@@ -37,6 +43,7 @@ export class CategoriesRepository {
         lootrackDb.transactions,
         lootrackDb.mutations,
         async () => {
+          // 1. check that a category with the same name and type doesn't exist
           const categories = await lootrackDb.categories.toArray();
           const existing = categories.find(
             (category) =>
@@ -53,12 +60,9 @@ export class CategoriesRepository {
             );
           }
 
-          const transactions = await this.getAssignableTransactions(
-            input.transactionIds,
-            input.type,
-          );
+          // 2. create and insert the new category
           const now = new Date().toISOString();
-          const category: Category = {
+          const categoryData: Omit<Category, keyof SyncMetadata> = {
             id: crypto.randomUUID(),
             name: cleanCategoryName(input.name),
             type: input.type,
@@ -66,41 +70,36 @@ export class CategoriesRepository {
             updatedAt: now,
             deletedAt: null,
           };
-          const updatedTransactions = transactions.map((transaction) => ({
-            ...transaction,
-            categoryId: category.id,
-            updatedAt: now,
-          }));
+
+          const { entity: category } = await firstValueFrom(
+            this.mutationsRepository.add({
+              entityType: "category",
+              operation: "upsert",
+              timestamp: now,
+              previousEntity: null,
+              nextEntityData: categoryData,
+            }),
+          );
 
           await lootrackDb.categories.add(category);
 
-          const mutations: Mutation[] = [
-            {
-              mutationId: crypto.randomUUID(),
-              entityType: "category",
-              entityId: category.id,
-              operation: "upsert",
-              payloadJson: JSON.stringify(category),
-              createdAt: now,
-            },
-          ];
+          // 3. edit assigned transactions, if present, with the new category
+          const assignableTransactions = await this.getAssignableTransactions(
+            input.transactionIds,
+            input.type,
+          );
 
-          if (updatedTransactions.length > 0) {
-            await lootrackDb.transactions.bulkPut(updatedTransactions);
-            updatedTransactions.forEach((transaction) => {
-              mutations.push({
-                mutationId: crypto.randomUUID(),
-                entityType: "transaction",
-                entityId: transaction.id,
-                operation: "upsert",
-                payloadJson: JSON.stringify(transaction),
-                createdAt: now,
-              });
-            });
+          if (assignableTransactions.length > 0) {
+            const transactions = await this.addTransactionsMutations(
+              category,
+              assignableTransactions,
+              now,
+            );
+            await lootrackDb.transactions.bulkPut(transactions);
+            return { category, transactions: transactions };
           }
-          await lootrackDb.mutations.bulkPut(mutations);
 
-          return { category, transactions: updatedTransactions };
+          return { category };
         },
       ),
     );
@@ -130,19 +129,23 @@ export class CategoriesRepository {
           }
 
           const now = new Date().toISOString();
-
-          await lootrackDb.categories.update(id, {
+          const deletedCategory: Category = {
+            ...category,
             deletedAt: now,
             updatedAt: now,
-          });
-          await lootrackDb.mutations.add({
-            mutationId: crypto.randomUUID(),
-            entityType: "category",
-            entityId: id,
-            operation: "delete",
-            payloadJson: JSON.stringify(category),
-            createdAt: now,
-          });
+          };
+
+          const { entity } = await firstValueFrom(
+            this.mutationsRepository.add({
+              entityType: "category",
+              operation: "delete",
+              timestamp: now,
+              previousEntity: category,
+              nextEntityData: deletedCategory,
+            }),
+          );
+
+          await lootrackDb.categories.put(entity);
           return id;
         },
       ),
@@ -158,6 +161,7 @@ export class CategoriesRepository {
         "rw",
         lootrackDb.categories,
         lootrackDb.transactions,
+        lootrackDb.mutations,
         async () => {
           const existing = await lootrackDb.categories.get(id);
           if (!existing || existing.deletedAt !== null) {
@@ -196,63 +200,84 @@ export class CategoriesRepository {
             );
           }
 
-          const transactions = await this.getAssignableTransactions(
+          const now = new Date().toISOString();
+
+          const updatedCategory: Omit<Category, keyof SyncMetadata> = {
+            id: existing.id,
+            name: cleanCategoryName(input.name),
+            type: input.type,
+            createdAt: existing.createdAt,
+            updatedAt: now,
+            deletedAt: existing.deletedAt,
+          };
+
+          const { entity: category } = await firstValueFrom(
+            this.mutationsRepository.add({
+              entityType: "category",
+              operation: "upsert",
+              timestamp: now,
+              previousEntity: existing,
+              nextEntityData: updatedCategory,
+            }),
+          );
+
+          await lootrackDb.categories.put(category);
+
+          const assignableTransactions = await this.getAssignableTransactions(
             input.transactionIds,
             input.type,
           );
 
-          const now = new Date().toISOString();
-
-          const updatedCategory: Category = {
-            ...existing,
-            name: cleanCategoryName(input.name),
-            type: input.type,
-            updatedAt: now,
-          };
-
-          const updatedTransactions: Transaction[] = transactions.map(
-            (transaction) => ({
-              ...transaction,
-              categoryId: updatedCategory.id,
-              updatedAt: now,
-            }),
-          );
-
-          await lootrackDb.categories.put(updatedCategory);
-          const mutations: Mutation[] = [
-            {
-              mutationId: crypto.randomUUID(),
-              entityType: "category",
-              entityId: updatedCategory.id,
-              operation: "upsert",
-              payloadJson: JSON.stringify(updatedCategory),
-              createdAt: now,
-            },
-          ];
-
-          if (updatedTransactions.length > 0) {
+          if (assignableTransactions.length > 0) {
+            const updatedTransactions = await this.addTransactionsMutations(
+              category,
+              assignableTransactions,
+              now,
+            );
             await lootrackDb.transactions.bulkPut(updatedTransactions);
-            updatedTransactions.forEach((transaction) => {
-              mutations.push({
-                mutationId: crypto.randomUUID(),
-                entityType: "transaction",
-                entityId: transaction.id,
-                operation: "upsert",
-                payloadJson: JSON.stringify(transaction),
-                createdAt: now,
-              });
-            });
+            return {
+              category,
+              transactions: updatedTransactions,
+            };
           }
 
-          await lootrackDb.mutations.bulkAdd(mutations);
-
-          return {
-            category: updatedCategory,
-            transactions: updatedTransactions,
-          };
+          return { category };
         },
       ),
     );
+  }
+
+  private async addTransactionsMutations(
+    category: Category,
+    transactions: readonly Transaction[],
+    timestamp: string,
+  ): Promise<Transaction[]> {
+    const transactionMutations: CreateMutationPayload<Transaction>[] =
+      transactions.map((transaction) => ({
+        previousEntity: transaction,
+
+        nextEntityData: {
+          id: transaction.id,
+          type: transaction.type,
+          amountInCents: transaction.amountInCents,
+          description: transaction.description,
+          occurredOn: transaction.occurredOn,
+          categoryId: category.id,
+          createdAt: transaction.createdAt,
+          updatedAt: timestamp,
+          deletedAt: transaction.deletedAt,
+        },
+
+        entityType: "transaction",
+        timestamp,
+        operation: "upsert",
+      }));
+
+    const results = await firstValueFrom(
+      this.mutationsRepository.bulkAdd(transactionMutations),
+    );
+
+    return results.map(({ entity }) => entity);
   }
 
   private async getAssignableTransactions(
