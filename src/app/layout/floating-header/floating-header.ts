@@ -23,6 +23,9 @@ import { TuiAppBar } from "@taiga-ui/layout";
 import { TuiPlatform } from "@taiga-ui/cdk";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { BUILD_INFO } from "../../core/generated/build-info";
+import { Store } from "@ngrx/store";
+import { selectSyncConnectionStatus } from "../../state/sync/sync.selector";
+import { connectSync } from "../../state/sync/sync.actions";
 
 interface HeaderConfig {
   readonly title: string;
@@ -55,13 +58,18 @@ const DEFAULT_HEADER: HeaderConfig = {
 export class FloatingHeader {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+  private readonly store = inject(Store);
 
   protected readonly menuOpen = signal(false);
   protected readonly header = signal<HeaderConfig>(DEFAULT_HEADER);
   protected readonly menuSettingsOpen = signal(false);
   protected readonly darkMode = inject(TUI_DARK_MODE);
-  protected readonly buildInfo = BUILD_INFO;
 
+  protected readonly syncStatus = this.store.selectSignal(
+    selectSyncConnectionStatus,
+  );
+
+  protected readonly buildInfo = BUILD_INFO;
   protected readonly toggleDarkMode = output();
   constructor() {
     this.updateHeader();
@@ -93,6 +101,10 @@ export class FloatingHeader {
     }
 
     void this.router.navigateByUrl("/");
+  }
+
+  protected connectSynchronization(): void {
+    this.store.dispatch(connectSync());
   }
 
   private updateHeader(): void {

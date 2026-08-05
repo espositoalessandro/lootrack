@@ -12,7 +12,10 @@
     "openMenu": "Open menu",
     "categories": "Categories",
     "transactions": "Transactions",
-    "settings": "Settings"
+    "settings": "Settings",
+    "syncConnect": "Connect to cloud",
+    "syncConnecting": "Connecting...",
+    "syncConnected": "Connected"
   },
   "newTransaction": {
     "title": "Add transaction",

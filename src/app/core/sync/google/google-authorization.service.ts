@@ -100,20 +100,20 @@ export class GoogleAuthorizationService {
     return this.loadingPromise;
   }
 
-  async getAccessToken(): Promise<string> {
+  getAccessToken(): Promise<string> {
     const cachedToken = this.getCachedAccessToken();
 
     if (cachedToken) {
-      return cachedToken;
+      return Promise.resolve(cachedToken);
     }
-
-    await this.loadLibrary();
 
     const googleWindow = window as GoogleIdentityWindow;
     const oauth2 = googleWindow.google?.accounts?.oauth2;
 
     if (!oauth2) {
-      throw new Error("Google OAuth API is unavailable");
+      return Promise.reject(
+        new Error("Google synchronization is still initializing"),
+      );
     }
 
     return new Promise<string>((resolve, reject) => {
@@ -135,7 +135,6 @@ export class GoogleAuthorizationService {
           }
 
           this.accessToken = response.access_token;
-
           this.expiresAt = Date.now() + (response.expires_in ?? 0) * 1_000;
 
           resolve(response.access_token);

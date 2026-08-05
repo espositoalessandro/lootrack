@@ -55,6 +55,17 @@
       <tui-icon icon="@tui.moon"></tui-icon>
       }
     </button>
+    <button
+      tuiOption
+      type="button"
+      [disabled]="syncStatus() === 'connecting' || syncStatus() === 'connected'"
+      (click)="connectSynchronization()"
+    >
+      @switch (syncStatus()) { @case ('connecting') { {{ 'header.syncConnecting'
+      | transloco }} } @case ('connected') { {{ 'header.syncConnected' |
+      transloco }} } @default { {{ 'header.syncConnect' | transloco }} } }
+    </button>
+
     <div class="flex w-full justify-center">
       Lootrack v{{ buildInfo.version }}
     </div>
