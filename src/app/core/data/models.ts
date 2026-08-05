@@ -122,6 +122,7 @@ export interface SyncExchangeResult {
 
 export interface SyncProvider {
   initialize(): Promise<void>;
+  isConnected(): boolean;
   connect(): Promise<void>;
   exchange(request: SyncExchangeRequest): Promise<SyncExchangeResult>;
   disconnect(): Promise<void>;

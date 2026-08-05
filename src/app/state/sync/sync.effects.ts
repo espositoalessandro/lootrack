@@ -1,20 +1,22 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, defer, exhaustMap, map, of } from "rxjs";
+import { catchError, defer, EMPTY, exhaustMap, map, of } from "rxjs";
 import { SYNC_PROVIDER } from "../../core/data/CONST";
 import {
   connectSync,
   connectSyncFailure,
   connectSyncSuccess,
   synchronize,
-  synchronizeFailure,
+  synchronizeConnectionRequired,
   synchronizeSuccess,
 } from "./sync.actions";
+import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()
 export class SyncEffects {
   private readonly actions$ = inject(Actions);
   private readonly syncProvider = inject(SYNC_PROVIDER);
+  private readonly dialogs = inject(TuiDialogService);
 
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
@@ -43,24 +45,34 @@ export class SyncEffects {
     this.actions$.pipe(
       ofType(synchronize),
 
-      exhaustMap(() =>
-        defer(() => this.syncProvider.connect()).pipe(
-          // Temporary endpoint:
-          // the real exchange pipeline will replace this map.
-          map(() => synchronizeSuccess()),
+      exhaustMap(() => {
+        if (!this.syncProvider.isConnected()) {
+          return of(synchronizeConnectionRequired());
+        }
 
-          catchError((error: unknown) =>
-            of(
-              synchronizeFailure({
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : "Unable to synchronize",
-              }),
-            ),
-          ),
+        // Temporary until exchange() is implemented.
+        return of(synchronizeSuccess());
+      }),
+    ),
+  );
+
+  readonly showConnectionRequired$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(synchronizeConnectionRequired),
+
+        exhaustMap(() =>
+          this.dialogs
+            .open(
+              "Connect synchronization from the Settings menu before syncing.",
+              {
+                label: "Synchronization not connected",
+                size: "s",
+              },
+            )
+            .pipe(catchError(() => EMPTY)),
         ),
       ),
-    ),
+    { dispatch: false },
   );
 }

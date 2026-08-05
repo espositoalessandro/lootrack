@@ -21,3 +21,7 @@ export const synchronizeFailure = createAction(
   "[Sync] Synchronization Failed",
   props<{ error: string }>(),
 );
+
+export const synchronizeConnectionRequired = createAction(
+  "[Sync] Connection Required",
+);

@@ -28,4 +28,8 @@ export class GoogleSheetsSyncProvider implements SyncProvider {
   async disconnect(): Promise<void> {
     this.authorization.clearAccessToken();
   }
+
+  isConnected(): boolean {
+    return this.authorization.hasValidAccessToken();
+  }
 }

@@ -151,6 +151,10 @@ export class GoogleAuthorizationService {
     });
   }
 
+  hasValidAccessToken(): boolean {
+    return this.getCachedAccessToken() !== null;
+  }
+
   private getCachedAccessToken(): string | null {
     const isStillValid =
       this.accessToken && Date.now() < this.expiresAt - TOKEN_EXPIRY_MARGIN_MS;

@@ -4,6 +4,7 @@ import {
   connectSyncFailure,
   connectSyncSuccess,
   synchronize,
+  synchronizeConnectionRequired,
   synchronizeFailure,
   synchronizeSuccess,
 } from "./sync.actions";
@@ -61,5 +62,12 @@ export const syncReducer = createReducer(
     connectionStatus: "disconnected" as const,
     synchronizing: false,
     error,
+  })),
+
+  on(synchronizeConnectionRequired, (state) => ({
+    ...state,
+    connectionStatus: "disconnected" as const,
+    synchronizing: false,
+    error: null,
   })),
 );
