@@ -6,7 +6,12 @@
       [loading]="!!(transactionsLoading$ | async)"
     >
       <main class="app-content">
-        <router-outlet />
+        <tui-pull-to-refresh
+          class="app-refresh"
+          (pulled)="requestSynchronization()"
+        >
+          <router-outlet />
+        </tui-pull-to-refresh>
       </main>
     </tui-loader>
 

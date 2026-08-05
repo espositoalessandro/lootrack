@@ -10,3 +10,14 @@ export const connectSyncFailure = createAction(
   "[Sync Provider] Connect Failed",
   props<{ error: string }>(),
 );
+
+export const synchronize = createAction("[Sync] Synchronization Requested");
+
+export const synchronizeSuccess = createAction(
+  "[Sync] Synchronization Succeeded",
+);
+
+export const synchronizeFailure = createAction(
+  "[Sync] Synchronization Failed",
+  props<{ error: string }>(),
+);

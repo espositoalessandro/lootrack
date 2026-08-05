@@ -15,6 +15,8 @@ import {
   updateAppSettings,
 } from "./state/app-settings/app-settings.actions";
 import { selectAppSettings } from "./state/app-settings/app-settings.selector";
+import { synchronize } from "./state/sync/sync.actions";
+import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
 
 @Component({
   selector: "app-root",
@@ -25,6 +27,7 @@ import { selectAppSettings } from "./state/app-settings/app-settings.selector";
     AsyncPipe,
     TuiLoader,
     FloatingHeader,
+    TuiPullToRefresh,
   ],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
@@ -58,6 +61,10 @@ export class App implements OnInit {
         newSettings: { theme },
       }),
     );
+  }
+
+  protected requestSynchronization(): void {
+    this.store.dispatch(synchronize());
   }
 
   private async initializeApp(): Promise<void> {

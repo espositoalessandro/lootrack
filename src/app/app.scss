@@ -2,6 +2,14 @@
   --app-top-chrome-space: 5rem;
   --app-bottom-chrome-space: 6rem;
 
+  --app-top-offset: calc(
+    var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
+  );
+
+  --app-bottom-offset: calc(
+    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
+  );
+
   display: block;
   width: 100%;
   height: 100%;
@@ -12,21 +20,18 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
 
   padding-block-start: calc(
     var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
   );
 
-  padding-block-end: calc(
-    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
-  );
+  scroll-padding-block-start: var(--app-top-offset);
+  scroll-padding-block-end: var(--app-bottom-offset);
+}
 
-  scroll-padding-block-start: calc(
-    var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
-  );
-
-  scroll-padding-block-end: calc(
-    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
-  );
+.app-refresh {
+  position: relative;
+  display: block;
+  min-block-size: 100%;
 }

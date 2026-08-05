@@ -15,7 +15,7 @@ import { provideTransloco } from "@jsverse/transloco";
 import { provideStore } from "@ngrx/store";
 import { transactionsReducer } from "./state/transactions/transactions.reducer";
 import { TransactionsEffects } from "./state/transactions/transactions.effects";
-import { provideEffects } from "@ngrx/effects";
+import { Actions, ofType, provideEffects } from "@ngrx/effects";
 import { provideServiceWorker } from "@angular/service-worker";
 import { categoriesReducer } from "./state/categories/categories.reducer";
 import { CategoriesEffects } from "./state/categories/categories.effects";
@@ -26,6 +26,11 @@ import { SYNC_PROVIDER } from "./core/data/CONST";
 import { syncReducer } from "./state/sync/sync.reducer";
 import { GoogleSheetsSyncProvider } from "./core/sync/google/google-sheets-sync.provider";
 import { SyncEffects } from "./state/sync/sync.effects";
+import { TUI_PULL_TO_REFRESH_LOADED } from "@taiga-ui/addon-mobile";
+import {
+  synchronizeFailure,
+  synchronizeSuccess,
+} from "./state/sync/sync.actions";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -78,5 +83,11 @@ export const appConfig: ApplicationConfig = {
         // Sync is optional. Failure must not prevent the local app from starting.
       });
     }),
+    {
+      provide: TUI_PULL_TO_REFRESH_LOADED,
+      useFactory: (actions$: Actions) =>
+        actions$.pipe(ofType(synchronizeSuccess, synchronizeFailure)),
+      deps: [Actions],
+    },
   ],
 };

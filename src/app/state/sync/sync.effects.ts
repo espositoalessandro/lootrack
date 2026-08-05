@@ -6,6 +6,9 @@ import {
   connectSync,
   connectSyncFailure,
   connectSyncSuccess,
+  synchronize,
+  synchronizeFailure,
+  synchronizeSuccess,
 } from "./sync.actions";
 
 @Injectable()
@@ -28,6 +31,31 @@ export class SyncEffects {
                   error instanceof Error
                     ? error.message
                     : "Unable to connect to synchronization provider",
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly synchronize$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(synchronize),
+
+      exhaustMap(() =>
+        defer(() => this.syncProvider.connect()).pipe(
+          // Temporary endpoint:
+          // the real exchange pipeline will replace this map.
+          map(() => synchronizeSuccess()),
+
+          catchError((error: unknown) =>
+            of(
+              synchronizeFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to synchronize",
               }),
             ),
           ),

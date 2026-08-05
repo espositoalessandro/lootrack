@@ -145,7 +145,9 @@ export class GoogleAuthorizationService {
         },
       });
 
-      tokenClient.requestAccessToken();
+      tokenClient.requestAccessToken({
+        prompt: "",
+      });
     });
   }
 
