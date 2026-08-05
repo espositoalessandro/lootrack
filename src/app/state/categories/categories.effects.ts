@@ -23,13 +23,13 @@ import {
   updateCategory,
   updateCategorySuccess,
 } from "./categories.actions";
-import { CategoriesRepository } from "../../data/repositories/categories-repository";
+import { CategoriesRepository } from "../../core/data/repositories/categories-repository";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-} from "../../data/errors";
+} from "../../core/data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
 
 @Injectable()

@@ -39,7 +39,7 @@ import type {
   Category,
   TransactionType,
   UpdateCategory,
-} from "../../data/models";
+} from "../../core/data/models";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { Store } from "@ngrx/store";
 import { Actions, ofType } from "@ngrx/effects";

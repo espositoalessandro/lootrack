@@ -10,7 +10,7 @@ import {
   switchMap,
 } from "rxjs";
 
-import { TransactionsRepository } from "../../data/repositories/transactions-repository";
+import { TransactionsRepository } from "../../core/data/repositories/transactions-repository";
 import {
   addTransaction,
   addTransactionSuccess,

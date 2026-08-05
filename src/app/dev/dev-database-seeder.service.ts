@@ -1,13 +1,13 @@
 import { Injectable } from "@angular/core";
 
-import { lootrackDb } from "../data/database";
+import { lootrackDb } from "../core/data/database";
 import {
   AddCategory,
   Category,
   Transaction,
   TransactionType,
-} from "../data/models";
-import { categoryKey } from "../data/category-name";
+} from "../core/data/models";
+import { categoryKey } from "../core/data/category-name";
 
 const MOCK_CATEGORIES = [
   { name: "Bills", type: "expense" },

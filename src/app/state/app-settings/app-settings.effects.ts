@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { AppSettingsRepository } from "../../data/repositories/app-settings-repository";
+import { AppSettingsRepository } from "../../core/data/repositories/app-settings-repository";
 import {
   catchError,
   concatMap,
@@ -20,8 +20,8 @@ import {
   updateAppSettingsSuccess,
 } from "./app-settings.actions";
 import { TuiDialogService } from "@taiga-ui/core";
-import { DEFAULT_SETTINGS } from "../../data/CONST";
-import { AppSettingsNotFoundError } from "../../data/errors";
+import { DEFAULT_SETTINGS } from "../../core/data/CONST";
+import { AppSettingsNotFoundError } from "../../core/data/errors";
 
 @Injectable()
 export class AppSettingsEffects {

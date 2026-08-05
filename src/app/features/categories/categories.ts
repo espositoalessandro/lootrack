@@ -4,7 +4,7 @@ import { Store } from "@ngrx/store";
 import { TuiButton, TuiIcon, TuiTitle } from "@taiga-ui/core";
 import { TuiSegmented } from "@taiga-ui/kit";
 
-import type { TransactionType } from "../../data/models";
+import type { TransactionType } from "../../core/data/models";
 import { AmountPipe } from "../../shared/pipes/amount-pipe";
 import { selectCategorySummariesByType } from "../../state/categories/categories.selector";
 import {

@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
 
-import type { Transaction } from "../../data/models";
+import type { Transaction } from "../../core/data/models";
 import {
   addTransaction,
   addTransactionFailure,

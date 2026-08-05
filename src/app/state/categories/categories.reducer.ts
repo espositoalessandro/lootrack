@@ -1,6 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
 
-import type { Category } from "../../data/models";
+import type { Category } from "../../core/data/models";
 import {
   addCategory,
   addCategoryFailure,

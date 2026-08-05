@@ -88,3 +88,41 @@ export interface CategoryMutationResult {
   category: Category;
   transactions?: Transaction[];
 }
+
+export type OutgoingSyncMutation = Omit<SyncMutation, "localSequence">;
+
+export interface RemoteSyncRecord {
+  entityType: SyncEntityType;
+  entityId: string;
+  operation: SyncOperation;
+
+  revision: number;
+  mutationId: string;
+  payloadJson: string;
+}
+
+export interface SyncExchangeRequest {
+  sinceRevision: number;
+  mutations: readonly OutgoingSyncMutation[];
+}
+
+export type SyncMutationOutcome = "applied" | "duplicate" | "conflict";
+
+export interface SyncMutationResult {
+  mutationId: string;
+  outcome: SyncMutationOutcome;
+  remoteRecord: RemoteSyncRecord;
+}
+
+export interface SyncExchangeResult {
+  latestRevision: number;
+  changes: readonly RemoteSyncRecord[];
+  mutationResults: readonly SyncMutationResult[];
+}
+
+export interface SyncProvider {
+  initialize(): Promise<void>;
+  connect(): Promise<void>;
+  exchange(request: SyncExchangeRequest): Promise<SyncExchangeResult>;
+  disconnect(): Promise<void>;
+}

@@ -1,6 +1,6 @@
 import { createSelector } from "@ngrx/store";
 
-import type { Transaction, TransactionType } from "../../data/models";
+import type { Transaction, TransactionType } from "../../core/data/models";
 import { selectAppSettings } from "../app-settings/app-settings.selector";
 import { selectCategory } from "../categories/categories.selector";
 import { selectTransactions } from "./transactions.selector";

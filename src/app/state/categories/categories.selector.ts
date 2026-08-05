@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from "@ngrx/store";
 
-import type { Category, TransactionType } from "../../data/models";
+import type { Category, TransactionType } from "../../core/data/models";
 import type { CategoriesState } from "./categories.reducer";
 import { selectTransactions } from "../transactions/transactions.selector";
 

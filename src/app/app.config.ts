@@ -1,8 +1,10 @@
 import { provideTaiga } from "@taiga-ui/core";
 import {
   ApplicationConfig,
+  inject,
   isDevMode,
   provideBrowserGlobalErrorListeners,
+  provideEnvironmentInitializer,
 } from "@angular/core";
 import { provideRouter } from "@angular/router";
 
@@ -20,6 +22,10 @@ import { CategoriesEffects } from "./state/categories/categories.effects";
 import { provideStoreDevtools } from "@ngrx/store-devtools";
 import { appSettingsReducer } from "./state/app-settings/app-settings.reducer";
 import { AppSettingsEffects } from "./state/app-settings/app-settings.effects";
+import { SYNC_PROVIDER } from "./core/data/CONST";
+import { syncReducer } from "./state/sync/sync.reducer";
+import { GoogleSheetsSyncProvider } from "./core/sync/google/google-sheets-sync.provider";
+import { SyncEffects } from "./state/sync/sync.effects";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,7 +37,14 @@ export const appConfig: ApplicationConfig = {
       transactions: transactionsReducer,
       categories: categoriesReducer,
       appSettings: appSettingsReducer,
+      sync: syncReducer,
     }),
+    provideEffects(
+      TransactionsEffects,
+      CategoriesEffects,
+      AppSettingsEffects,
+      SyncEffects,
+    ),
     ...(isDevMode()
       ? [
           provideStoreDevtools({
@@ -42,7 +55,6 @@ export const appConfig: ApplicationConfig = {
           }),
         ]
       : []),
-    provideEffects(TransactionsEffects, CategoriesEffects, AppSettingsEffects),
     provideTransloco({
       config: {
         availableLangs: ["en"],
@@ -55,6 +67,16 @@ export const appConfig: ApplicationConfig = {
     provideServiceWorker("ngsw-worker.js", {
       enabled: !isDevMode(),
       registrationStrategy: "registerWhenStable:30000",
+    }),
+    {
+      provide: SYNC_PROVIDER,
+      useClass: GoogleSheetsSyncProvider,
+    },
+    provideEnvironmentInitializer(() => {
+      const syncProvider = inject(SYNC_PROVIDER);
+      void syncProvider.initialize().catch(() => {
+        // Sync is optional. Failure must not prevent the local app from starting.
+      });
     }),
   ],
 };

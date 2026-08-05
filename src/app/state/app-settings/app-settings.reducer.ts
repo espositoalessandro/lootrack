@@ -1,4 +1,4 @@
-import { AppSettings } from "../../data/models";
+import { AppSettings } from "../../core/data/models";
 import { createReducer, on } from "@ngrx/store";
 import {
   createSettingsDefaults,
@@ -12,7 +12,7 @@ import {
   updateAppSettingsFailure,
   updateAppSettingsSuccess,
 } from "./app-settings.actions";
-import { DEFAULT_SETTINGS } from "../../data/CONST";
+import { DEFAULT_SETTINGS } from "../../core/data/CONST";
 
 export interface AppSettingsState {
   settings: AppSettings;

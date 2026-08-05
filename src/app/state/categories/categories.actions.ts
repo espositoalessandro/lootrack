@@ -5,7 +5,7 @@ import type {
   Category,
   Transaction,
   UpdateCategory,
-} from "../../data/models";
+} from "../../core/data/models";
 
 // RETRIEVES
 

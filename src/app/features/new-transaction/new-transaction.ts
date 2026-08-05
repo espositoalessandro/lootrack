@@ -38,7 +38,7 @@ import {
   CategoryAssignment,
   Transaction,
   TransactionType,
-} from "../../data/models";
+} from "../../core/data/models";
 import { MaskitoDirective } from "@maskito/angular";
 import { type MaskitoOptions } from "@maskito/core";
 import { selectTransactionById } from "../../state/transactions/transactions.selector";
