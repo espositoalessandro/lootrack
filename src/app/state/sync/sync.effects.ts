@@ -10,13 +10,14 @@ import {
   synchronizeConnectionRequired,
   synchronizeSuccess,
 } from "./sync.actions";
-import { TuiDialogService } from "@taiga-ui/core";
+import { TuiDialogService, TuiNotificationService } from "@taiga-ui/core";
 
 @Injectable()
 export class SyncEffects {
   private readonly actions$ = inject(Actions);
   private readonly syncProvider = inject(SYNC_PROVIDER);
   private readonly dialogs = inject(TuiDialogService);
+  private readonly notifications = inject(TuiNotificationService);
 
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
@@ -70,6 +71,27 @@ export class SyncEffects {
                 size: "s",
               },
             )
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  readonly showSynchronizationSuccess$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(synchronizeSuccess),
+
+        exhaustMap(() =>
+          this.notifications
+            .open("", {
+              label: "Synchronization complete",
+              appearance: "positive",
+              size: "s",
+              autoClose: 2_000,
+              closable: false,
+              inline: "center",
+            })
             .pipe(catchError(() => EMPTY)),
         ),
       ),
