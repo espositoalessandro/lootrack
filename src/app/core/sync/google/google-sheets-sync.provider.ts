@@ -1,10 +1,10 @@
 import { inject, Injectable } from "@angular/core";
-
 import { GoogleAuthorizationService } from "./google-authorization.service";
 import {
-  SyncExchangeRequest,
-  SyncExchangeResult,
+  RemoteSyncSnapshot,
   SyncProvider,
+  SyncPushRequest,
+  SyncPushResult,
 } from "../../data/models";
 
 @Injectable()
@@ -21,8 +21,12 @@ export class GoogleSheetsSyncProvider implements SyncProvider {
     await this.authorization.getAccessToken();
   }
 
-  async exchange(_request: SyncExchangeRequest): Promise<SyncExchangeResult> {
-    throw new Error("Google Sheets synchronization is not implemented yet");
+  async pull(): Promise<RemoteSyncSnapshot> {
+    throw new Error("Google Sheets pull is not implemented yet");
+  }
+
+  async push(_request: SyncPushRequest): Promise<SyncPushResult> {
+    throw new Error("Google Sheets push is not implemented yet");
   }
 
   async disconnect(): Promise<void> {

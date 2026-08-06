@@ -101,29 +101,28 @@ export interface RemoteSyncRecord {
   payloadJson: string;
 }
 
-export interface SyncExchangeRequest {
-  sinceRevision: number;
+export interface RemoteSyncSnapshot {
+  records: readonly RemoteSyncRecord[];
+}
+
+export interface SyncPushRequest {
   mutations: readonly OutgoingSyncMutation[];
 }
 
-export type SyncMutationOutcome = "applied" | "duplicate" | "conflict";
-
-export interface SyncMutationResult {
-  mutationId: string;
-  outcome: SyncMutationOutcome;
-  remoteRecord: RemoteSyncRecord;
+export interface SyncPushResult {
+  records: readonly RemoteSyncRecord[];
 }
 
-export interface SyncExchangeResult {
-  latestRevision: number;
-  changes: readonly RemoteSyncRecord[];
-  mutationResults: readonly SyncMutationResult[];
+export interface SyncTarget {
+  id: "active";
+  remoteId: string;
 }
 
 export interface SyncProvider {
   initialize(): Promise<void>;
   isConnected(): boolean;
   connect(): Promise<void>;
-  exchange(request: SyncExchangeRequest): Promise<SyncExchangeResult>;
+  pull(): Promise<RemoteSyncSnapshot>;
+  push(request: SyncPushRequest): Promise<SyncPushResult>;
   disconnect(): Promise<void>;
 }
