@@ -9,6 +9,7 @@ import {
 } from "../data/models";
 
 import { LocalSyncSnapshot } from "../data/repositories/sync-local-repository";
+import { Injectable } from "@angular/core";
 
 export type SyncConflictReason =
   "diverged" | "remote-missing" | "invalid-local-chain";
@@ -247,4 +248,16 @@ export function reconcileSyncSnapshots(
     mutationIdsToAcknowledge,
     conflicts,
   };
+}
+
+@Injectable({
+  providedIn: "root",
+})
+export class SyncReconciler {
+  reconcile(
+    local: LocalSyncSnapshot,
+    remote: RemoteSyncSnapshot,
+  ): SyncReconciliationPlan {
+    return reconcileSyncSnapshots(local, remote);
+  }
 }
