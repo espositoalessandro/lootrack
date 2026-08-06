@@ -4,7 +4,6 @@ import { Component, effect, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { Store } from "@ngrx/store";
 
-import { DevDatabaseSeeder } from "./dev/dev-database-seeder.service";
 import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 import { loadCategories } from "./state/categories/categories.actions";
 import { loadTransactions } from "./state/transactions/transactions.actions";
@@ -34,7 +33,6 @@ import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
 })
 export class App implements OnInit {
   private readonly store = inject(Store);
-  private readonly databaseSeeder = inject(DevDatabaseSeeder);
   protected readonly darkMode = inject(TUI_DARK_MODE);
 
   protected readonly transactionsLoading$ = this.store.select(
@@ -68,14 +66,6 @@ export class App implements OnInit {
   }
 
   private async initializeApp(): Promise<void> {
-    // if (isDevMode()) {
-    //   try {
-    //     await this.databaseSeeder.seed();
-    //   } catch (error) {
-    //     console.error("Unable to seed development database", error);
-    //   }
-    // }
-
     this.store.dispatch(loadCategories());
     this.store.dispatch(loadTransactions());
     this.store.dispatch(loadAppSettings());
