@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 
-const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
+const GOOGLE_IDENTITY_SCRIPT_ID = "google-sheets-identity-services";
 const GOOGLE_IDENTITY_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
 const GOOGLE_DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const TOKEN_EXPIRY_MARGIN_MS = 30_000;

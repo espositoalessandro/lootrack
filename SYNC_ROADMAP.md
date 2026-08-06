@@ -106,7 +106,7 @@ mutations:
 
 ```ts
 interface SyncConnection {
-  id: "google-sheets";
+  id: "google-sheets-sheets";
   spreadsheetId: string;
   datasetId: string;
   deviceId: string;

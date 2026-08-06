@@ -24,7 +24,7 @@ import { appSettingsReducer } from "./state/app-settings/app-settings.reducer";
 import { AppSettingsEffects } from "./state/app-settings/app-settings.effects";
 import { SYNC_PROVIDER } from "./core/data/CONST";
 import { syncReducer } from "./state/sync/sync.reducer";
-import { GoogleSheetsProvider } from "./core/sync/google/google-sheets.provider";
+import { GoogleSheetsProvider } from "./core/sync/google-sheets/google-sheets.provider";
 import { SyncEffects } from "./state/sync/sync.effects";
 import { TUI_PULL_TO_REFRESH_LOADED } from "@taiga-ui/addon-mobile";
 import {
