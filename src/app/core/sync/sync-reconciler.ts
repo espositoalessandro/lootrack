@@ -46,7 +46,7 @@ export interface SyncReconciliationPlan {
   readonly mutationIdsToAcknowledge: readonly string[];
 
   /**
-   * Divergent entities requiring three-way conflict resolution.
+   * Divergent entities requiring explicit user resolution.
    */
   readonly conflicts: readonly SyncConflictCandidate[];
 }
@@ -229,7 +229,7 @@ export function reconcileSyncSnapshots(
 
     /*
      * The remote entity changed after the first local mutation was based on it.
-     * This enters three-way conflict resolution.
+     * The user must choose the final record.
      */
     conflicts.push({
       entityType: firstPending.entityType,

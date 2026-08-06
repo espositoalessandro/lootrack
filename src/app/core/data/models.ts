@@ -1,55 +1,5 @@
 /************************** SYNC **************************************/
 
-export interface Entity extends SyncMetadata {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-}
-
-export type JsonPrimitive = string | number | boolean | null;
-
-export type JsonValue = JsonPrimitive | JsonObject | readonly JsonValue[];
-
-export interface JsonObject {
-  readonly [key: string]: JsonValue;
-}
-
-export type SyncEnvelopeFieldDescriptor =
-  "string" | "nullable-string" | "nullable-revision";
-
-type IsExactly<T, Expected> = [T] extends [Expected]
-  ? [Expected] extends [T]
-    ? true
-    : false
-  : false;
-
-type DescriptorFor<T> =
-  IsExactly<T, string> extends true
-    ? "string"
-    : IsExactly<T, string | null> extends true
-      ? "nullable-string"
-      : IsExactly<T, number | null> extends true
-        ? "nullable-revision"
-        : never;
-
-/**
- * Declarative runtime description of synchronization-managed fields.
- * No validation logic belongs in this file.
- */
-export const SYNC_ENTITY_ENVELOPE_SCHEMA = {
-  id: "string",
-  createdAt: "string",
-  updatedAt: "string",
-  deletedAt: "nullable-string",
-  revision: "nullable-revision",
-  lastMutationId: "nullable-string",
-} as const satisfies {
-  [Key in keyof Entity]-?: DescriptorFor<Entity[Key]>;
-};
-
-export type SyncEntityPayload = Entity & JsonObject;
-
 export type SyncEntityType = "transaction" | "category";
 export type SyncOperation = "upsert" | "delete";
 
@@ -113,6 +63,13 @@ export interface SyncProvider {
 }
 
 /************************** ENTITIES **************************************/
+
+export interface Entity extends SyncMetadata {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
 
 export interface AppSettings {
   id: "app";
