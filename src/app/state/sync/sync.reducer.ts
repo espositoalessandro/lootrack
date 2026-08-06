@@ -4,10 +4,12 @@ import {
   connectSyncFailure,
   connectSyncSuccess,
   synchronize,
+  synchronizeConflictFailure,
   synchronizeConnectionRequired,
   synchronizeFailure,
   synchronizeSuccess,
 } from "./sync.actions";
+import { SyncConflictCandidate } from "../../core/sync/sync-reconciler";
 
 export type SyncConnectionStatus = "disconnected" | "connecting" | "connected";
 
@@ -15,12 +17,14 @@ export interface SyncState {
   connectionStatus: SyncConnectionStatus;
   synchronizing: boolean;
   error: string | null;
+  conflicts: readonly SyncConflictCandidate[];
 }
 
 export const initialSyncState: SyncState = {
   connectionStatus: "disconnected",
   synchronizing: false,
   error: null,
+  conflicts: [],
 };
 
 export const syncReducer = createReducer(
@@ -48,6 +52,7 @@ export const syncReducer = createReducer(
     ...state,
     synchronizing: true,
     error: null,
+    conflicts: [],
   })),
 
   on(synchronizeSuccess, (state) => ({
@@ -55,13 +60,25 @@ export const syncReducer = createReducer(
     connectionStatus: "connected" as const,
     synchronizing: false,
     error: null,
+    conflicts: [],
+  })),
+
+  on(synchronizeConflictFailure, (state, { conflicts }) => ({
+    ...state,
+    connectionStatus: "connected" as const,
+    synchronizing: false,
+    error:
+      conflicts.length === 1
+        ? "Synchronization cancelled because a conflict was found"
+        : `Synchronization cancelled because ${conflicts.length} conflicts were found`,
+    conflicts,
   })),
 
   on(synchronizeFailure, (state, { error }) => ({
     ...state,
-    connectionStatus: "disconnected" as const,
     synchronizing: false,
     error,
+    conflicts: [],
   })),
 
   on(synchronizeConnectionRequired, (state) => ({

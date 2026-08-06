@@ -28,6 +28,7 @@ import { GoogleSheetsProvider } from "./core/sync/google-sheets/google-sheets.pr
 import { SyncEffects } from "./state/sync/sync.effects";
 import { TUI_PULL_TO_REFRESH_LOADED } from "@taiga-ui/addon-mobile";
 import {
+  synchronizeConflictFailure,
   synchronizeConnectionRequired,
   synchronizeFailure,
   synchronizeSuccess,
@@ -91,6 +92,7 @@ export const appConfig: ApplicationConfig = {
           ofType(
             synchronizeSuccess,
             synchronizeFailure,
+            synchronizeConflictFailure,
             synchronizeConnectionRequired,
           ),
         ),

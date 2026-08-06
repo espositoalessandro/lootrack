@@ -7,10 +7,14 @@ import {
   connectSyncFailure,
   connectSyncSuccess,
   synchronize,
+  synchronizeConflictFailure,
   synchronizeConnectionRequired,
+  synchronizeFailure,
   synchronizeSuccess,
 } from "./sync.actions";
 import { TuiDialogService, TuiNotificationService } from "@taiga-ui/core";
+import { SyncEngine } from "../../core/sync/sync-engine";
+import { SyncRunConflictError } from "../../core/data/errors";
 
 @Injectable()
 export class SyncEffects {
@@ -18,6 +22,7 @@ export class SyncEffects {
   private readonly syncProvider = inject(SYNC_PROVIDER);
   private readonly dialogs = inject(TuiDialogService);
   private readonly notifications = inject(TuiNotificationService);
+  private readonly syncEngine = inject(SyncEngine);
 
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
@@ -51,8 +56,28 @@ export class SyncEffects {
           return of(synchronizeConnectionRequired());
         }
 
-        // Temporary until exchange() is implemented.
-        return of(synchronizeSuccess());
+        return defer(() => this.syncEngine.synchronize()).pipe(
+          map(() => synchronizeSuccess()),
+
+          catchError((error: unknown) => {
+            if (error instanceof SyncRunConflictError) {
+              return of(
+                synchronizeConflictFailure({
+                  conflicts: error.conflicts,
+                }),
+              );
+            }
+
+            return of(
+              synchronizeFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Synchronization failed",
+              }),
+            );
+          }),
+        );
       }),
     ),
   );

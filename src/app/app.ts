@@ -68,11 +68,13 @@ export class App implements OnInit {
   }
 
   private async initializeApp(): Promise<void> {
-    try {
-      await this.databaseSeeder.seed();
-    } catch (error) {
-      console.error("Unable to seed development database", error);
-    }
+    // if (isDevMode()) {
+    //   try {
+    //     await this.databaseSeeder.seed();
+    //   } catch (error) {
+    //     console.error("Unable to seed development database", error);
+    //   }
+    // }
 
     this.store.dispatch(loadCategories());
     this.store.dispatch(loadTransactions());

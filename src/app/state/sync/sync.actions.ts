@@ -1,4 +1,5 @@
 import { createAction, props } from "@ngrx/store";
+import { SyncConflictCandidate } from "../../core/sync/sync-reconciler";
 
 export const connectSync = createAction("[Sync] Connect Requested");
 
@@ -24,4 +25,12 @@ export const synchronizeFailure = createAction(
 
 export const synchronizeConnectionRequired = createAction(
   "[Sync] Connection Required",
+);
+
+export const synchronizeConflictFailure = createAction(
+  "[Sync] Synchronization Failed With Conflicts",
+
+  props<{
+    conflicts: readonly SyncConflictCandidate[];
+  }>(),
 );

@@ -209,7 +209,12 @@ export function reconcileSyncSnapshots(
           basePayloadJson: remaining[0].basePayloadJson,
           localPayloadJson: lastPending.payloadJson,
           remotePayloadJson: remoteRecord.payloadJson,
-          pendingMutations: remaining,
+          /*
+           * The run will be cancelled, so the acknowledged prefix will not actually
+           * be removed locally. Conflict resolution must therefore replace the whole
+           * current local chain.
+           */
+          pendingMutations: pending,
         });
 
         continue;

@@ -1,3 +1,5 @@
+import { SyncConflictCandidate } from "../sync/sync-reconciler";
+
 export class AppSettingsNotFoundError extends Error {
   constructor() {
     super(`Error while retrieving app settings`);
@@ -53,5 +55,17 @@ export class CategoryTypeChangeBlockedError extends Error {
           : `${transactionCount} active transactions`
       }`,
     );
+  }
+}
+
+export class SyncRunConflictError extends Error {
+  constructor(readonly conflicts: readonly SyncConflictCandidate[]) {
+    super(
+      `Synchronization cancelled because ${conflicts.length} ${
+        conflicts.length === 1 ? "conflict was" : "conflicts were"
+      } found`,
+    );
+
+    this.name = "SyncRunConflictError";
   }
 }
