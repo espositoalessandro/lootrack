@@ -1,5 +1,7 @@
 import { inject, Injectable } from "@angular/core";
+
 import { GoogleAuthorizationService } from "./google-authorization.service";
+import { GoogleSheetsTargetService } from "./google-sheets-target.service";
 import {
   RemoteSyncSnapshot,
   SyncProvider,
@@ -8,17 +10,17 @@ import {
 } from "../../data/models";
 
 @Injectable()
-export class GoogleSheetsSyncProvider implements SyncProvider {
-  private readonly authorization: GoogleAuthorizationService = inject(
-    GoogleAuthorizationService,
-  );
+export class GoogleSheetsProvider implements SyncProvider {
+  private readonly authorization = inject(GoogleAuthorizationService);
+  private readonly targetService = inject(GoogleSheetsTargetService);
 
   async initialize(): Promise<void> {
     await this.authorization.loadLibrary();
   }
 
   async connect(): Promise<void> {
-    await this.authorization.getAccessToken();
+    const accessToken = await this.authorization.getAccessToken();
+    await this.targetService.ensureTarget(accessToken);
   }
 
   async pull(): Promise<RemoteSyncSnapshot> {

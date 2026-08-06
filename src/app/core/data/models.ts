@@ -1,4 +1,4 @@
-export type SyncEntityType = "transaction" | "category" | "settings";
+export type SyncEntityType = "transaction" | "category";
 export type SyncOperation = "upsert" | "delete";
 
 export interface SyncMetadata {
