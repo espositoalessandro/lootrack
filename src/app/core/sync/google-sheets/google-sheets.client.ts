@@ -359,23 +359,10 @@ export class GoogleSheetsClient {
       )
       .sort((left, right) => left.entityId.localeCompare(right.entityId));
 
-    const previousTransactionCount = snapshot.records.filter(
-      ({ entityType }) => entityType === "transaction",
-    ).length;
+    const transactionValues =
+      this.buildTransactionSheetValues(transactionRecords);
 
-    const previousCategoryCount = snapshot.records.filter(
-      ({ entityType }) => entityType === "category",
-    ).length;
-
-    const transactionValues = this.buildTransactionSheetValues(
-      transactionRecords,
-      previousTransactionCount,
-    );
-
-    const categoryValues = this.buildCategorySheetValues(
-      categoryRecords,
-      previousCategoryCount,
-    );
+    const categoryValues = this.buildCategorySheetValues(categoryRecords);
 
     await this.request<unknown>(
       `${SHEETS_API_BASE_URL}/${encodeURIComponent(
@@ -450,7 +437,6 @@ export class GoogleSheetsClient {
 
   private buildTransactionSheetValues(
     records: readonly RemoteSyncRecord[],
-    previousRecordCount: number,
   ): GoogleSheetCell[][] {
     const rows = records.map((record): GoogleSheetCell[] => {
       const transaction = this.parseTransactionPayload(
@@ -474,17 +460,11 @@ export class GoogleSheetsClient {
         transaction.lastMutationId as string,
       ];
     });
-
-    return this.buildSheetValues(
-      TRANSACTION_HEADERS,
-      rows,
-      previousRecordCount,
-    );
+    return [[...TRANSACTION_HEADERS], ...rows];
   }
 
   private buildCategorySheetValues(
     records: readonly RemoteSyncRecord[],
-    previousRecordCount: number,
   ): GoogleSheetCell[][] {
     const rows = records.map((record): GoogleSheetCell[] => {
       const category = this.parseCategoryPayload(
@@ -506,40 +486,7 @@ export class GoogleSheetsClient {
       ];
     });
 
-    return this.buildSheetValues(CATEGORY_HEADERS, rows, previousRecordCount);
-  }
-
-  private buildSheetValues(
-    headers: readonly string[],
-    rows: readonly (readonly GoogleSheetCell[])[],
-    previousRecordCount: number,
-  ): GoogleSheetCell[][] {
-    /*
-     * Keep enough rows to overwrite the previous materialized table.
-     *
-     * When records were removed, trailing rows are filled with empty strings,
-     * which clears those existing cells in Google Sheets.
-     */
-    const requiredDataRowCount = Math.max(rows.length, previousRecordCount);
-
-    const values: GoogleSheetCell[][] = [[...headers]];
-
-    for (let index = 0; index < requiredDataRowCount; index += 1) {
-      const row = rows[index];
-
-      values.push(
-        row
-          ? [...row]
-          : Array.from(
-              {
-                length: headers.length,
-              },
-              () => "",
-            ),
-      );
-    }
-
-    return values;
+    return [[...CATEGORY_HEADERS], ...rows];
   }
 
   private parseTransactionPayload(
