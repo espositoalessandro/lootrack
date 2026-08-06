@@ -1,40 +1,53 @@
 import { Injectable } from "@angular/core";
+
 import {
-  Category,
+  JsonObject,
+  JsonValue,
+  SYNC_ENTITY_ENVELOPE_SCHEMA,
+  SyncEntityPayload,
   SyncEntityType,
   SyncMutation,
-  Transaction,
 } from "../data/models";
 import { SyncConflictCandidate } from "./sync-reconciler";
 
-type SyncEntity = Transaction | Category;
-
-const TRANSACTION_FIELDS = [
-  "type",
-  "amountInCents",
-  "description",
-  "occurredOn",
-  "categoryId",
-] as const;
-
-const CATEGORY_FIELDS = ["type", "name"] as const;
-
 export interface ResolvedSyncConflict {
   readonly status: "resolved";
-  readonly finalEntity: SyncEntity;
+  readonly entityType: SyncEntityType;
+  readonly entityId: string;
 
   /**
-   * Replacements for the old pending chain.
-   * localSequence is preserved.
+   * The final entity after replaying and rebasing every pending local
+   * mutation on top of the current remote entity.
+   */
+  readonly finalEntity: SyncEntityPayload;
+
+  /**
+   * Replacements for the original pending mutation chain.
+   *
+   * Each mutation keeps its original localSequence but receives a new
+   * mutationId and new expected remote metadata.
    */
   readonly rewrittenMutations: readonly SyncMutation[];
 
+  /**
+   * IDs of the original pending mutations being replaced.
+   */
   readonly replacedMutationIds: readonly string[];
 }
 
 export interface UnresolvedSyncConflict {
   readonly status: "unresolved";
   readonly conflict: SyncConflictCandidate;
+
+  /**
+   * Paths that both local and remote changed incompatibly.
+   *
+   * Examples:
+   * - "amountInCents"
+   * - "merchant.name"
+   * - "deletedAt"
+   * - "$payload"
+   */
   readonly conflictingFields: readonly string[];
 }
 
@@ -42,13 +55,51 @@ export type SyncConflictResolution =
   ResolvedSyncConflict | UnresolvedSyncConflict;
 
 interface EntityMergeResult {
-  readonly entity: SyncEntity;
+  readonly entity: SyncEntityPayload;
   readonly conflictingFields: readonly string[];
 }
+
+interface SplitSyncEntity {
+  /**
+   * The complete synchronized entity. Envelope fields can be read from it.
+   */
+  readonly envelope: SyncEntityPayload;
+
+  /**
+   * Every property not declared in SYNC_ENTITY_ENVELOPE_SCHEMA.
+   */
+  readonly data: JsonObject;
+}
+
+const MISSING = Symbol("missing");
+
+type Missing = typeof MISSING;
+
+type MaybeJsonValue = JsonValue | Missing;
+
+interface JsonMergeResult {
+  readonly value: MaybeJsonValue;
+  readonly conflictingPaths: readonly string[];
+}
+
+interface JsonObjectMergeResult {
+  readonly value: JsonObject;
+  readonly conflictingPaths: readonly string[];
+}
+
+const syncEnvelopeFields = new Set<string>(
+  Object.keys(SYNC_ENTITY_ENVELOPE_SCHEMA),
+);
 
 export function resolveSyncConflict(
   conflict: SyncConflictCandidate,
 ): SyncConflictResolution {
+  /*
+   * Only true divergence can currently be automatically resolved.
+   *
+   * A missing remote record or malformed mutation chain needs an explicit
+   * policy rather than an automatic field merge.
+   */
   if (
     conflict.reason !== "diverged" ||
     conflict.basePayloadJson === null ||
@@ -58,13 +109,16 @@ export function resolveSyncConflict(
     return unresolved(conflict, ["$record"]);
   }
 
-  let currentRemote = parseEntity(
-    conflict.remotePayloadJson,
-    conflict.entityType,
-  );
+  let currentRemote = parsePayload(conflict.remotePayloadJson);
 
   const rewrittenMutations: SyncMutation[] = [];
 
+  /*
+   * Reapply each local mutation in its original order.
+   *
+   * We do not collapse the whole chain into one mutation because preserving
+   * the chain retains operation ordering and makes acknowledgements precise.
+   */
   for (const mutation of conflict.pendingMutations) {
     if (
       mutation.localSequence === undefined ||
@@ -73,22 +127,11 @@ export function resolveSyncConflict(
       return unresolved(conflict, ["$chain"]);
     }
 
-    const originalBase = parseEntity(
-      mutation.basePayloadJson,
-      conflict.entityType,
-    );
+    const originalBase = parsePayload(mutation.basePayloadJson);
 
-    const originalLocal = parseEntity(
-      mutation.payloadJson,
-      conflict.entityType,
-    );
+    const originalLocal = parsePayload(mutation.payloadJson);
 
-    const merge = mergeEntityChange(
-      conflict.entityType,
-      originalBase,
-      originalLocal,
-      currentRemote,
-    );
+    const merge = mergeEntityChange(originalBase, originalLocal, currentRemote);
 
     if (merge.conflictingFields.length > 0) {
       return unresolved(conflict, merge.conflictingFields);
@@ -103,25 +146,31 @@ export function resolveSyncConflict(
 
     const mutationId = crypto.randomUUID();
 
-    const nextEntity: SyncEntity = {
+    const nextEntity: SyncEntityPayload = {
       ...merge.entity,
+
       revision: currentRemote.revision + 1,
       lastMutationId: mutationId,
 
       /*
-       * Preserve the timestamp of the original local edit.
-       * It remains informational and does not decide conflicts.
+       * Keep the timestamp associated with the original local operation.
+       * It remains informational and never decides the conflict.
        */
       updatedAt: originalLocal.updatedAt,
     };
 
     rewrittenMutations.push({
       ...mutation,
+
       mutationId,
+
       expectedRevision: currentRemote.revision,
       expectedMutationId: currentRemote.lastMutationId,
+
       basePayloadJson: JSON.stringify(currentRemote),
+
       payloadJson: JSON.stringify(nextEntity),
+
       operation: nextEntity.deletedAt === null ? "upsert" : "delete",
     });
 
@@ -130,6 +179,8 @@ export function resolveSyncConflict(
 
   return {
     status: "resolved",
+    entityType: conflict.entityType,
+    entityId: conflict.entityId,
     finalEntity: currentRemote,
     rewrittenMutations,
     replacedMutationIds: conflict.pendingMutations.map(
@@ -138,12 +189,36 @@ export function resolveSyncConflict(
   };
 }
 
+export function parseSyncEntityPayload(value: unknown): SyncEntityPayload {
+  if (!isJsonObject(value)) {
+    throw new Error("Synchronization payload must be a JSON object");
+  }
+
+  for (const [field, validate] of Object.entries(SYNC_ENTITY_ENVELOPE_SCHEMA)) {
+    if (!validate(value[field])) {
+      throw new Error(`Synchronization payload has an invalid ${field} value`);
+    }
+  }
+
+  return value as SyncEntityPayload;
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function mergeEntityChange(
-  entityType: SyncEntityType,
-  base: SyncEntity,
-  local: SyncEntity,
-  remote: SyncEntity,
+  base: SyncEntityPayload,
+  local: SyncEntityPayload,
+  remote: SyncEntityPayload,
 ): EntityMergeResult {
+  const baseParts = splitEntity(base);
+  const localParts = splitEntity(local);
+  const remoteParts = splitEntity(remote);
+
+  /*
+   * Entity identity and creation metadata are immutable.
+   */
   if (
     base.id !== local.id ||
     base.id !== remote.id ||
@@ -156,31 +231,28 @@ function mergeEntityChange(
     };
   }
 
-  const fields =
-    entityType === "transaction" ? TRANSACTION_FIELDS : CATEGORY_FIELDS;
-
-  const merged = { ...remote } as SyncEntity;
-  const conflictingFields: string[] = [];
-
-  const baseValues = base as unknown as Record<string, unknown>;
-  const localValues = local as unknown as Record<string, unknown>;
-  const remoteValues = remote as unknown as Record<string, unknown>;
-  const mergedValues = merged as unknown as Record<string, unknown>;
-
-  const localBusinessChanged = fields.some(
-    (field) => !Object.is(localValues[field], baseValues[field]),
+  const dataMerge = mergeJsonObjects(
+    baseParts.data,
+    localParts.data,
+    remoteParts.data,
   );
 
-  const remoteBusinessChanged = fields.some(
-    (field) => !Object.is(remoteValues[field], baseValues[field]),
-  );
+  const conflictingFields = [...dataMerge.conflictingPaths];
+
+  const localBusinessChanged = !jsonEquals(baseParts.data, localParts.data);
+
+  const remoteBusinessChanged = !jsonEquals(baseParts.data, remoteParts.data);
 
   const localDeleted = base.deletedAt === null && local.deletedAt !== null;
 
   const remoteDeleted = base.deletedAt === null && remote.deletedAt !== null;
 
   /*
-   * A delete racing with an edit must not be silently merged.
+   * A delete racing against a business-data edit is not automatically safe.
+   *
+   * Examples:
+   * - local deletes while remote changes the amount;
+   * - remote deletes while local changes the description.
    */
   if (
     (localDeleted && remoteBusinessChanged) ||
@@ -189,68 +261,202 @@ function mergeEntityChange(
     conflictingFields.push("deletedAt");
   }
 
-  for (const field of fields) {
-    const baseValue = baseValues[field];
-    const localValue = localValues[field];
-    const remoteValue = remoteValues[field];
+  let deletedAt: string | null;
 
-    const localChanged = !Object.is(localValue, baseValue);
-    const remoteChanged = !Object.is(remoteValue, baseValue);
-
-    if (localChanged && remoteChanged && !Object.is(localValue, remoteValue)) {
-      conflictingFields.push(field);
-      continue;
-    }
-
-    if (localChanged) {
-      mergedValues[field] = localValue;
-    } else {
-      mergedValues[field] = remoteValue;
-    }
-  }
-
-  if (localDeleted && remoteDeleted) {
-    // Both sides deleted the entity. Different timestamps are not a conflict.
-    merged.deletedAt = local.deletedAt;
-  } else if (localDeleted) {
-    merged.deletedAt = local.deletedAt;
+  if (localDeleted) {
+    deletedAt = local.deletedAt;
   } else if (remoteDeleted) {
-    merged.deletedAt = remote.deletedAt;
+    deletedAt = remote.deletedAt;
   } else {
-    merged.deletedAt = null;
+    /*
+     * Covers ordinary non-deleted entities and entities that were already
+     * tombstones in the common base.
+     */
+    deletedAt = remote.deletedAt;
   }
+
+  const entity: SyncEntityPayload = {
+    /*
+     * Generic business fields.
+     */
+    ...dataMerge.value,
+
+    /*
+     * The synchronization envelope is written last so business data cannot
+     * accidentally override protocol-managed properties.
+     */
+    id: remote.id,
+    createdAt: remote.createdAt,
+    updatedAt: remote.updatedAt,
+    deletedAt,
+    revision: remote.revision,
+    lastMutationId: remote.lastMutationId,
+  };
 
   return {
-    entity: merged,
+    entity,
     conflictingFields: [...new Set(conflictingFields)],
   };
 }
 
-function parseEntity(
-  payloadJson: string,
-  expectedType: SyncEntityType,
-): SyncEntity {
+function splitEntity(entity: SyncEntityPayload): SplitSyncEntity {
+  const dataEntries = Object.entries(entity).filter(
+    ([field]) => !syncEnvelopeFields.has(field),
+  );
+
+  return {
+    envelope: entity,
+    data: Object.fromEntries(dataEntries) as JsonObject,
+  };
+}
+
+function mergeJsonObjects(
+  base: JsonObject,
+  local: JsonObject,
+  remote: JsonObject,
+  parentPath = "",
+): JsonObjectMergeResult {
+  const keys = new Set([
+    ...Object.keys(base),
+    ...Object.keys(local),
+    ...Object.keys(remote),
+  ]);
+
+  const merged: Record<string, JsonValue> = {};
+  const conflictingPaths: string[] = [];
+
+  for (const key of keys) {
+    const path = parentPath ? `${parentPath}.${key}` : key;
+
+    const result = mergeJsonValue(
+      readValue(base, key),
+      readValue(local, key),
+      readValue(remote, key),
+      path,
+    );
+
+    conflictingPaths.push(...result.conflictingPaths);
+
+    /*
+     * MISSING means that the property was removed by the selected side.
+     */
+    if (result.value !== MISSING) {
+      merged[key] = result.value;
+    }
+  }
+
+  return {
+    value: merged,
+    conflictingPaths,
+  };
+}
+
+function mergeJsonValue(
+  base: MaybeJsonValue,
+  local: MaybeJsonValue,
+  remote: MaybeJsonValue,
+  path: string,
+): JsonMergeResult {
+  /*
+   * Both sides produced the same final value.
+   */
+  if (jsonEquals(local, remote)) {
+    return {
+      value: local,
+      conflictingPaths: [],
+    };
+  }
+
+  /*
+   * Local did not change the value, so use remote.
+   */
+  if (jsonEquals(local, base)) {
+    return {
+      value: remote,
+      conflictingPaths: [],
+    };
+  }
+
+  /*
+   * Remote did not change the value, so use local.
+   */
+  if (jsonEquals(remote, base)) {
+    return {
+      value: local,
+      conflictingPaths: [],
+    };
+  }
+
+  /*
+   * Both sides changed an object. Try merging individual nested properties.
+   *
+   * When the property did not exist in the base, both sides independently
+   * created an object, so an empty object acts as their common base.
+   */
+  if (
+    (base === MISSING || isJsonObject(base)) &&
+    isJsonObject(local) &&
+    isJsonObject(remote)
+  ) {
+    return mergeJsonObjects(base === MISSING ? {} : base, local, remote, path);
+  }
+
+  /*
+   * Primitive values and arrays are atomic.
+   *
+   * Safe array merging would require domain-specific item identity and
+   * ordering rules, so conflicting array edits remain unresolved.
+   */
+  return {
+    value: remote,
+    conflictingPaths: [path || "$"],
+  };
+}
+
+function readValue(object: JsonObject, key: string): MaybeJsonValue {
+  return Object.prototype.hasOwnProperty.call(object, key)
+    ? object[key]
+    : MISSING;
+}
+
+function jsonEquals(left: MaybeJsonValue, right: MaybeJsonValue): boolean {
+  if (left === MISSING || right === MISSING) {
+    return left === right;
+  }
+
+  if (Object.is(left, right)) {
+    return true;
+  }
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return (
+      left.length === right.length &&
+      left.every((value, index) => jsonEquals(value, right[index]))
+    );
+  }
+
+  if (isJsonObject(left) && isJsonObject(right)) {
+    const leftKeys = Object.keys(left);
+
+    const rightKeys = Object.keys(right);
+
+    return (
+      leftKeys.length === rightKeys.length &&
+      leftKeys.every(
+        (key) =>
+          Object.prototype.hasOwnProperty.call(right, key) &&
+          jsonEquals(left[key], right[key]),
+      )
+    );
+  }
+
+  return false;
+}
+
+function parsePayload(payloadJson: string): SyncEntityPayload {
   const value: unknown = JSON.parse(payloadJson);
 
-  if (!value || typeof value !== "object") {
-    throw new Error("Invalid synchronization entity payload");
-  }
-
-  const entity = value as SyncEntity;
-
-  if (typeof entity.id !== "string") {
-    throw new Error("Synchronization entity has no valid ID");
-  }
-
-  if (expectedType === "transaction" && !("amountInCents" in entity)) {
-    throw new Error("Expected a transaction payload");
-  }
-
-  if (expectedType === "category" && !("name" in entity)) {
-    throw new Error("Expected a category payload");
-  }
-
-  return entity;
+  return parseSyncEntityPayload(value);
 }
 
 function unresolved(
