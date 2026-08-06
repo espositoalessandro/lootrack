@@ -1,5 +1,9 @@
 import { Injectable } from "@angular/core";
-import { GoogleApiError, GoogleSheetsDataError } from "./google-sheets.errors";
+import {
+  GoogleApiError,
+  GoogleSheetsDataError,
+  GoogleSheetsWriteConflictError,
+} from "./google-sheets.errors";
 import {
   Category,
   OutgoingSyncMutation,
@@ -269,12 +273,413 @@ export class GoogleSheetsClient {
     spreadsheetId: string,
     request: SyncPushRequest,
   ): Promise<SyncPushResult> {
-    // 1. Read a fresh remote snapshot.
-    // 2. Validate expectedRevision and expectedMutationId.
-    // 3. Apply mutations to an in-memory record map.
-    // 4. Convert the final records back to sheet rows.
-    // 5. Write Transactions and Categories with values:batchUpdate.
-    // 6. Return only the records affected by this request.
+    if (request.mutations.length === 0) {
+      return {
+        records: [],
+      };
+    }
+
+    /*
+     * Read again immediately before writing.
+     *
+     * The original snapshot used by the reconciler may already be stale by
+     * the time this method is called.
+     */
+    const snapshot = await this.readLootrackSnapshot(
+      accessToken,
+      spreadsheetId,
+    );
+
+    const recordsByKey = new Map(
+      snapshot.records.map((record) => [
+        this.recordKey(record.entityType, record.entityId),
+        record,
+      ]),
+    );
+
+    /*
+     * Contains only the final version of each entity affected by this push.
+     */
+    const affectedRecordsByKey = new Map<string, RemoteSyncRecord>();
+
+    /*
+     * Mutations must be processed in order.
+     *
+     * A later mutation for the same entity expects the result produced by the
+     * previous mutation in the chain.
+     */
+    for (const mutation of request.mutations) {
+      const key = this.recordKey(mutation.entityType, mutation.entityId);
+
+      const currentRecord = recordsByKey.get(key);
+
+      /*
+       * Idempotency:
+       *
+       * The previous request may have reached Google Sheets even though the
+       * client never received its response.
+       */
+      if (currentRecord?.mutationId === mutation.mutationId) {
+        affectedRecordsByKey.set(key, currentRecord);
+
+        continue;
+      }
+
+      if (!matchesExpectedRemote(currentRecord, mutation)) {
+        throw new GoogleSheetsWriteConflictError(
+          mutation.entityType,
+          mutation.entityId,
+        );
+      }
+
+      const nextRecord = this.recordFromMutation(mutation);
+
+      recordsByKey.set(key, nextRecord);
+
+      affectedRecordsByKey.set(key, nextRecord);
+    }
+
+    const transactionRecords = [...recordsByKey.values()]
+      .filter(
+        (
+          record,
+        ): record is RemoteSyncRecord & {
+          entityType: "transaction";
+        } => record.entityType === "transaction",
+      )
+      .sort((left, right) => left.entityId.localeCompare(right.entityId));
+
+    const categoryRecords = [...recordsByKey.values()]
+      .filter(
+        (
+          record,
+        ): record is RemoteSyncRecord & {
+          entityType: "category";
+        } => record.entityType === "category",
+      )
+      .sort((left, right) => left.entityId.localeCompare(right.entityId));
+
+    const previousTransactionCount = snapshot.records.filter(
+      ({ entityType }) => entityType === "transaction",
+    ).length;
+
+    const previousCategoryCount = snapshot.records.filter(
+      ({ entityType }) => entityType === "category",
+    ).length;
+
+    const transactionValues = this.buildTransactionSheetValues(
+      transactionRecords,
+      previousTransactionCount,
+    );
+
+    const categoryValues = this.buildCategorySheetValues(
+      categoryRecords,
+      previousCategoryCount,
+    );
+
+    await this.request<unknown>(
+      `${SHEETS_API_BASE_URL}/${encodeURIComponent(
+        spreadsheetId,
+      )}/values:batchUpdate`,
+      accessToken,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          valueInputOption: "RAW",
+          includeValuesInResponse: false,
+          data: [
+            {
+              range: `${TRANSACTIONS_SHEET}!A1:K` + transactionValues.length,
+              majorDimension: "ROWS",
+              values: transactionValues,
+            },
+            {
+              range: `${CATEGORIES_SHEET}!A1:H` + categoryValues.length,
+              majorDimension: "ROWS",
+              values: categoryValues,
+            },
+          ],
+        }),
+      },
+    );
+
+    return {
+      records: [...affectedRecordsByKey.values()],
+    };
+  }
+
+  private recordFromMutation(mutation: OutgoingSyncMutation): RemoteSyncRecord {
+    const context = `${mutation.entityType} mutation ` + mutation.mutationId;
+
+    const entity =
+      mutation.entityType === "transaction"
+        ? this.parseTransactionPayload(mutation.payloadJson, context)
+        : this.parseCategoryPayload(mutation.payloadJson, context);
+
+    if (entity.id !== mutation.entityId) {
+      throw new GoogleSheetsDataError(
+        `${context}: payload entity ID does not match the mutation`,
+      );
+    }
+
+    if (entity.lastMutationId !== mutation.mutationId) {
+      throw new GoogleSheetsDataError(
+        `${context}: payload lastMutationId does not match the mutation`,
+      );
+    }
+
+    const expectedNextRevision = (mutation.expectedRevision ?? 0) + 1;
+
+    if (entity.revision !== expectedNextRevision) {
+      throw new GoogleSheetsDataError(
+        `${context}: expected payload revision ${expectedNextRevision}, ` +
+          `received ${entity.revision ?? "null"}`,
+      );
+    }
+
+    const record = this.toRemoteRecord(mutation.entityType, entity);
+
+    if (record.operation !== mutation.operation) {
+      throw new GoogleSheetsDataError(
+        `${context}: payload deletion state does not match the mutation operation`,
+      );
+    }
+
+    return record;
+  }
+
+  private buildTransactionSheetValues(
+    records: readonly RemoteSyncRecord[],
+    previousRecordCount: number,
+  ): GoogleSheetCell[][] {
+    const rows = records.map((record): GoogleSheetCell[] => {
+      const transaction = this.parseTransactionPayload(
+        record.payloadJson,
+        `remote transaction ${record.entityId}`,
+      );
+
+      this.assertRecordMatchesEntity(record, transaction);
+
+      return [
+        transaction.id,
+        transaction.type,
+        transaction.amountInCents,
+        transaction.description,
+        transaction.occurredOn,
+        transaction.categoryId ?? "",
+        transaction.createdAt,
+        transaction.updatedAt,
+        transaction.deletedAt ?? "",
+        transaction.revision as number,
+        transaction.lastMutationId as string,
+      ];
+    });
+
+    return this.buildSheetValues(
+      TRANSACTION_HEADERS,
+      rows,
+      previousRecordCount,
+    );
+  }
+
+  private buildCategorySheetValues(
+    records: readonly RemoteSyncRecord[],
+    previousRecordCount: number,
+  ): GoogleSheetCell[][] {
+    const rows = records.map((record): GoogleSheetCell[] => {
+      const category = this.parseCategoryPayload(
+        record.payloadJson,
+        `remote category ${record.entityId}`,
+      );
+
+      this.assertRecordMatchesEntity(record, category);
+
+      return [
+        category.id,
+        category.type,
+        category.name,
+        category.createdAt,
+        category.updatedAt,
+        category.deletedAt ?? "",
+        category.revision as number,
+        category.lastMutationId as string,
+      ];
+    });
+
+    return this.buildSheetValues(CATEGORY_HEADERS, rows, previousRecordCount);
+  }
+
+  private buildSheetValues(
+    headers: readonly string[],
+    rows: readonly (readonly GoogleSheetCell[])[],
+    previousRecordCount: number,
+  ): GoogleSheetCell[][] {
+    /*
+     * Keep enough rows to overwrite the previous materialized table.
+     *
+     * When records were removed, trailing rows are filled with empty strings,
+     * which clears those existing cells in Google Sheets.
+     */
+    const requiredDataRowCount = Math.max(rows.length, previousRecordCount);
+
+    const values: GoogleSheetCell[][] = [[...headers]];
+
+    for (let index = 0; index < requiredDataRowCount; index += 1) {
+      const row = rows[index];
+
+      values.push(
+        row
+          ? [...row]
+          : Array.from(
+              {
+                length: headers.length,
+              },
+              () => "",
+            ),
+      );
+    }
+
+    return values;
+  }
+
+  private parseTransactionPayload(
+    payloadJson: string,
+    context: string,
+  ): Transaction {
+    const value = this.parsePayloadObject(payloadJson, context);
+
+    this.assertCommonEntityPayload(value, context);
+
+    if (value["type"] !== "expense" && value["type"] !== "income") {
+      throw new GoogleSheetsDataError(`${context}: invalid transaction type`);
+    }
+
+    if (
+      typeof value["amountInCents"] !== "number" ||
+      !Number.isSafeInteger(value["amountInCents"]) ||
+      value["amountInCents"] < 0
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid amountInCents`);
+    }
+
+    if (typeof value["description"] !== "string") {
+      throw new GoogleSheetsDataError(`${context}: invalid description`);
+    }
+
+    if (
+      typeof value["occurredOn"] !== "string" ||
+      value["occurredOn"].length === 0
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid occurredOn`);
+    }
+
+    if (
+      value["categoryId"] !== null &&
+      typeof value["categoryId"] !== "string"
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid categoryId`);
+    }
+
+    return value as unknown as Transaction;
+  }
+
+  private parseCategoryPayload(payloadJson: string, context: string): Category {
+    const value = this.parsePayloadObject(payloadJson, context);
+
+    this.assertCommonEntityPayload(value, context);
+
+    if (value["type"] !== "expense" && value["type"] !== "income") {
+      throw new GoogleSheetsDataError(`${context}: invalid category type`);
+    }
+
+    if (
+      typeof value["name"] !== "string" ||
+      value["name"].trim().length === 0
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid category name`);
+    }
+
+    return value as unknown as Category;
+  }
+
+  private parsePayloadObject(
+    payloadJson: string,
+    context: string,
+  ): Record<string, unknown> {
+    let value: unknown;
+
+    try {
+      value = JSON.parse(payloadJson);
+    } catch {
+      throw new GoogleSheetsDataError(`${context}: payload is not valid JSON`);
+    }
+
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      throw new GoogleSheetsDataError(`${context}: payload must be an object`);
+    }
+
+    return value as Record<string, unknown>;
+  }
+
+  private assertCommonEntityPayload(
+    entity: Record<string, unknown>,
+    context: string,
+  ): void {
+    for (const field of [
+      "id",
+      "createdAt",
+      "updatedAt",
+      "lastMutationId",
+    ] as const) {
+      if (typeof entity[field] !== "string" || entity[field].length === 0) {
+        throw new GoogleSheetsDataError(`${context}: invalid ${field}`);
+      }
+    }
+
+    if (
+      entity["deletedAt"] !== null &&
+      typeof entity["deletedAt"] !== "string"
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid deletedAt`);
+    }
+
+    if (
+      typeof entity["revision"] !== "number" ||
+      !Number.isSafeInteger(entity["revision"]) ||
+      entity["revision"] < 1
+    ) {
+      throw new GoogleSheetsDataError(`${context}: invalid revision`);
+    }
+  }
+
+  private assertRecordMatchesEntity(
+    record: RemoteSyncRecord,
+    entity: Transaction | Category,
+  ): void {
+    if (
+      entity.id !== record.entityId ||
+      entity.revision !== record.revision ||
+      entity.lastMutationId !== record.mutationId
+    ) {
+      throw new GoogleSheetsDataError(
+        `Remote ${record.entityType} ${record.entityId} has inconsistent metadata`,
+      );
+    }
+
+    const operation = entity.deletedAt === null ? "upsert" : "delete";
+
+    if (operation !== record.operation) {
+      throw new GoogleSheetsDataError(
+        `Remote ${record.entityType} ${record.entityId} has an inconsistent operation`,
+      );
+    }
+  }
+
+  private recordKey(
+    entityType: RemoteSyncRecord["entityType"],
+    entityId: string,
+  ): string {
+    return `${entityType}:${entityId}`;
   }
 
   private async request<T>(
