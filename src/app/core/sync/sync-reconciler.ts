@@ -23,7 +23,7 @@ export interface SyncConflictCandidate {
   readonly localPayloadJson: string;
   readonly remotePayloadJson: string | null;
 
-  readonly pendingMutationIds: readonly string[];
+  readonly pendingMutations: readonly SyncMutation[];
 }
 
 export interface SyncReconciliationPlan {
@@ -156,7 +156,7 @@ export function reconcileSyncSnapshots(
             basePayloadJson: JSON.stringify(localReference.entity),
             localPayloadJson: JSON.stringify(localReference.entity),
             remotePayloadJson: null,
-            pendingMutationIds: [],
+            pendingMutations: [],
           });
         }
 
@@ -209,7 +209,7 @@ export function reconcileSyncSnapshots(
           basePayloadJson: remaining[0].basePayloadJson,
           localPayloadJson: lastPending.payloadJson,
           remotePayloadJson: remoteRecord.payloadJson,
-          pendingMutationIds: remaining.map((mutation) => mutation.mutationId),
+          pendingMutations: remaining,
         });
 
         continue;
@@ -238,7 +238,7 @@ export function reconcileSyncSnapshots(
       basePayloadJson: firstPending.basePayloadJson,
       localPayloadJson: lastPending.payloadJson,
       remotePayloadJson: remoteRecord?.payloadJson ?? null,
-      pendingMutationIds: pending.map((mutation) => mutation.mutationId),
+      pendingMutations: pending,
     });
   }
 
