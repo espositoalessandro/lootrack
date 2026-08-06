@@ -6,6 +6,7 @@ import {
   SYNC_ENTITY_ENVELOPE_SCHEMA,
   SyncEntityPayload,
   SyncEntityType,
+  SyncEnvelopeFieldDescriptor,
   SyncMutation,
 } from "../data/models";
 import { SyncConflictCandidate } from "./sync-reconciler";
@@ -60,11 +61,6 @@ interface EntityMergeResult {
 }
 
 interface SplitSyncEntity {
-  /**
-   * The complete synchronized entity. Envelope fields can be read from it.
-   */
-  readonly envelope: SyncEntityPayload;
-
   /**
    * Every property not declared in SYNC_ENTITY_ENVELOPE_SCHEMA.
    */
@@ -189,18 +185,48 @@ export function resolveSyncConflict(
   };
 }
 
-export function parseSyncEntityPayload(value: unknown): SyncEntityPayload {
+function parseSyncEntityPayload(value: unknown): SyncEntityPayload {
   if (!isJsonObject(value)) {
     throw new Error("Synchronization payload must be a JSON object");
   }
 
-  for (const [field, validate] of Object.entries(SYNC_ENTITY_ENVELOPE_SCHEMA)) {
-    if (!validate(value[field])) {
+  for (const [field, descriptor] of Object.entries(
+    SYNC_ENTITY_ENVELOPE_SCHEMA,
+  )) {
+    if (
+      !validateEnvelopeField(
+        descriptor as SyncEnvelopeFieldDescriptor,
+        value[field],
+      )
+    ) {
       throw new Error(`Synchronization payload has an invalid ${field} value`);
     }
   }
 
   return value as SyncEntityPayload;
+}
+
+function validateEnvelopeField(
+  descriptor: SyncEnvelopeFieldDescriptor,
+  value: unknown,
+): boolean {
+  switch (descriptor) {
+    case "string":
+      return typeof value === "string";
+
+    case "nullable-string":
+      return value === null || typeof value === "string";
+
+    case "nullable-revision":
+      return (
+        value === null ||
+        (typeof value === "number" && Number.isSafeInteger(value) && value >= 0)
+      );
+
+    default: {
+      return descriptor;
+    }
+  }
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -305,7 +331,6 @@ function splitEntity(entity: SyncEntityPayload): SplitSyncEntity {
   );
 
   return {
-    envelope: entity,
     data: Object.fromEntries(dataEntries) as JsonObject,
   };
 }

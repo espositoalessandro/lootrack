@@ -15,34 +15,37 @@ export interface JsonObject {
   readonly [key: string]: JsonValue;
 }
 
-type RuntimeFieldValidator<T> = (value: unknown) => value is T;
+export type SyncEnvelopeFieldDescriptor =
+  "string" | "nullable-string" | "nullable-revision";
 
-const isString: RuntimeFieldValidator<string> = (value): value is string =>
-  typeof value === "string";
+type IsExactly<T, Expected> = [T] extends [Expected]
+  ? [Expected] extends [T]
+    ? true
+    : false
+  : false;
 
-const isNullableString: RuntimeFieldValidator<string | null> = (
-  value,
-): value is string | null => value === null || typeof value === "string";
-
-const isNullableRevision: RuntimeFieldValidator<number | null> = (
-  value,
-): value is number | null =>
-  value === null ||
-  (typeof value === "number" && Number.isSafeInteger(value) && value >= 0);
+type DescriptorFor<T> =
+  IsExactly<T, string> extends true
+    ? "string"
+    : IsExactly<T, string | null> extends true
+      ? "nullable-string"
+      : IsExactly<T, number | null> extends true
+        ? "nullable-revision"
+        : never;
 
 /**
- * Runtime contract for the fields managed by the synchronization system.
- * Business fields are intentionally absent and are handled generically.
+ * Declarative runtime description of synchronization-managed fields.
+ * No validation logic belongs in this file.
  */
 export const SYNC_ENTITY_ENVELOPE_SCHEMA = {
-  id: isString,
-  createdAt: isString,
-  updatedAt: isString,
-  deletedAt: isNullableString,
-  revision: isNullableRevision,
-  lastMutationId: isNullableString,
-} satisfies {
-  [Key in keyof Entity]-?: RuntimeFieldValidator<Entity[Key]>;
+  id: "string",
+  createdAt: "string",
+  updatedAt: "string",
+  deletedAt: "nullable-string",
+  revision: "nullable-revision",
+  lastMutationId: "nullable-string",
+} as const satisfies {
+  [Key in keyof Entity]-?: DescriptorFor<Entity[Key]>;
 };
 
 export type SyncEntityPayload = Entity & JsonObject;
