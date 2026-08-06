@@ -15,3 +15,16 @@ export class GoogleSheetsDataError extends Error {
     this.name = "GoogleSheetsDataError";
   }
 }
+
+export class GoogleSheetsWriteConflictError extends Error {
+  constructor(
+    readonly entityType: string,
+    readonly entityId: string,
+  ) {
+    super(
+      `Remote ${entityType} ${entityId} changed before it could be updated`,
+    );
+
+    this.name = "GoogleSheetsWriteConflictError";
+  }
+}

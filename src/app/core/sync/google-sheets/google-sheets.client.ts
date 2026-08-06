@@ -2,8 +2,11 @@ import { Injectable } from "@angular/core";
 import { GoogleApiError, GoogleSheetsDataError } from "./google-sheets.errors";
 import {
   Category,
+  OutgoingSyncMutation,
   RemoteSyncRecord,
   RemoteSyncSnapshot,
+  SyncPushRequest,
+  SyncPushResult,
   Transaction,
   TransactionType,
 } from "../../data/models";
@@ -81,6 +84,22 @@ interface GoogleValueRangeResponse {
 interface GoogleBatchGetValuesResponse {
   spreadsheetId?: string;
   valueRanges?: GoogleValueRangeResponse[];
+}
+
+function matchesExpectedRemote(
+  current: RemoteSyncRecord | undefined,
+  mutation: OutgoingSyncMutation,
+): boolean {
+  if (!current) {
+    return (
+      mutation.expectedRevision === null && mutation.expectedMutationId === null
+    );
+  }
+
+  return (
+    current.revision === mutation.expectedRevision &&
+    current.mutationId === mutation.expectedMutationId
+  );
 }
 
 @Injectable({
@@ -243,6 +262,19 @@ export class GoogleSheetsClient {
         }`,
       );
     }
+  }
+
+  async pushLootrackMutations(
+    accessToken: string,
+    spreadsheetId: string,
+    request: SyncPushRequest,
+  ): Promise<SyncPushResult> {
+    // 1. Read a fresh remote snapshot.
+    // 2. Validate expectedRevision and expectedMutationId.
+    // 3. Apply mutations to an in-memory record map.
+    // 4. Convert the final records back to sheet rows.
+    // 5. Write Transactions and Categories with values:batchUpdate.
+    // 6. Return only the records affected by this request.
   }
 
   private async request<T>(

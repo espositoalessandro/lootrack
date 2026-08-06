@@ -35,8 +35,16 @@ export class GoogleSheetsProvider implements SyncProvider {
     );
   }
 
-  async push(_request: SyncPushRequest): Promise<SyncPushResult> {
-    throw new Error("Google Sheets push is not implemented yet");
+  async push(request: SyncPushRequest): Promise<SyncPushResult> {
+    const accessToken = await this.authorization.getAccessToken();
+
+    const target = await this.targetService.requireTarget();
+
+    return this.sheetsApi.pushLootrackMutations(
+      accessToken,
+      target.remoteId,
+      request,
+    );
   }
 
   async disconnect(): Promise<void> {
