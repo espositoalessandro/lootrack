@@ -2,9 +2,7 @@ import { createAction, props } from "@ngrx/store";
 
 import type { AddTransaction, Transaction } from "../../core/data/models";
 
-export const loadTransactions = createAction(
-  "[Transactions Page] Load Requested",
-);
+export const loadTransactions = createAction("[Transactions] Load Requested");
 
 export const loadTransactionsSuccess = createAction(
   "[Transactions Database] Load Succeeded",
@@ -17,7 +15,7 @@ export const loadTransactionsFailure = createAction(
 );
 
 export const addTransaction = createAction(
-  "[New Transaction Page] Add Requested",
+  "[Transaction] Add Requested",
   props<{ transaction: AddTransaction }>(),
 );
 
@@ -32,7 +30,7 @@ export const addTransactionFailure = createAction(
 );
 
 export const deleteTransaction = createAction(
-  "[Transaction Item] Delete Requested",
+  "[Transaction] Delete Requested",
   props<{ id: string }>(),
 );
 
@@ -47,7 +45,7 @@ export const deleteTransactionFailure = createAction(
 );
 
 export const updateTransaction = createAction(
-  "[Transaction Item] Update Requested",
+  "[Transaction] Update Requested",
   props<{ id: string; changes: AddTransaction }>(),
 );
 

@@ -9,7 +9,7 @@ import type {
 
 // RETRIEVES
 
-export const loadCategories = createAction("[Categories Page] Load Requested");
+export const loadCategories = createAction("[Categories] Load Requested");
 
 export const loadCategoriesSuccess = createAction(
   "[Categories Database] Load Succeeded",
@@ -29,7 +29,7 @@ export const generalCategoriesFailure = createAction(
 // ADD
 
 export const addCategory = createAction(
-  "[New Category Page] Add Requested",
+  "[Category] Add Requested",
   props<{ category: AddCategory }>(),
 );
 

@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, defer, EMPTY, exhaustMap, map, of } from "rxjs";
+import { catchError, concatMap, defer, EMPTY, exhaustMap, map, of } from "rxjs";
 import { SYNC_PROVIDER } from "../../core/data/CONST";
 import {
   connectSync,
@@ -15,6 +15,8 @@ import {
 import { TuiDialogService, TuiNotificationService } from "@taiga-ui/core";
 import { SyncEngine } from "../../core/sync/sync-engine";
 import { SyncRunConflictError } from "../../core/data/errors";
+import { loadCategories } from "../categories/categories.actions";
+import { loadTransactions } from "../transactions/transactions.actions";
 
 @Injectable()
 export class SyncEffects {
@@ -121,5 +123,12 @@ export class SyncEffects {
         ),
       ),
     { dispatch: false },
+  );
+
+  readonly reloadLocalStateAfterSync$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(synchronizeSuccess),
+      concatMap(() => [loadTransactions(), loadCategories()]),
+    ),
   );
 }
