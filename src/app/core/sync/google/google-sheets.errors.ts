@@ -8,3 +8,10 @@ export class GoogleApiError extends Error {
     this.name = "GoogleApiError";
   }
 }
+
+export class GoogleSheetsDataError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GoogleSheetsDataError";
+  }
+}

@@ -1,18 +1,20 @@
 import { inject, Injectable } from "@angular/core";
 
 import { GoogleAuthorizationService } from "./google-authorization.service";
-import { GoogleSheetsTargetService } from "./google-sheets-target.service";
+import { GoogleSheetsService } from "./google-sheets.service";
 import {
   RemoteSyncSnapshot,
   SyncProvider,
   SyncPushRequest,
   SyncPushResult,
 } from "../../data/models";
+import { GoogleSheetsClient } from "./google-sheets.client";
 
 @Injectable()
 export class GoogleSheetsProvider implements SyncProvider {
   private readonly authorization = inject(GoogleAuthorizationService);
-  private readonly targetService = inject(GoogleSheetsTargetService);
+  private readonly targetService = inject(GoogleSheetsService);
+  private readonly sheetsApi = inject(GoogleSheetsClient);
 
   async initialize(): Promise<void> {
     await this.authorization.loadLibrary();
@@ -24,7 +26,13 @@ export class GoogleSheetsProvider implements SyncProvider {
   }
 
   async pull(): Promise<RemoteSyncSnapshot> {
-    throw new Error("Google Sheets pull is not implemented yet");
+    const accessToken = await this.authorization.getAccessToken();
+    const target = await this.targetService.requireTarget();
+
+    return await this.sheetsApi.readLootrackSnapshot(
+      accessToken,
+      target.remoteId,
+    );
   }
 
   async push(_request: SyncPushRequest): Promise<SyncPushResult> {
