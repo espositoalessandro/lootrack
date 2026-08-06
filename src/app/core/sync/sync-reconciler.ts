@@ -200,7 +200,6 @@ export function reconcileSyncSnapshots(
       if (remaining.length === 0) {
         continue;
       }
-
       if (!remoteMatchesExpectedBase(remoteRecord, remaining[0])) {
         conflicts.push({
           entityType: firstPending.entityType,
