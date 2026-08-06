@@ -95,7 +95,6 @@ export class SyncLocalRepository {
             }
 
             foundRemoteRecords.add(key);
-
             /*
              * Preserve newer local work.
              *

@@ -69,42 +69,9 @@ The application is designed to work primarily as an installable Progressive Web 
 
 ---
 
-## v0.2 — Desktop, portability, and synchronization foundation
+## v0.2 — Synchronization foundation
 
-**Goal:** Make Lootrack comfortable to use on desktop and prepare the application for remote synchronization.
-
-### Responsive desktop interface
-
-- [ ] Create desktop application shell
-- [ ] Adapt dashboard layout for larger screens
-- [ ] Adapt transaction management for larger screens
-- [ ] Add responsive widget grid
-- [ ] Support movable dashboard widgets
-- [ ] Persist widget layout locally
-- [ ] Improve keyboard navigation
-- [ ] Add desktop-friendly filters and tables
-
-### Analytics
-
-- [ ] Spending by category
-- [ ] Daily spending chart
-- [ ] Monthly spending trend
-- [ ] Budget progress
-- [ ] Mean daily spending
-- [ ] Median daily spending
-- [ ] Cumulative spending mode
-- [ ] Date-range filtering
-- [ ] Account and category filters
-
-### JSON backup and restore
-
-- [ ] Export the complete local database as JSON
-- [ ] Import and validate a JSON backup
-- [ ] Detect incompatible backup versions
-- [ ] Add explicit replace and merge restore modes
-- [ ] Include schema and application version metadata
-- [ ] Add automatic pre-import backup
-- [ ] Add CSV export for human-readable transaction data
+**Goal:** Implement remote synchronization and implement a first Google Sheet provider.
 
 ### Synchronization model
 
@@ -138,12 +105,6 @@ The application is designed to work primarily as an installable Progressive Web 
 - [ ] Demonstrate category swipe actions the first time they are available
 - [ ] Persist dismissed onboarding hints locally
 - [ ] End-to-end test for transaction CRUD
-
----
-
-## v0.3 — Google Sheets synchronization
-
-**Goal:** Add optional remote synchronization without requiring a custom hosted backend.
 
 ### Google authentication
 
@@ -199,9 +160,21 @@ The application is designed to work primarily as an installable Progressive Web 
 
 ---
 
-## v0.4 — Daily-driver features, testing and accessibility
+## v0.3 — Daily-driver features, testing and accessibility
 
 **Goal:** Make Lootrack practical for continuous personal use. Define tests and make the app WADC compliant
+
+### JSON backup and restore
+
+- [ ] Export the complete local database as JSON
+- [ ] Import and validate a JSON backup
+- [ ] Detect incompatible backup versions
+- [ ] Add explicit replace and merge restore modes
+- [ ] Include schema and application version metadata
+- [ ] Add automatic pre-import backup
+- [ ] Add CSV export for human-readable transaction data
+
+### UI improvements
 
 - [ ] Search transactions
 - [ ] Advanced filters
