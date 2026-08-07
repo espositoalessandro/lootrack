@@ -1,6 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
+import { environment } from "../../../../environments/environment";
 import { SyncTargetRepository } from "../../data/repositories/sync-target-repository";
 import { SyncTarget } from "../../data/models";
 import { GoogleSheetsClient } from "./google-sheets.client";
@@ -14,6 +15,17 @@ export class GoogleSheetsService {
   private readonly sheetsApi = inject(GoogleSheetsClient);
 
   async ensureTarget(accessToken: string): Promise<SyncTarget> {
+    const configuredTarget = this.getConfiguredTarget();
+
+    if (configuredTarget) {
+      await this.sheetsApi.validateLootrackSpreadsheet(
+        accessToken,
+        configuredTarget.remoteId,
+      );
+
+      return configuredTarget;
+    }
+
     const existingTarget = await firstValueFrom(this.targetRepository.get());
 
     if (existingTarget) {
@@ -40,11 +52,13 @@ export class GoogleSheetsService {
     );
   }
 
-  private shouldReplaceTarget(error: unknown): boolean {
-    return error instanceof GoogleApiError && error.status === 404;
-  }
-
   async requireTarget(): Promise<SyncTarget> {
+    const configuredTarget = this.getConfiguredTarget();
+
+    if (configuredTarget) {
+      return configuredTarget;
+    }
+
     const target = await firstValueFrom(this.targetRepository.get());
 
     if (!target) {
@@ -52,5 +66,20 @@ export class GoogleSheetsService {
     }
 
     return target;
+  }
+
+  private getConfiguredTarget(): SyncTarget | null {
+    const remoteId = environment.googleSheets.targetSpreadsheetId;
+    if (!remoteId) {
+      return null;
+    }
+    return {
+      id: "active",
+      remoteId,
+    };
+  }
+
+  private shouldReplaceTarget(error: unknown): boolean {
+    return error instanceof GoogleApiError && error.status === 404;
   }
 }
