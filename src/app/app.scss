@@ -1,6 +1,6 @@
 :host {
   --app-top-chrome-space: 5rem;
-  --app-bottom-chrome-space: 6rem;
+  --app-bottom-chrome-space: 4rem;
 
   --app-top-offset: calc(
     var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
@@ -25,7 +25,9 @@
   padding-block-start: calc(
     var(--app-top-chrome-space) + env(safe-area-inset-top, 0px)
   );
-
+  padding-block-end: calc(
+    var(--app-bottom-chrome-space) + env(safe-area-inset-bottom, 0px)
+  );
   scroll-padding-block-start: var(--app-top-offset);
   scroll-padding-block-end: var(--app-bottom-offset);
 }

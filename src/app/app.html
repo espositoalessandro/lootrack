@@ -5,7 +5,7 @@
       [overlay]="true"
       [loading]="!!(transactionsLoading$ | async)"
     >
-      <main class="app-content">
+      <main tuiScrollRef class="app-content">
         <tui-pull-to-refresh
           class="app-refresh"
           (pulled)="requestSynchronization()"

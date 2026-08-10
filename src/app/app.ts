@@ -1,4 +1,9 @@
-import { TUI_DARK_MODE, TuiLoader, TuiRoot } from "@taiga-ui/core";
+import {
+  TUI_DARK_MODE,
+  TuiLoader,
+  TuiRoot,
+  TuiScrollRef,
+} from "@taiga-ui/core";
 import { AsyncPipe } from "@angular/common";
 import { Component, effect, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
@@ -27,6 +32,7 @@ import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
     TuiLoader,
     FloatingHeader,
     TuiPullToRefresh,
+    TuiScrollRef,
   ],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
