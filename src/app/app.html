@@ -3,7 +3,7 @@
     <tui-loader
       class="block h-full"
       [overlay]="true"
-      [loading]="!!(transactionsLoading$ | async)"
+      [loading]="!!isAppLoading()"
     >
       <main tuiScrollRef class="app-content">
         <tui-pull-to-refresh

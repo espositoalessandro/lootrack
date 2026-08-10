@@ -4,7 +4,6 @@ import {
   TuiRoot,
   TuiScrollRef,
 } from "@taiga-ui/core";
-import { AsyncPipe } from "@angular/common";
 import { Component, effect, inject, OnInit } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { Store } from "@ngrx/store";
@@ -12,7 +11,6 @@ import { Store } from "@ngrx/store";
 import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 import { loadCategories } from "./state/categories/categories.actions";
 import { loadTransactions } from "./state/transactions/transactions.actions";
-import { selectTransactionsLoading } from "./state/transactions/transactions.selector";
 import { FloatingHeader } from "./layout/floating-header/floating-header";
 import {
   loadAppSettings,
@@ -21,6 +19,7 @@ import {
 import { selectAppSettings } from "./state/app-settings/app-settings.selector";
 import { synchronize } from "./state/sync/sync.actions";
 import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
+import { isAppLoading } from "./state/global.selector";
 
 @Component({
   selector: "app-root",
@@ -28,7 +27,6 @@ import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
     RouterOutlet,
     TuiRoot,
     FloatingFooter,
-    AsyncPipe,
     TuiLoader,
     FloatingHeader,
     TuiPullToRefresh,
@@ -41,10 +39,7 @@ export class App implements OnInit {
   private readonly store = inject(Store);
   protected readonly darkMode = inject(TUI_DARK_MODE);
 
-  protected readonly transactionsLoading$ = this.store.select(
-    selectTransactionsLoading,
-  );
-
+  protected readonly isAppLoading = this.store.selectSignal(isAppLoading);
   protected readonly settings = this.store.selectSignal(selectAppSettings);
 
   constructor() {
