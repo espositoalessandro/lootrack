@@ -23,8 +23,6 @@ export interface SyncMutation {
   createdAt: string;
 }
 
-export type OutgoingSyncMutation = Omit<SyncMutation, "localSequence">;
-
 export interface RemoteSyncRecord {
   entityType: SyncEntityType;
   entityId: string;
@@ -40,7 +38,7 @@ export interface RemoteSyncSnapshot {
 }
 
 export interface SyncPushRequest {
-  mutations: readonly OutgoingSyncMutation[];
+  mutations: readonly SyncMutation[];
 }
 
 export interface SyncPushResult {

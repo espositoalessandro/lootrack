@@ -1,6 +1,5 @@
 import {
   Category,
-  OutgoingSyncMutation,
   RemoteSyncRecord,
   RemoteSyncSnapshot,
   SyncEntityType,
@@ -37,7 +36,7 @@ export interface SyncReconciliationPlan {
    * Existing outbox mutations that are already based on the current remote
    * records and can therefore be submitted unchanged.
    */
-  readonly mutationsToPush: readonly OutgoingSyncMutation[];
+  readonly mutationsToPush: readonly SyncMutation[];
 
   /**
    * Mutations already represented by the remote final state, usually after
@@ -60,10 +59,6 @@ interface LocalEntityReference {
 
 function entityKey(entityType: SyncEntityType, entityId: string): string {
   return `${entityType}:${entityId}`;
-}
-
-function toOutgoingMutation(mutation: SyncMutation): OutgoingSyncMutation {
-  return mutation;
 }
 
 function remoteMatchesExpectedBase(
@@ -133,7 +128,7 @@ export function reconcileSyncSnapshots(
   ]);
 
   const remoteRecordsToApply: RemoteSyncRecord[] = [];
-  const mutationsToPush: OutgoingSyncMutation[] = [];
+  const mutationsToPush: SyncMutation[] = [];
   const mutationIdsToAcknowledge: string[] = [];
   const conflicts: SyncConflictCandidate[] = [];
 
@@ -218,7 +213,7 @@ export function reconcileSyncSnapshots(
         continue;
       }
 
-      mutationsToPush.push(...remaining.map(toOutgoingMutation));
+      mutationsToPush.push(...remaining);
       continue;
     }
 
@@ -226,7 +221,7 @@ export function reconcileSyncSnapshots(
      * Ordinary non-conflicting pending chain.
      */
     if (remoteMatchesExpectedBase(remoteRecord, firstPending)) {
-      mutationsToPush.push(...pending.map(toOutgoingMutation));
+      mutationsToPush.push(...pending);
       continue;
     }
 

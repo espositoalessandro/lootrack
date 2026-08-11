@@ -13,6 +13,13 @@ export const PERSISTENCE_PROVIDER = new InjectionToken<PersistenceProvider>(
   "PERSISTENCE_PROVIDER",
 );
 
+export interface MutationPersistenceStore {
+  getPending(): Observable<readonly SyncMutation[]>;
+  add(mutation: SyncMutation): Observable<void>;
+  addMany(mutations: readonly SyncMutation[]): Observable<void>;
+  removeByIds(mutationIds: readonly string[]): Observable<void>;
+}
+
 export interface PersistenceStore<T, K> {
   get(key: K): Observable<T | undefined>;
   getAll(): Observable<readonly T[]>;
@@ -24,9 +31,9 @@ export interface PersistenceStore<T, K> {
 export interface PersistenceContext {
   transactions: PersistenceStore<Transaction, string>;
   categories: PersistenceStore<Category, string>;
-  mutations: PersistenceStore<SyncMutation, number>;
   appSettings: PersistenceStore<AppSettings, string>;
   syncTargets: PersistenceStore<SyncTarget, string>;
+  mutations: MutationPersistenceStore;
 }
 
 export type PersistenceStoreName = keyof PersistenceContext;
