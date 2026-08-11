@@ -1,4 +1,5 @@
-import Dexie, { type EntityTable } from "dexie";
+import Dexie, { type EntityTable, type Table } from "dexie";
+
 import {
   AppSettings,
   Category,
@@ -12,11 +13,12 @@ interface StoredSyncMutation extends SyncMutation {
 }
 
 export class Database extends Dexie {
-  transactions!: EntityTable<Transaction, "id">;
-  categories!: EntityTable<Category, "id">;
-  appSettings!: EntityTable<AppSettings, "id">;
+  transactions!: Table<Transaction, Transaction["id"]>;
+  categories!: Table<Category, Category["id"]>;
+  appSettings!: Table<AppSettings, AppSettings["id"]>;
+  syncTargets!: Table<SyncTarget, SyncTarget["id"]>;
+
   mutations!: EntityTable<StoredSyncMutation, "localSequence">;
-  syncTargets!: EntityTable<SyncTarget, "id">;
 
   constructor() {
     super("lootrack");
