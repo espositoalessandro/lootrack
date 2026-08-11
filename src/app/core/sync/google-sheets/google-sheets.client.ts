@@ -6,9 +6,9 @@ import {
 } from "./google-sheets.errors";
 import {
   Category,
-  OutgoingSyncMutation,
   RemoteSyncRecord,
   RemoteSyncSnapshot,
+  SyncMutation,
   SyncPushRequest,
   SyncPushResult,
   Transaction,
@@ -92,7 +92,7 @@ interface GoogleBatchGetValuesResponse {
 
 function matchesExpectedRemote(
   current: RemoteSyncRecord | undefined,
-  mutation: OutgoingSyncMutation,
+  mutation: SyncMutation,
 ): boolean {
   if (!current) {
     return (
@@ -395,7 +395,7 @@ export class GoogleSheetsClient {
     };
   }
 
-  private recordFromMutation(mutation: OutgoingSyncMutation): RemoteSyncRecord {
+  private recordFromMutation(mutation: SyncMutation): RemoteSyncRecord {
     const context = `${mutation.entityType} mutation ` + mutation.mutationId;
 
     const entity =
