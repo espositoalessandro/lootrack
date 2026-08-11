@@ -56,7 +56,7 @@ The application is designed to work primarily as an installable Progressive Web 
 * [x] Category management
 * [x] Basic monthly totals
 * [x] Basic category breakdown
-* [x] Transaction list
+* [x] TransactionService list
 * [x] Add transaction
 * [x] Edit transaction
 * [x] Delete transaction

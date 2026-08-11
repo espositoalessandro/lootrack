@@ -15,7 +15,7 @@ export const loadTransactionsFailure = createAction(
 );
 
 export const addTransaction = createAction(
-  "[Transaction] Add Requested",
+  "[TransactionService] Add Requested",
   props<{ transaction: AddTransaction }>(),
 );
 
@@ -30,7 +30,7 @@ export const addTransactionFailure = createAction(
 );
 
 export const deleteTransaction = createAction(
-  "[Transaction] Delete Requested",
+  "[TransactionService] Delete Requested",
   props<{ id: string }>(),
 );
 
@@ -45,7 +45,7 @@ export const deleteTransactionFailure = createAction(
 );
 
 export const updateTransaction = createAction(
-  "[Transaction] Update Requested",
+  "[TransactionService] Update Requested",
   props<{ id: string; changes: AddTransaction }>(),
 );
 
@@ -60,6 +60,6 @@ export const updateTransactionFailure = createAction(
 );
 
 export const generalTransactionFailure = createAction(
-  "[Transaction Database] Transaction error",
+  "[TransactionService Database] TransactionService error",
   props<{ error: string }>(),
 );

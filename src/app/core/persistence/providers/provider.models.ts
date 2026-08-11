@@ -40,7 +40,7 @@ export type PersistenceStoreName = keyof PersistenceContext;
 export type PersistenceTransactionMode = "read" | "readwrite";
 
 export interface PersistenceProvider extends PersistenceContext {
-  transaction<T>(
+  doTransaction<T>(
     mode: PersistenceTransactionMode,
     stores: readonly PersistenceStoreName[],
     operation: (context: PersistenceContext) => Observable<T>,

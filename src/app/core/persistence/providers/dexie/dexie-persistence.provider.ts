@@ -20,7 +20,7 @@ export class DexiePersistenceProvider implements PersistenceProvider {
 
   readonly mutations = new DexieMutationRepository();
 
-  transaction<T>(
+  doTransaction<T>(
     mode: PersistenceTransactionMode,
     stores: readonly PersistenceStoreName[],
     operation: (context: PersistenceContext) => Observable<T>,
