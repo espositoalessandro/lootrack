@@ -3,15 +3,7 @@ import {
   PERSISTENCE_PROVIDER,
   PersistenceContext,
 } from "../providers/provider.models";
-import {
-  concatMap,
-  endWith,
-  ignoreElements,
-  map,
-  Observable,
-  of,
-  switchMap,
-} from "rxjs";
+import { map, Observable, of, switchMap } from "rxjs";
 import {
   AddTransaction,
   CategoryAssignment,
@@ -88,43 +80,41 @@ export class TransactionService {
       (db): Observable<Transaction> => {
         const categoryId = this.resolveCategoryId(changes.category);
 
-        return this.getTransaction(db, id).pipe(
-          concatMap((existing) =>
+        return this.getActiveTransaction(db, id).pipe(
+          switchMap((existing) =>
             this.validateCategoryReference(db, categoryId, changes.type).pipe(
-              ignoreElements(),
-              endWith(existing),
+              switchMap(() => {
+                const now = new Date().toISOString();
+                const updatedTransaction: Omit<
+                  Transaction,
+                  keyof SyncMetadata
+                > = {
+                  id,
+                  type: changes.type,
+                  amountInCents: changes.amountInCents,
+                  description: changes.description,
+                  occurredOn: changes.occurredOn,
+                  categoryId,
+                  createdAt: existing.createdAt,
+                  updatedAt: now,
+                  deletedAt: existing.deletedAt,
+                };
+
+                const { entity, mutation } = createMutation<Transaction>({
+                  nextEntityData: updatedTransaction,
+                  previousEntity: existing,
+                  entityType: "transaction",
+                  operation: "upsert",
+                  timestamp: now,
+                });
+
+                return db.mutations.add(mutation).pipe(
+                  switchMap(() => db.transactions.put(entity)),
+                  map(() => entity),
+                );
+              }),
             ),
           ),
-          switchMap((existing) => {
-            if (!existing) {
-              throw new Error();
-            }
-            const now = new Date().toISOString();
-            const updatedTransaction: Omit<Transaction, keyof SyncMetadata> = {
-              id,
-              type: changes.type,
-              amountInCents: changes.amountInCents,
-              description: changes.description,
-              occurredOn: changes.occurredOn,
-              categoryId,
-              createdAt: existing.createdAt,
-              updatedAt: now,
-              deletedAt: existing.deletedAt,
-            };
-
-            const { entity, mutation } = createMutation<Transaction>({
-              nextEntityData: updatedTransaction,
-              previousEntity: existing,
-              entityType: "transaction",
-              operation: "upsert",
-              timestamp: now,
-            });
-
-            return db.mutations.add(mutation).pipe(
-              switchMap(() => db.transactions.add(entity)),
-              map(() => entity),
-            );
-          }),
         );
       },
     );
@@ -143,17 +133,17 @@ export class TransactionService {
     }
   }
 
-  private getTransaction(
+  private getActiveTransaction(
     db: PersistenceContext,
     id: string,
   ): Observable<Transaction> {
     return db.transactions.get(id).pipe(
       map((transaction) => {
-        if (!transaction) {
+        if (!transaction || transaction.deletedAt !== null) {
           throw new Error("Transaction not found");
-        } else {
-          return transaction;
         }
+
+        return transaction;
       }),
     );
   }
