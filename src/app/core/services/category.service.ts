@@ -14,6 +14,7 @@ import {
 import { createMutation } from "../sync/mutation";
 import {
   CategoryAlreadyExistsError,
+  CategoryInUseError,
   CategoryTransactionAssignmentError,
 } from "../data/errors";
 
@@ -139,6 +140,49 @@ export class CategoryService {
     );
   }
 
+  remove(id: string): Observable<void> {
+    return this.persistenceProvider.doTransaction(
+      "readwrite",
+      ["categories", "transactions", "mutations"],
+      (db) =>
+        this.getByIdFrom(db, id).pipe(
+          switchMap((category) =>
+            this.getActiveTransactionsByCategory(db, id).pipe(
+              switchMap((transactions) => {
+                if (transactions.length > 0) {
+                  throw new CategoryInUseError(transactions.length);
+                }
+
+                const now = new Date().toISOString();
+
+                const deletedCategory: Omit<Category, keyof SyncMetadata> = {
+                  id: category.id,
+                  name: category.name,
+                  type: category.type,
+                  createdAt: category.createdAt,
+                  updatedAt: now,
+                  deletedAt: now,
+                };
+
+                const { entity, mutation } = createMutation<Category>({
+                  entityType: "category",
+                  operation: "delete",
+                  timestamp: now,
+                  previousEntity: category,
+                  nextEntityData: deletedCategory,
+                });
+
+                return db.mutations.add(mutation).pipe(
+                  switchMap(() => db.categories.put(entity)),
+                  map(() => undefined),
+                );
+              }),
+            ),
+          ),
+        ),
+    );
+  }
+
   private validateUniqueCategory(
     db: PersistenceContext,
     name: string,
@@ -163,6 +207,7 @@ export class CategoryService {
       }),
     );
   }
+
   private getAssignableTransactions(
     db: PersistenceContext,
     transactionIds: readonly string[] | undefined,
@@ -210,5 +255,22 @@ export class CategoryService {
         return transactions;
       }),
     );
+  }
+
+  private getActiveTransactionsByCategory(
+    db: PersistenceContext,
+    categoryId: string,
+  ): Observable<readonly Transaction[]> {
+    return db.transactions
+      .getAll()
+      .pipe(
+        map((transactions) =>
+          transactions.filter(
+            (transaction) =>
+              transaction.categoryId === categoryId &&
+              transaction.deletedAt === null,
+          ),
+        ),
+      );
   }
 }
