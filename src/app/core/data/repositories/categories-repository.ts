@@ -9,7 +9,6 @@ import {
   UpdateCategory,
 } from "../models";
 import { lootrackDb } from "../database";
-import { categoryNamesMatch, cleanCategoryName } from "../category-name";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
@@ -18,6 +17,10 @@ import {
 } from "../errors";
 import { MutationsRepository } from "./mutations-repository";
 import { CreateMutationPayload } from "../../sync/mutation";
+import {
+  categoryNamesMatch,
+  cleanCategoryName,
+} from "../../services/category.service";
 
 @Injectable({
   providedIn: "root",
