@@ -40,7 +40,7 @@ export class SyncEffects {
                 error:
                   error instanceof Error
                     ? error.message
-                    : "Unable to connect to synchronization provider",
+                    : "Unable to connect to synchronization providers",
               }),
             ),
           ),

@@ -33,6 +33,8 @@ import {
   synchronizeFailure,
   synchronizeSuccess,
 } from "./state/sync/sync.actions";
+import { PERSISTENCE_PROVIDER } from "./core/persistence/providers/provider.models";
+import { DexiePersistenceProvider } from "./core/persistence/providers/dexie/dexie-persistence.provider";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -75,6 +77,10 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: "registerWhenStable:30000",
     }),
+    {
+      provide: PERSISTENCE_PROVIDER,
+      useClass: DexiePersistenceProvider,
+    },
     {
       provide: SYNC_PROVIDER,
       useClass: GoogleSheetsProvider,

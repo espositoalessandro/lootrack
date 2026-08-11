@@ -7,7 +7,7 @@ import {
   SyncMutation,
   SyncTarget,
   Transaction,
-} from "../data/models";
+} from "../../data/models";
 
 export const PERSISTENCE_PROVIDER = new InjectionToken<PersistenceProvider>(
   "PERSISTENCE_PROVIDER",
@@ -29,17 +29,19 @@ export interface PersistenceStore<T, K> {
 }
 
 export interface PersistenceContext {
-  transactions: PersistenceStore<Transaction, string>;
-  categories: PersistenceStore<Category, string>;
-  appSettings: PersistenceStore<AppSettings, string>;
-  syncTargets: PersistenceStore<SyncTarget, string>;
+  transactions: PersistenceStore<Transaction, Transaction["id"]>;
+  categories: PersistenceStore<Category, Category["id"]>;
+  appSettings: PersistenceStore<AppSettings, AppSettings["id"]>;
+  syncTargets: PersistenceStore<SyncTarget, SyncTarget["id"]>;
   mutations: MutationPersistenceStore;
 }
 
 export type PersistenceStoreName = keyof PersistenceContext;
+export type PersistenceTransactionMode = "read" | "readwrite";
 
 export interface PersistenceProvider extends PersistenceContext {
   transaction<T>(
+    mode: PersistenceTransactionMode,
     stores: readonly PersistenceStoreName[],
     operation: (context: PersistenceContext) => Observable<T>,
   ): Observable<T>;
