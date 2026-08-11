@@ -23,7 +23,6 @@ import {
   updateCategory,
   updateCategorySuccess,
 } from "./categories.actions";
-import { CategoriesRepository } from "../../core/data/repositories/categories-repository";
 import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
@@ -31,20 +30,23 @@ import {
   CategoryTypeChangeBlockedError,
 } from "../../core/data/errors";
 import { TuiDialogService } from "@taiga-ui/core";
+import { CategoryService } from "../../core/services/category.service";
 
 @Injectable()
 export class CategoriesEffects {
   private readonly actions$ = inject(Actions);
   private readonly dialogs = inject(TuiDialogService);
-  private readonly categoriesDatabase = inject(CategoriesRepository);
+  private readonly categoryService = inject(CategoryService);
 
   readonly loadCategories$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadCategories),
 
       switchMap(() =>
-        this.categoriesDatabase.getActive().pipe(
-          map((categories) => loadCategoriesSuccess({ categories })),
+        this.categoryService.getAllActive().pipe(
+          map((categories) =>
+            loadCategoriesSuccess({ categories: [...categories] }),
+          ),
 
           catchError((error: unknown) =>
             of(
@@ -66,7 +68,7 @@ export class CategoriesEffects {
       ofType(addCategory),
 
       concatMap(({ category }) =>
-        this.categoriesDatabase.add(category).pipe(
+        this.categoryService.add(category).pipe(
           map((result) =>
             addCategorySuccess({
               category: result.category,
@@ -103,7 +105,7 @@ export class CategoriesEffects {
     this.actions$.pipe(
       ofType(deleteCategory),
       concatMap(({ id }) =>
-        this.categoriesDatabase.remove(id).pipe(
+        this.categoryService.remove(id).pipe(
           map(() => deleteCategorySuccess({ id })),
           catchError((error: unknown) => {
             if (error instanceof CategoryInUseError) {
@@ -133,7 +135,7 @@ export class CategoriesEffects {
       ofType(updateCategory),
 
       concatMap(({ id, changes }) =>
-        this.categoriesDatabase.update(id, changes).pipe(
+        this.categoryService.update(id, changes).pipe(
           map((result) =>
             updateCategorySuccess({
               updatedCategory: result.category,

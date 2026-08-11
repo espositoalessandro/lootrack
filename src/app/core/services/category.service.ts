@@ -5,6 +5,7 @@ import {
   CategoryMutationResult,
   SyncMetadata,
   Transaction,
+  UpdateCategory,
 } from "../data/models";
 import { inject, Service } from "@angular/core";
 import {
@@ -16,6 +17,7 @@ import {
   CategoryAlreadyExistsError,
   CategoryInUseError,
   CategoryTransactionAssignmentError,
+  CategoryTypeChangeBlockedError,
 } from "../data/errors";
 
 export function cleanCategoryName(name: string): string {
@@ -183,6 +185,103 @@ export class CategoryService {
     );
   }
 
+  update(
+    id: string,
+    input: UpdateCategory,
+  ): Observable<CategoryMutationResult> {
+    return this.persistenceProvider.doTransaction(
+      "readwrite",
+      ["categories", "transactions", "mutations"],
+      (db) =>
+        this.getByIdFrom(db, id).pipe(
+          switchMap((existing) =>
+            this.validateTypeChange(db, existing, input.type).pipe(
+              switchMap(() =>
+                this.validateUniqueCategory(
+                  db,
+                  input.name,
+                  input.type,
+                  existing.id,
+                ),
+              ),
+              switchMap(() =>
+                this.getAssignableTransactions(
+                  db,
+                  input.transactionIds,
+                  input.type,
+                ),
+              ),
+              switchMap((assignableTransactions) => {
+                const now = new Date().toISOString();
+
+                const updatedCategoryData: Omit<Category, keyof SyncMetadata> =
+                  {
+                    id: existing.id,
+                    name: cleanCategoryName(input.name),
+                    type: input.type,
+                    createdAt: existing.createdAt,
+                    updatedAt: now,
+                    deletedAt: null,
+                  };
+
+                const { entity: category, mutation: categoryMutation } =
+                  createMutation<Category>({
+                    entityType: "category",
+                    operation: "upsert",
+                    timestamp: now,
+                    previousEntity: existing,
+                    nextEntityData: updatedCategoryData,
+                  });
+
+                const transactionResults = assignableTransactions.map(
+                  (transaction) =>
+                    createMutation<Transaction>({
+                      previousEntity: transaction,
+                      nextEntityData: {
+                        id: transaction.id,
+                        type: transaction.type,
+                        amountInCents: transaction.amountInCents,
+                        description: transaction.description,
+                        occurredOn: transaction.occurredOn,
+                        categoryId: category.id,
+                        createdAt: transaction.createdAt,
+                        updatedAt: now,
+                        deletedAt: transaction.deletedAt,
+                      },
+                      entityType: "transaction",
+                      operation: "upsert",
+                      timestamp: now,
+                    }),
+                );
+
+                const updatedTransactions = transactionResults.map(
+                  ({ entity }) => entity,
+                );
+
+                const mutations = [
+                  categoryMutation,
+                  ...transactionResults.map(({ mutation }) => mutation),
+                ];
+
+                return db.mutations.addMany(mutations).pipe(
+                  switchMap(() => db.categories.put(category)),
+                  switchMap(() => db.transactions.putMany(updatedTransactions)),
+                  map(() => ({
+                    category,
+                    ...(updatedTransactions.length > 0
+                      ? {
+                          transactions: updatedTransactions,
+                        }
+                      : {}),
+                  })),
+                );
+              }),
+            ),
+          ),
+        ),
+    );
+  }
+
   private validateUniqueCategory(
     db: PersistenceContext,
     name: string,
@@ -272,5 +371,23 @@ export class CategoryService {
           ),
         ),
       );
+  }
+
+  private validateTypeChange(
+    db: PersistenceContext,
+    category: Category,
+    newType: Category["type"],
+  ): Observable<void> {
+    if (category.type === newType) {
+      return of(undefined);
+    }
+    // forbid edit category type if there are associated transactions
+    return this.getActiveTransactionsByCategory(db, category.id).pipe(
+      map((transactions) => {
+        if (transactions.length > 0) {
+          throw new CategoryTypeChangeBlockedError(transactions.length);
+        }
+      }),
+    );
   }
 }
