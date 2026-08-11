@@ -9,8 +9,6 @@ import {
   of,
   switchMap,
 } from "rxjs";
-
-import { TransactionsRepository } from "../../core/data/repositories/transactions-repository";
 import {
   addTransaction,
   addTransactionSuccess,
@@ -23,20 +21,23 @@ import {
   updateTransactionSuccess,
 } from "./transactions.actions";
 import { TuiDialogService } from "@taiga-ui/core";
+import { TransactionService } from "../../core/persistence/services/transaction.service";
 
 @Injectable()
 export class TransactionsEffects {
   private readonly actions$ = inject(Actions);
   private readonly dialogs = inject(TuiDialogService);
-  private readonly transactionsDatabase = inject(TransactionsRepository);
+  private readonly transactionService = inject(TransactionService);
 
   readonly loadTransactions$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadTransactions),
 
       switchMap(() =>
-        this.transactionsDatabase.getActive().pipe(
-          map((transactions) => loadTransactionsSuccess({ transactions })),
+        this.transactionService.getAllActive().pipe(
+          map((transactions) =>
+            loadTransactionsSuccess({ transactions: [...transactions] }),
+          ),
 
           catchError((error: unknown) =>
             of(
@@ -58,7 +59,7 @@ export class TransactionsEffects {
       ofType(addTransaction),
 
       concatMap(({ transaction }) =>
-        this.transactionsDatabase.add(transaction).pipe(
+        this.transactionService.add(transaction).pipe(
           map((newTransaction) =>
             addTransactionSuccess({ transaction: newTransaction }),
           ),
@@ -82,7 +83,7 @@ export class TransactionsEffects {
     this.actions$.pipe(
       ofType(deleteTransaction),
       concatMap(({ id }) =>
-        this.transactionsDatabase.remove(id).pipe(
+        this.transactionService.remove(id).pipe(
           map(() => deleteTransactionSuccess({ id })),
           catchError((error: unknown) =>
             of(
@@ -104,7 +105,7 @@ export class TransactionsEffects {
       ofType(updateTransaction),
 
       concatMap(({ id, changes }) =>
-        this.transactionsDatabase.update(id, changes).pipe(
+        this.transactionService.update(id, changes).pipe(
           map((transaction) =>
             updateTransactionSuccess({
               updatedTransaction: transaction,
