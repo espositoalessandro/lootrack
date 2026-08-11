@@ -7,11 +7,15 @@ import {
   Transaction,
 } from "./models";
 
+interface StoredSyncMutation extends SyncMutation {
+  localSequence?: number;
+}
+
 export class Database extends Dexie {
   transactions!: EntityTable<Transaction, "id">;
   categories!: EntityTable<Category, "id">;
   appSettings!: EntityTable<AppSettings, "id">;
-  mutations!: EntityTable<SyncMutation, "localSequence">;
+  mutations!: EntityTable<StoredSyncMutation, "localSequence">;
   syncTargets!: EntityTable<SyncTarget, "id">;
 
   constructor() {

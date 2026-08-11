@@ -9,15 +9,9 @@ import {
 import { defer, Observable } from "rxjs";
 import { lootrackDb } from "../database";
 
-export type UnstoredSyncMutation = Omit<SyncMutation, "localSequence">;
-
 export interface MutationResult<T extends Entity> {
   entity: T;
   mutation: SyncMutation;
-}
-interface UnstoredMutationResult<T extends Entity> {
-  entity: T;
-  mutation: UnstoredSyncMutation;
 }
 
 export interface CreateMutationPayload<T extends Entity> {
@@ -30,7 +24,7 @@ export interface CreateMutationPayload<T extends Entity> {
 
 function createMutation<T extends Entity>(
   payload: CreateMutationPayload<T>,
-): UnstoredMutationResult<T> {
+): MutationResult<T> {
   const mutationId = crypto.randomUUID();
 
   const entity = {
@@ -65,7 +59,13 @@ function createMutation<T extends Entity>(
 export class MutationsRepository {
   getPending(): Observable<SyncMutation[]> {
     return defer(async () => {
-      return await lootrackDb.mutations.orderBy("localSequence").toArray();
+      const storedMutations = await lootrackDb.mutations
+        .orderBy("localSequence")
+        .toArray();
+
+      return storedMutations.map(
+        ({ localSequence: _, ...mutation }) => mutation,
+      );
     });
   }
 
@@ -73,16 +73,9 @@ export class MutationsRepository {
     payload: CreateMutationPayload<T>,
   ): Observable<MutationResult<T>> {
     return defer(async () => {
-      const { entity, mutation } = createMutation(payload);
-      const localSequence = await lootrackDb.mutations.add(mutation);
-
-      return {
-        entity,
-        mutation: {
-          ...mutation,
-          localSequence,
-        },
-      };
+      const result = createMutation(payload);
+      await lootrackDb.mutations.add(result.mutation);
+      return result;
     });
   }
 
@@ -92,26 +85,9 @@ export class MutationsRepository {
     return defer(async () => {
       const results = payload.map((payload) => createMutation(payload));
       const mutations = results.map(({ mutation }) => mutation);
-      const sequences = await lootrackDb.mutations.bulkAdd(mutations, {
-        allKeys: true,
-      });
-      return results.map((result, index) => {
-        const localSequence = sequences[index];
+      await lootrackDb.mutations.bulkAdd(mutations);
 
-        if (localSequence === undefined) {
-          throw new Error(
-            `Missing local sequence for mutation ${result.mutation.mutationId}`,
-          );
-        }
-
-        return {
-          ...result,
-          mutation: {
-            ...result.mutation,
-            localSequence,
-          },
-        };
-      });
+      return results;
     });
   }
 }

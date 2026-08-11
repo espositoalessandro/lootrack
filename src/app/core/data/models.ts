@@ -9,7 +9,6 @@ export interface SyncMetadata {
 }
 
 export interface SyncMutation {
-  localSequence?: number;
   mutationId: string;
 
   entityType: SyncEntityType;

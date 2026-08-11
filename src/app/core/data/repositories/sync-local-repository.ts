@@ -50,11 +50,13 @@ export class SyncLocalRepository {
             lootrackDb.categories.toArray(),
             lootrackDb.mutations.orderBy("localSequence").toArray(),
           ]);
-
+          const strippedMutations = mutations.map(
+            ({ localSequence: _, ...mutation }) => mutation,
+          );
           return {
             transactions,
             categories,
-            mutations,
+            mutations: strippedMutations,
           };
         },
       ),

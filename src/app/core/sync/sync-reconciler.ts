@@ -63,8 +63,7 @@ function entityKey(entityType: SyncEntityType, entityId: string): string {
 }
 
 function toOutgoingMutation(mutation: SyncMutation): OutgoingSyncMutation {
-  const { localSequence: _localSequence, ...outgoing } = mutation;
-  return outgoing;
+  return mutation;
 }
 
 function remoteMatchesExpectedBase(
