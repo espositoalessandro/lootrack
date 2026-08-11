@@ -3,7 +3,7 @@ import {
   PERSISTENCE_PROVIDER,
   PersistenceContext,
 } from "../providers/provider.models";
-import { map, Observable, of, switchMap } from "rxjs";
+import { ignoreElements, map, Observable, of, switchMap } from "rxjs";
 import {
   AddTransaction,
   CategoryAssignment,
@@ -22,7 +22,7 @@ import {
 export class TransactionService {
   private readonly persistenceProvider = inject(PERSISTENCE_PROVIDER);
 
-  getActive(): Observable<readonly Transaction[]> {
+  getAllActive(): Observable<readonly Transaction[]> {
     return this.persistenceProvider.transactions
       .getAll()
       .pipe(
@@ -30,6 +30,18 @@ export class TransactionService {
           transactions.filter((transaction) => transaction.deletedAt === null),
         ),
       );
+  }
+
+  getById(id: string): Observable<Transaction> {
+    return this.persistenceProvider.transactions.get(id).pipe(
+      map((transaction) => {
+        if (!transaction || transaction.deletedAt !== null) {
+          throw new Error("Transaction not found");
+        }
+
+        return transaction;
+      }),
+    );
   }
 
   add(input: AddTransaction): Observable<Transaction> {
@@ -80,7 +92,7 @@ export class TransactionService {
       (db): Observable<Transaction> => {
         const categoryId = this.resolveCategoryId(changes.category);
 
-        return this.getActiveTransaction(db, id).pipe(
+        return this.getById(id).pipe(
           switchMap((existing) =>
             this.validateCategoryReference(db, categoryId, changes.type).pipe(
               switchMap(() => {
@@ -120,6 +132,42 @@ export class TransactionService {
     );
   }
 
+  remove(id: string): Observable<void> {
+    return this.persistenceProvider.doTransaction(
+      "readwrite",
+      ["transactions", "mutations"],
+      (db): Observable<void> => {
+        return this.getById(id).pipe(
+          switchMap((existing) => {
+            const now = new Date().toISOString();
+            const deletedTransaction: Omit<Transaction, keyof SyncMetadata> = {
+              id: existing.id,
+              type: existing.type,
+              amountInCents: existing.amountInCents,
+              description: existing.description,
+              occurredOn: existing.occurredOn,
+              categoryId: existing.categoryId,
+              createdAt: existing.createdAt,
+              updatedAt: now,
+              deletedAt: now,
+            };
+            const { entity, mutation } = createMutation<Transaction>({
+              nextEntityData: deletedTransaction,
+              previousEntity: existing,
+              entityType: "transaction",
+              operation: "upsert",
+              timestamp: now,
+            });
+            return db.mutations.add(mutation).pipe(
+              switchMap(() => db.transactions.put(entity)),
+              ignoreElements(),
+            );
+          }),
+        );
+      },
+    );
+  }
+
   private resolveCategoryId(assignment: CategoryAssignment): string | null {
     switch (assignment.kind) {
       case "categorized":
@@ -131,21 +179,6 @@ export class TransactionService {
       default:
         throw new InvalidTransactionError("Invalid category assignment");
     }
-  }
-
-  private getActiveTransaction(
-    db: PersistenceContext,
-    id: string,
-  ): Observable<Transaction> {
-    return db.transactions.get(id).pipe(
-      map((transaction) => {
-        if (!transaction || transaction.deletedAt !== null) {
-          throw new Error("Transaction not found");
-        }
-
-        return transaction;
-      }),
-    );
   }
 
   private validateCategoryReference(
