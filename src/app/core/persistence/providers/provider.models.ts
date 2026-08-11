@@ -22,9 +22,11 @@ export interface MutationPersistenceStore {
 
 export interface PersistenceStore<T, K> {
   get(key: K): Observable<T | undefined>;
+  getMany(keys: readonly K[]): Observable<readonly (T | undefined)[]>;
   getAll(): Observable<readonly T[]>;
   add(entity: T): Observable<K>;
   put(entity: T): Observable<K>;
+  putMany(entities: readonly T[]): Observable<void>;
   delete(key: K): Observable<void>;
 }
 
