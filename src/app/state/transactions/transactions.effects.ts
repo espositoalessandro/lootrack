@@ -21,7 +21,7 @@ import {
   updateTransactionSuccess,
 } from "./transactions.actions";
 import { TuiDialogService } from "@taiga-ui/core";
-import { TransactionService } from "../../core/persistence/services/transaction.service";
+import { TransactionService } from "../../core/services/transaction.service";
 
 @Injectable()
 export class TransactionsEffects {

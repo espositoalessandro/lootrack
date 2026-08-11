@@ -16,10 +16,8 @@ import {
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
 } from "../errors";
-import {
-  CreateMutationPayload,
-  MutationsRepository,
-} from "./mutations-repository";
+import { MutationsRepository } from "./mutations-repository";
+import { CreateMutationPayload } from "../../sync/mutation";
 
 @Injectable({
   providedIn: "root",

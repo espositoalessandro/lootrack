@@ -2,7 +2,7 @@ import { inject, Service } from "@angular/core";
 import {
   PERSISTENCE_PROVIDER,
   PersistenceContext,
-} from "../providers/provider.models";
+} from "../persistence/providers/provider.models";
 import { map, Observable, of, switchMap } from "rxjs";
 import {
   AddTransaction,
@@ -11,12 +11,12 @@ import {
   Transaction,
   TransactionType,
   UpdateTransaction,
-} from "../../data/models";
-import { createMutation } from "../../sync/mutation";
+} from "../data/models";
+import { createMutation } from "../sync/mutation";
 import {
   InvalidCategoryReferenceError,
   InvalidTransactionError,
-} from "../../data/errors";
+} from "../data/errors";
 
 @Service()
 export class TransactionService {
