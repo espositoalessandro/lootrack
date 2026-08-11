@@ -3,7 +3,7 @@ import {
   PERSISTENCE_PROVIDER,
   PersistenceContext,
 } from "../providers/provider.models";
-import { ignoreElements, map, Observable, of, switchMap } from "rxjs";
+import { map, Observable, of, switchMap } from "rxjs";
 import {
   AddTransaction,
   CategoryAssignment,
@@ -33,15 +33,7 @@ export class TransactionService {
   }
 
   getById(id: string): Observable<Transaction> {
-    return this.persistenceProvider.transactions.get(id).pipe(
-      map((transaction) => {
-        if (!transaction || transaction.deletedAt !== null) {
-          throw new Error("Transaction not found");
-        }
-
-        return transaction;
-      }),
-    );
+    return this.getByIdFrom(this.persistenceProvider, id);
   }
 
   add(input: AddTransaction): Observable<Transaction> {
@@ -92,7 +84,7 @@ export class TransactionService {
       (db): Observable<Transaction> => {
         const categoryId = this.resolveCategoryId(changes.category);
 
-        return this.getById(id).pipe(
+        return this.getByIdFrom(db, id).pipe(
           switchMap((existing) =>
             this.validateCategoryReference(db, categoryId, changes.type).pipe(
               switchMap(() => {
@@ -137,7 +129,7 @@ export class TransactionService {
       "readwrite",
       ["transactions", "mutations"],
       (db): Observable<void> => {
-        return this.getById(id).pipe(
+        return this.getByIdFrom(db, id).pipe(
           switchMap((existing) => {
             const now = new Date().toISOString();
             const deletedTransaction: Omit<Transaction, keyof SyncMetadata> = {
@@ -155,16 +147,31 @@ export class TransactionService {
               nextEntityData: deletedTransaction,
               previousEntity: existing,
               entityType: "transaction",
-              operation: "upsert",
+              operation: "delete",
               timestamp: now,
             });
             return db.mutations.add(mutation).pipe(
               switchMap(() => db.transactions.put(entity)),
-              ignoreElements(),
+              map(() => undefined),
             );
           }),
         );
       },
+    );
+  }
+
+  private getByIdFrom(
+    db: PersistenceContext,
+    id: string,
+  ): Observable<Transaction> {
+    return db.transactions.get(id).pipe(
+      map((transaction) => {
+        if (!transaction || transaction.deletedAt !== null) {
+          throw new Error("Transaction not found");
+        }
+
+        return transaction;
+      }),
     );
   }
 
