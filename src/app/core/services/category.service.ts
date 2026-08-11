@@ -20,16 +20,6 @@ import {
   CategoryTypeChangeBlockedError,
 } from "../data/errors";
 
-export function cleanCategoryName(name: string): string {
-  return name.trim();
-}
-
-export function categoryNamesMatch(a: string, b: string): boolean {
-  return (
-    cleanCategoryName(a).toLowerCase() === cleanCategoryName(b).toLowerCase()
-  );
-}
-
 @Service()
 export class CategoryService {
   private readonly persistenceProvider = inject(PERSISTENCE_PROVIDER);
@@ -81,7 +71,7 @@ export class CategoryService {
 
             const categoryData: Omit<Category, keyof SyncMetadata> = {
               id: crypto.randomUUID(),
-              name: cleanCategoryName(input.name),
+              name: this.cleanCategoryName(input.name),
               type: input.type,
               createdAt: now,
               updatedAt: now,
@@ -217,7 +207,7 @@ export class CategoryService {
                 const updatedCategoryData: Omit<Category, keyof SyncMetadata> =
                   {
                     id: existing.id,
-                    name: cleanCategoryName(input.name),
+                    name: this.cleanCategoryName(input.name),
                     type: input.type,
                     createdAt: existing.createdAt,
                     updatedAt: now,
@@ -295,12 +285,12 @@ export class CategoryService {
             category.id !== excludeId &&
             category.type === type &&
             category.deletedAt === null &&
-            categoryNamesMatch(category.name, name),
+            this.categoryNamesMatch(category.name, name),
         );
 
         if (duplicate) {
           throw new CategoryAlreadyExistsError(
-            `An ${type} category named "${cleanCategoryName(name)}" already exists`,
+            `An ${type} category named "${this.cleanCategoryName(name)}" already exists`,
           );
         }
       }),
@@ -353,6 +343,17 @@ export class CategoryService {
 
         return transactions;
       }),
+    );
+  }
+
+  private cleanCategoryName(name: string): string {
+    return name.trim();
+  }
+
+  private categoryNamesMatch(a: string, b: string): boolean {
+    return (
+      this.cleanCategoryName(a).toLowerCase() ===
+      this.cleanCategoryName(b).toLowerCase()
     );
   }
 
