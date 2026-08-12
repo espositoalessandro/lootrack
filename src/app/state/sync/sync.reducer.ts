@@ -9,7 +9,7 @@ import {
   synchronizeFailure,
   synchronizeSuccess,
 } from "./sync.actions";
-import { SyncConflictCandidate } from "../../core/data/models";
+import { SyncConflictCandidate } from "../../core/models/models";
 
 export type SyncConnectionStatus = "disconnected" | "connecting" | "connected";
 

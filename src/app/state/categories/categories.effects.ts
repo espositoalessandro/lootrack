@@ -28,7 +28,7 @@ import {
   CategoryInUseError,
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-} from "../../core/data/errors";
+} from "../../core/models/errors";
 import { TuiDialogService } from "@taiga-ui/core";
 import { CategoryService } from "../../core/services/category.service";
 

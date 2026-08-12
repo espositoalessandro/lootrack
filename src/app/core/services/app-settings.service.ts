@@ -1,8 +1,8 @@
 import { inject, Service } from "@angular/core";
 import { map, Observable, switchMap } from "rxjs";
 
-import { AppSettings, AppSettingsPatch } from "../data/models";
-import { AppSettingsNotFoundError } from "../data/errors";
+import { AppSettings, AppSettingsPatch } from "../models/models";
+import { AppSettingsNotFoundError } from "../models/errors";
 import {
   PERSISTENCE_PROVIDER,
   PersistenceContext,

@@ -1,7 +1,7 @@
 import { defer, Observable } from "rxjs";
 
-import { lootrackDb } from "../../../data/database";
-import { SyncMutation } from "../../../data/models";
+import { lootrackDb } from "./database";
+import { SyncMutation } from "../../../models/models";
 import { MutationPersistenceStore } from "../provider.models";
 
 export class DexieMutationRepository implements MutationPersistenceStore {

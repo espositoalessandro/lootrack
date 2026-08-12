@@ -8,7 +8,7 @@ import {
   SyncMutation,
   SyncReconciliationPlan,
   Transaction,
-} from "../data/models";
+} from "../models/models";
 
 import { Injectable } from "@angular/core";
 

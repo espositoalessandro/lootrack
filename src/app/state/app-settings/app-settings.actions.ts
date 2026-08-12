@@ -1,5 +1,5 @@
 import { createAction, props } from "@ngrx/store";
-import { AppSettings, AppSettingsPatch } from "../../core/data/models";
+import { AppSettings, AppSettingsPatch } from "../../core/models/models";
 
 // RETRIEVES
 

@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
 import { catchError, concatMap, defer, EMPTY, exhaustMap, map, of } from "rxjs";
-import { SYNC_PROVIDER } from "../../core/data/CONST";
+import { SYNC_PROVIDER } from "../../core/models/CONST";
 import {
   connectSync,
   connectSyncFailure,
@@ -14,7 +14,7 @@ import {
 } from "./sync.actions";
 import { TuiDialogService, TuiNotificationService } from "@taiga-ui/core";
 import { SyncEngine } from "../../core/sync/sync-engine";
-import { SyncRunConflictError } from "../../core/data/errors";
+import { SyncRunConflictError } from "../../core/models/errors";
 import { loadCategories } from "../categories/categories.actions";
 import { loadTransactions } from "../transactions/transactions.actions";
 

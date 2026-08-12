@@ -13,7 +13,7 @@ import {
   SyncPushResult,
   Transaction,
   TransactionType,
-} from "../../data/models";
+} from "../../models/models";
 
 const SHEETS_API_BASE_URL = "https://sheets.googleapis.com/v4/spreadsheets";
 

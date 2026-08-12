@@ -1,6 +1,6 @@
 import { createAction, props } from "@ngrx/store";
 
-import type { AddTransaction, Transaction } from "../../core/data/models";
+import type { AddTransaction, Transaction } from "../../core/models/models";
 
 export const loadTransactions = createAction("[Transactions] Load Requested");
 

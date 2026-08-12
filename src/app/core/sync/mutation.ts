@@ -4,7 +4,7 @@ import {
   SyncMetadata,
   SyncMutation,
   SyncOperation,
-} from "../data/models";
+} from "../models/models";
 
 export interface MutationResult<T extends Entity> {
   entity: T;

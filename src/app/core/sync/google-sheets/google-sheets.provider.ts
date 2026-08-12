@@ -7,7 +7,7 @@ import {
   SyncProvider,
   SyncPushRequest,
   SyncPushResult,
-} from "../../data/models";
+} from "../../models/models";
 import { GoogleSheetsClient } from "./google-sheets.client";
 
 @Injectable()

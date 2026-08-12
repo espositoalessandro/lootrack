@@ -1,5 +1,5 @@
 import { createAction, props } from "@ngrx/store";
-import { SyncConflictCandidate } from "../../core/data/models";
+import { SyncConflictCandidate } from "../../core/models/models";
 
 export const connectSync = createAction("[Sync] Connect Requested");
 

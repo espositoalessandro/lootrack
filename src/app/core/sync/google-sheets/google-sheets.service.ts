@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { firstValueFrom, map, Observable } from "rxjs";
 
 import { environment } from "../../../../environments/environment";
-import { SyncTarget } from "../../data/models";
+import { SyncTarget } from "../../models/models";
 import { GoogleSheetsClient } from "./google-sheets.client";
 import { GoogleApiError } from "./google-sheets.errors";
 import { PERSISTENCE_PROVIDER } from "../../persistence/providers/provider.models";

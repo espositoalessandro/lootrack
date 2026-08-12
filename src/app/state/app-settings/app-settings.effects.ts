@@ -19,8 +19,8 @@ import {
   updateAppSettingsSuccess,
 } from "./app-settings.actions";
 import { TuiDialogService } from "@taiga-ui/core";
-import { DEFAULT_SETTINGS } from "../../core/data/CONST";
-import { AppSettingsNotFoundError } from "../../core/data/errors";
+import { DEFAULT_SETTINGS } from "../../core/models/CONST";
+import { AppSettingsNotFoundError } from "../../core/models/errors";
 import { AppSettingsService } from "../../core/services/app-settings.service";
 
 @Injectable()

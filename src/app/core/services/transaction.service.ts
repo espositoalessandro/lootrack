@@ -11,12 +11,12 @@ import {
   Transaction,
   TransactionType,
   UpdateTransaction,
-} from "../data/models";
+} from "../models/models";
 import { createMutation } from "../sync/mutation";
 import {
   InvalidCategoryReferenceError,
   InvalidTransactionError,
-} from "../data/errors";
+} from "../models/errors";
 
 @Service()
 export class TransactionService {

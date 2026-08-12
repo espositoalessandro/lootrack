@@ -6,7 +6,7 @@ import {
   SyncMutation,
   SyncTarget,
   Transaction,
-} from "./models";
+} from "../../../models/models";
 
 interface StoredSyncMutation extends SyncMutation {
   localSequence?: number;

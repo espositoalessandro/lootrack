@@ -7,7 +7,7 @@ import {
   SyncMutation,
   SyncTarget,
   Transaction,
-} from "../../data/models";
+} from "../../models/models";
 
 export const PERSISTENCE_PROVIDER = new InjectionToken<PersistenceProvider>(
   "PERSISTENCE_PROVIDER",

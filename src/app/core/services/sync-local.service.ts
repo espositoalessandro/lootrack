@@ -9,7 +9,7 @@ import {
   RemoteSyncRecord,
   SyncMutation,
   Transaction,
-} from "../data/models";
+} from "../models/models";
 import { PERSISTENCE_PROVIDER } from "../persistence/providers/provider.models";
 
 @Service()

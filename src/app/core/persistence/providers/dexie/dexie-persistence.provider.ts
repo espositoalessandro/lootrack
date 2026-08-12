@@ -3,7 +3,7 @@ import { defer, firstValueFrom, Observable } from "rxjs";
 
 import { DexieEntityRepository } from "./dexie-entity.repository";
 import { DexieMutationRepository } from "./dexie-mutation.repository";
-import { lootrackDb } from "../../../data/database";
+import { lootrackDb } from "./database";
 import {
   PersistenceContext,
   PersistenceProvider,

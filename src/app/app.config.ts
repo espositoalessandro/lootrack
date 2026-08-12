@@ -22,7 +22,7 @@ import { CategoriesEffects } from "./state/categories/categories.effects";
 import { provideStoreDevtools } from "@ngrx/store-devtools";
 import { appSettingsReducer } from "./state/app-settings/app-settings.reducer";
 import { AppSettingsEffects } from "./state/app-settings/app-settings.effects";
-import { SYNC_PROVIDER } from "./core/data/CONST";
+import { SYNC_PROVIDER } from "./core/models/CONST";
 import { syncReducer } from "./state/sync/sync.reducer";
 import { GoogleSheetsProvider } from "./core/sync/google-sheets/google-sheets.provider";
 import { SyncEffects } from "./state/sync/sync.effects";

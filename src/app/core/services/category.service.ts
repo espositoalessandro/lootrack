@@ -7,7 +7,7 @@ import {
   SyncMutation,
   Transaction,
   UpdateCategory,
-} from "../data/models";
+} from "../models/models";
 import { inject, Service } from "@angular/core";
 import {
   PERSISTENCE_PROVIDER,
@@ -19,7 +19,7 @@ import {
   CategoryInUseError,
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
-} from "../data/errors";
+} from "../models/errors";
 
 interface CategoryChange {
   category: Category;

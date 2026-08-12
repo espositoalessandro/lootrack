@@ -1,9 +1,9 @@
 import { inject, Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
-import { SYNC_PROVIDER } from "../data/CONST";
+import { SYNC_PROVIDER } from "../models/CONST";
 import { SyncReconciler } from "./sync-reconciler";
-import { SyncRunConflictError } from "../data/errors";
+import { SyncRunConflictError } from "../models/errors";
 import { SyncLocalService } from "../services/sync-local.service";
 
 @Injectable({

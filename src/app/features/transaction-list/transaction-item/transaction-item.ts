@@ -1,5 +1,5 @@
 import { Component, computed, inject, input } from "@angular/core";
-import { Transaction } from "../../../core/data/models";
+import { Transaction } from "../../../core/models/models";
 import { AsyncPipe, CurrencyPipe } from "@angular/common";
 import { TuiButton, TuiExpand } from "@taiga-ui/core";
 import { AmountPipe } from "../../../shared/pipes/amount-pipe";
