@@ -24,8 +24,13 @@ import { TuiPlatform } from "@taiga-ui/cdk";
 import { TranslocoPipe } from "@jsverse/transloco";
 import { BUILD_INFO } from "../../core/generated/build-info";
 import { Store } from "@ngrx/store";
-import { selectSyncConnectionStatus } from "../../state/sync/sync.selector";
+import {
+  selectHasConflicts,
+  selectPendingEntityCount,
+  selectSyncConnectionStatus,
+} from "../../state/sync/sync.selector";
 import { connectSync } from "../../state/sync/sync.actions";
+import { TuiBadgeNotification } from "@taiga-ui/kit";
 
 interface HeaderConfig {
   readonly title: string;
@@ -50,6 +55,7 @@ const DEFAULT_HEADER: HeaderConfig = {
     RouterLink,
     TuiIcon,
     TranslocoPipe,
+    TuiBadgeNotification,
   ],
   providers: [{ provide: TUI_LIQUID_GLASS, useValue: true }],
   templateUrl: "./floating-header.html",
@@ -68,6 +74,11 @@ export class FloatingHeader {
   protected readonly syncStatus = this.store.selectSignal(
     selectSyncConnectionStatus,
   );
+  protected readonly pendingCount = this.store.selectSignal(
+    selectPendingEntityCount,
+  );
+
+  protected readonly hasConflicts = this.store.selectSignal(selectHasConflicts);
 
   protected readonly buildInfo = BUILD_INFO;
   protected readonly toggleDarkMode = output();

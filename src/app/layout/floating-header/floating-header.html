@@ -24,6 +24,26 @@
 
       <h1 tuiTitle="m">{{ header().title }}</h1>
 
+      @if (pendingCount() > 0 || hasConflicts()) {
+      <button
+        tuiIconButton
+        tuiSlot="end"
+        type="button"
+        class="relative"
+        [routerLink]="['/pending-changes']"
+        [iconStart]="hasConflicts() ? '@tui.triangle-alert' : '@tui.cloud-upload'"
+        [title]="hasConflicts() ? 'Synchronization conflicts' : 'Pending changes'"
+      >
+        <tui-badge-notification
+          size="s"
+          tuiSlot="top"
+          style="inset-inline-end: 0; inset-block-start: 9%"
+        >
+          {{hasConflicts() ? '!' : pendingCount()}}
+        </tui-badge-notification>
+      </button>
+      }
+
       <button
         tuiIconButton
         tuiSlot="end"

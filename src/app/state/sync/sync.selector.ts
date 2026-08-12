@@ -28,3 +28,8 @@ export const selectPendingMutationCount = createSelector(
   (changes) =>
     changes.reduce((count, entity) => count + entity.changes.length, 0),
 );
+
+export const selectHasConflicts = createSelector(
+  selectSyncState,
+  (state) => state.conflicts.length > 0,
+);
