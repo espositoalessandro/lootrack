@@ -1,17 +1,17 @@
 import { inject, Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, map, Observable } from "rxjs";
 
 import { environment } from "../../../../environments/environment";
-import { SyncTargetRepository } from "../../data/repositories/sync-target-repository";
 import { SyncTarget } from "../../data/models";
 import { GoogleSheetsClient } from "./google-sheets.client";
 import { GoogleApiError } from "./google-sheets.errors";
+import { PERSISTENCE_PROVIDER } from "../../persistence/providers/provider.models";
 
 @Injectable({
   providedIn: "root",
 })
 export class GoogleSheetsService {
-  private readonly targetRepository = inject(SyncTargetRepository);
+  private readonly persistenceProvider = inject(PERSISTENCE_PROVIDER);
   private readonly sheetsApi = inject(GoogleSheetsClient);
 
   async ensureTarget(accessToken: string): Promise<SyncTarget> {
@@ -26,7 +26,7 @@ export class GoogleSheetsService {
       return configuredTarget;
     }
 
-    const existingTarget = await firstValueFrom(this.targetRepository.get());
+    const existingTarget = await firstValueFrom(this.getStoredTarget());
 
     if (existingTarget) {
       try {
@@ -41,15 +41,13 @@ export class GoogleSheetsService {
           throw error;
         }
 
-        await firstValueFrom(this.targetRepository.clear());
+        await firstValueFrom(this.clearTarget());
       }
     }
 
     const created = await this.sheetsApi.createLootrackSpreadsheet(accessToken);
 
-    return await firstValueFrom(
-      this.targetRepository.save(created.spreadsheetId),
-    );
+    return await firstValueFrom(this.saveTarget(created.spreadsheetId));
   }
 
   async requireTarget(): Promise<SyncTarget> {
@@ -59,7 +57,7 @@ export class GoogleSheetsService {
       return configuredTarget;
     }
 
-    const target = await firstValueFrom(this.targetRepository.get());
+    const target = await firstValueFrom(this.getStoredTarget());
 
     if (!target) {
       throw new Error("Google Sheets synchronization target is not configured");
@@ -81,5 +79,26 @@ export class GoogleSheetsService {
 
   private shouldReplaceTarget(error: unknown): boolean {
     return error instanceof GoogleApiError && error.status === 404;
+  }
+
+  private getStoredTarget(): Observable<SyncTarget | null> {
+    return this.persistenceProvider.syncTargets
+      .get("active")
+      .pipe(map((target) => target ?? null));
+  }
+
+  private saveTarget(remoteId: string): Observable<SyncTarget> {
+    const target: SyncTarget = {
+      id: "active",
+      remoteId,
+    };
+
+    return this.persistenceProvider.syncTargets
+      .put(target)
+      .pipe(map(() => target));
+  }
+
+  private clearTarget(): Observable<void> {
+    return this.persistenceProvider.syncTargets.delete("active");
   }
 }

@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { AppSettingsRepository } from "../../core/data/repositories/app-settings-repository";
 import {
   catchError,
   concatMap,
@@ -22,18 +21,33 @@ import {
 import { TuiDialogService } from "@taiga-ui/core";
 import { DEFAULT_SETTINGS } from "../../core/data/CONST";
 import { AppSettingsNotFoundError } from "../../core/data/errors";
+import { AppSettingsService } from "../../core/services/app-settings.service";
 
 @Injectable()
 export class AppSettingsEffects {
   private readonly actions$ = inject(Actions);
   private readonly dialogs = inject(TuiDialogService);
-  private readonly appSettingsDatabase = inject(AppSettingsRepository);
-
+  readonly generalAppSettingsFailure$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(generalAppSettingsFailure),
+        exhaustMap(({ error }) =>
+          this.dialogs
+            .open(error, {
+              label: "Settings error",
+              size: "s",
+            })
+            .pipe(catchError(() => EMPTY)),
+        ),
+      ),
+    { dispatch: false },
+  );
+  private readonly appSettingsService = inject(AppSettingsService);
   readonly loadAppSettings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(loadAppSettings),
       switchMap(() =>
-        this.appSettingsDatabase.get().pipe(
+        this.appSettingsService.get().pipe(
           map((settings) => loadAppSettingsSuccess({ settings })),
           catchError((error) => {
             if (error instanceof AppSettingsNotFoundError) {
@@ -52,12 +66,11 @@ export class AppSettingsEffects {
       ),
     ),
   );
-
   readonly createSettingsDefaults$ = createEffect(() =>
     this.actions$.pipe(
       ofType(createSettingsDefaults),
       switchMap(() =>
-        this.appSettingsDatabase.add(DEFAULT_SETTINGS).pipe(
+        this.appSettingsService.add(DEFAULT_SETTINGS).pipe(
           map((settings) => createSettingsDefaultsSuccess({ settings })),
           catchError((error) =>
             of(
@@ -73,12 +86,11 @@ export class AppSettingsEffects {
       ),
     ),
   );
-
   readonly updateAppSettings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateAppSettings),
       concatMap((input) =>
-        this.appSettingsDatabase.update(input.newSettings).pipe(
+        this.appSettingsService.update(input.newSettings).pipe(
           map((settings) => updateAppSettingsSuccess({ settings })),
           catchError((error) =>
             of(
@@ -93,21 +105,5 @@ export class AppSettingsEffects {
         ),
       ),
     ),
-  );
-
-  readonly generalAppSettingsFailure$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(generalAppSettingsFailure),
-        exhaustMap(({ error }) =>
-          this.dialogs
-            .open(error, {
-              label: "Settings error",
-              size: "s",
-            })
-            .pipe(catchError(() => EMPTY)),
-        ),
-      ),
-    { dispatch: false },
   );
 }
