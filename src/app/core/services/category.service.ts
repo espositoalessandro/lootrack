@@ -4,8 +4,8 @@ import {
   Category,
   CategoryMutationResult,
   SyncMetadata,
+  SyncMutation,
   Transaction,
-  TransactionType,
   UpdateCategory,
 } from "../data/models";
 import { inject, Service } from "@angular/core";
@@ -20,6 +20,12 @@ import {
   CategoryTransactionAssignmentError,
   CategoryTypeChangeBlockedError,
 } from "../data/errors";
+
+interface CategoryChange {
+  category: Category;
+  updatedTransactions: Transaction[];
+  mutations: SyncMutation[];
+}
 
 @Service()
 export class CategoryService {
@@ -45,15 +51,7 @@ export class CategoryService {
       ["categories", "transactions", "mutations"],
       (db) =>
         this.validateUniqueCategory(db, input.name, input.type).pipe(
-          switchMap(() =>
-            this.createOrUpdateCategory(
-              db,
-              input.transactionIds,
-              input.type,
-              null,
-              input,
-            ),
-          ),
+          switchMap(() => this.buildCategoryChange(db, null, input)),
           switchMap(({ category, updatedTransactions, mutations }) => {
             return db.mutations.addMany(mutations).pipe(
               switchMap(() => db.categories.add(category)),
@@ -132,15 +130,7 @@ export class CategoryService {
                   existing.id,
                 ),
               ),
-              switchMap(() =>
-                this.createOrUpdateCategory(
-                  db,
-                  input.transactionIds,
-                  input.type,
-                  existing,
-                  input,
-                ),
-              ),
+              switchMap(() => this.buildCategoryChange(db, existing, input)),
               switchMap(({ category, updatedTransactions, mutations }) => {
                 return db.mutations.addMany(mutations).pipe(
                   switchMap(() => db.categories.put(category)),
@@ -176,31 +166,35 @@ export class CategoryService {
     );
   }
 
-  private createOrUpdateCategory(
+  private buildCategoryChange(
     db: PersistenceContext,
-    ids: string[] | undefined,
-    type: TransactionType,
-    item: Category | null,
+    existing: Category | null,
     input: AddCategory | UpdateCategory,
-  ) {
-    return this.getAssignableTransactions(db, ids, type).pipe(
+  ): Observable<CategoryChange> {
+    return this.getAssignableTransactions(
+      db,
+      input.transactionIds,
+      input.type,
+    ).pipe(
       map((assignableTransactions) => {
         const now = new Date().toISOString();
-        const updatedItemData: Omit<Category, keyof SyncMetadata> = {
-          id: item ? item.id : crypto.randomUUID(),
+
+        const categoryData: Omit<Category, keyof SyncMetadata> = {
+          id: existing?.id ?? crypto.randomUUID(),
           name: this.cleanCategoryName(input.name),
           type: input.type,
-          createdAt: item ? item.createdAt : now,
+          createdAt: existing?.createdAt ?? now,
           updatedAt: now,
           deletedAt: null,
         };
+
         const { entity: category, mutation: categoryMutation } =
           createMutation<Category>({
             entityType: "category",
             operation: "upsert",
             timestamp: now,
-            previousEntity: item,
-            nextEntityData: updatedItemData,
+            previousEntity: existing,
+            nextEntityData: categoryData,
           });
 
         const transactionResults = assignableTransactions.map((transaction) =>
