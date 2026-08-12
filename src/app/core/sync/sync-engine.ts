@@ -4,7 +4,7 @@ import { firstValueFrom } from "rxjs";
 import { SYNC_PROVIDER } from "../models/CONST";
 import { SyncReconciler } from "./sync-reconciler";
 import { SyncRunConflictError } from "../models/errors";
-import { SyncLocalService } from "../services/sync-local.service";
+import { SyncLocalService } from "./sync-local.service";
 
 @Injectable({
   providedIn: "root",
