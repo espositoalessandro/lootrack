@@ -53,6 +53,19 @@ export const routes: Routes = [
       ),
   },
   {
+    path: "pending-changes",
+    loadComponent: () =>
+      import("./features/pending-changes/pending-changes").then(
+        (m) => m.PendingChanges,
+      ),
+    data: {
+      header: {
+        title: "Pending",
+        leading: "back",
+      },
+    },
+  },
+  {
     path: "**",
     redirectTo: "",
   },
