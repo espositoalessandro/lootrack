@@ -2,22 +2,20 @@ import { inject, Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
 import { SYNC_PROVIDER } from "../data/CONST";
-import { SyncLocalRepository } from "../data/repositories/sync-local-repository";
 import { SyncReconciler } from "./sync-reconciler";
 import { SyncRunConflictError } from "../data/errors";
+import { SyncLocalService } from "../services/sync-local.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class SyncEngine {
+  private readonly localService = inject(SyncLocalService);
   private readonly provider = inject(SYNC_PROVIDER);
-  private readonly localRepository = inject(SyncLocalRepository);
   private readonly reconciler = inject(SyncReconciler);
 
   async synchronize(): Promise<void> {
-    const localSnapshot = await firstValueFrom(
-      this.localRepository.getSnapshot(),
-    );
+    const localSnapshot = await firstValueFrom(this.localService.getSnapshot());
     const remoteSnapshot = await this.provider.pull();
     const plan = this.reconciler.reconcile(localSnapshot, remoteSnapshot);
 
@@ -39,7 +37,7 @@ export class SyncEngine {
      * while the network operations were running.
      */
     await firstValueFrom(
-      this.localRepository.applyChanges({
+      this.localService.applyChanges({
         remoteRecords: [...plan.remoteRecordsToApply, ...pushResult.records],
         mutationIdsToAcknowledge: [
           ...plan.mutationIdsToAcknowledge,

@@ -42,6 +42,7 @@ export class AppSettingsEffects {
       ),
     { dispatch: false },
   );
+
   private readonly appSettingsService = inject(AppSettingsService);
   readonly loadAppSettings$ = createEffect(() =>
     this.actions$.pipe(
@@ -66,6 +67,7 @@ export class AppSettingsEffects {
       ),
     ),
   );
+
   readonly createSettingsDefaults$ = createEffect(() =>
     this.actions$.pipe(
       ofType(createSettingsDefaults),
@@ -86,6 +88,7 @@ export class AppSettingsEffects {
       ),
     ),
   );
+
   readonly updateAppSettings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(updateAppSettings),

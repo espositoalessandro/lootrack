@@ -1,4 +1,4 @@
-import { SyncConflictCandidate } from "../sync/sync-reconciler";
+import { SyncConflictCandidate } from "./models";
 
 export class AppSettingsNotFoundError extends Error {
   constructor() {

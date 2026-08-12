@@ -1,54 +1,16 @@
 import {
   Category,
+  LocalSyncSnapshot,
   RemoteSyncRecord,
   RemoteSyncSnapshot,
+  SyncConflictCandidate,
   SyncEntityType,
   SyncMutation,
+  SyncReconciliationPlan,
   Transaction,
 } from "../data/models";
 
-import { LocalSyncSnapshot } from "../data/repositories/sync-local-repository";
 import { Injectable } from "@angular/core";
-
-export type SyncConflictReason =
-  "diverged" | "remote-missing" | "invalid-local-chain";
-
-export interface SyncConflictCandidate {
-  readonly entityType: SyncEntityType;
-  readonly entityId: string;
-  readonly reason: SyncConflictReason;
-
-  readonly basePayloadJson: string | null;
-  readonly localPayloadJson: string;
-  readonly remotePayloadJson: string | null;
-
-  readonly pendingMutations: readonly SyncMutation[];
-}
-
-export interface SyncReconciliationPlan {
-  /**
-   * Remote records that can safely replace local state because there are no
-   * pending local changes for their entities.
-   */
-  readonly remoteRecordsToApply: readonly RemoteSyncRecord[];
-
-  /**
-   * Existing outbox mutations that are already based on the current remote
-   * records and can therefore be submitted unchanged.
-   */
-  readonly mutationsToPush: readonly SyncMutation[];
-
-  /**
-   * Mutations already represented by the remote final state, usually after
-   * a previous push succeeded but its acknowledgement was lost.
-   */
-  readonly mutationIdsToAcknowledge: readonly string[];
-
-  /**
-   * Divergent entities requiring explicit user resolution.
-   */
-  readonly conflicts: readonly SyncConflictCandidate[];
-}
 
 type LocalEntity = Transaction | Category;
 
