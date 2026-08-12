@@ -40,6 +40,7 @@ interface PendingItemView {
   selector: "app-pending-changes",
   imports: [TuiAppearance, DatePipe],
   templateUrl: "./pending-changes.html",
+  styleUrl: "./pending-changes.scss",
 })
 export class PendingChanges {
   private readonly store = inject(Store);

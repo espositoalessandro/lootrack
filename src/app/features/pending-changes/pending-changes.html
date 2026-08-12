@@ -25,7 +25,7 @@
 
     <div class="timeline">
       @for (change of item.changes; track change.createdAt) {
-      <div class="timeline-entry">
+      <div class="timeline-entry" [attr.data-kind]="change.kind">
         <span class="timeline-dot"></span>
 
         @switch (change.kind) { @case ("created") {
