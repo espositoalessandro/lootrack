@@ -180,15 +180,26 @@ export interface CategoryMutationResult {
   transactions?: Transaction[];
 }
 
+export type PendingChangeKind = "created" | "updated" | "deleted";
+
+export interface EntityFieldChange {
+  readonly field: string;
+  readonly before: unknown;
+  readonly after: unknown;
+}
+
 export interface PendingChange {
-  readonly operation: SyncOperation;
+  readonly kind: PendingChangeKind;
   readonly createdAt: string;
-  readonly beforeJson: string | null;
-  readonly afterJson: string;
+  readonly fields: readonly EntityFieldChange[];
 }
 
 export interface PendingEntityChanges {
   readonly entityType: SyncEntityType;
   readonly entityId: string;
+
+  // final local state after the latest mutation
+  readonly entity: RemoteEntity;
+
   readonly changes: readonly PendingChange[];
 }

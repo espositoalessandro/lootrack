@@ -4,9 +4,11 @@ import { map, Observable } from "rxjs";
 import {
   PendingChange,
   PendingEntityChanges,
+  RemoteEntity,
   SyncMutation,
 } from "../models/models";
 import { PERSISTENCE_PROVIDER } from "../persistence/providers/provider.models";
+import { diffEntityPayloads } from "../sync/entity-diff";
 
 @Service()
 export class PendingChangesService {
@@ -26,30 +28,34 @@ export class PendingChangesService {
       {
         entityType: SyncMutation["entityType"];
         entityId: string;
+        entity: RemoteEntity;
         changes: PendingChange[];
       }
     >();
 
     for (const mutation of mutations) {
       const key = `${mutation.entityType}:${mutation.entityId}`;
-
+      const diff = diffEntityPayloads(
+        mutation.basePayloadJson,
+        mutation.payloadJson,
+        mutation.operation,
+      );
       let group = groups.get(key);
 
       if (!group) {
         group = {
           entityType: mutation.entityType,
           entityId: mutation.entityId,
+          entity: diff.after,
           changes: [],
         };
-
         groups.set(key, group);
       }
 
       group.changes.push({
-        operation: mutation.operation,
+        kind: diff.kind,
         createdAt: mutation.createdAt,
-        beforeJson: mutation.basePayloadJson,
-        afterJson: mutation.payloadJson,
+        fields: diff.fields,
       });
     }
 
