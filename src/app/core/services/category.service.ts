@@ -5,6 +5,7 @@ import {
   CategoryMutationResult,
   SyncMetadata,
   Transaction,
+  TransactionType,
   UpdateCategory,
 } from "../data/models";
 import { inject, Service } from "@angular/core";
@@ -38,21 +39,6 @@ export class CategoryService {
     return this.getByIdFrom(this.persistenceProvider, id);
   }
 
-  private getByIdFrom(
-    db: PersistenceContext,
-    id: string,
-  ): Observable<Category> {
-    return db.categories.get(id).pipe(
-      map((category) => {
-        if (!category || category.deletedAt !== null) {
-          throw new Error("Category not found");
-        }
-
-        return category;
-      }),
-    );
-  }
-
   add(input: AddCategory): Observable<CategoryMutationResult> {
     return this.persistenceProvider.doTransaction(
       "readwrite",
@@ -60,63 +46,15 @@ export class CategoryService {
       (db) =>
         this.validateUniqueCategory(db, input.name, input.type).pipe(
           switchMap(() =>
-            this.getAssignableTransactions(
+            this.createOrUpdateCategory(
               db,
               input.transactionIds,
               input.type,
+              null,
+              input,
             ),
           ),
-          switchMap((assignableTransactions) => {
-            const now = new Date().toISOString();
-
-            const categoryData: Omit<Category, keyof SyncMetadata> = {
-              id: crypto.randomUUID(),
-              name: this.cleanCategoryName(input.name),
-              type: input.type,
-              createdAt: now,
-              updatedAt: now,
-              deletedAt: null,
-            };
-
-            const { entity: category, mutation: categoryMutation } =
-              createMutation<Category>({
-                entityType: "category",
-                operation: "upsert",
-                timestamp: now,
-                previousEntity: null,
-                nextEntityData: categoryData,
-              });
-
-            const transactionResults = assignableTransactions.map(
-              (transaction) =>
-                createMutation<Transaction>({
-                  previousEntity: transaction,
-                  nextEntityData: {
-                    id: transaction.id,
-                    type: transaction.type,
-                    amountInCents: transaction.amountInCents,
-                    description: transaction.description,
-                    occurredOn: transaction.occurredOn,
-                    categoryId: category.id,
-                    createdAt: transaction.createdAt,
-                    updatedAt: now,
-                    deletedAt: transaction.deletedAt,
-                  },
-                  entityType: "transaction",
-                  operation: "upsert",
-                  timestamp: now,
-                }),
-            );
-
-            const updatedTransactions = transactionResults.map(
-              ({ entity }) => entity,
-            );
-
-            const mutations = [
-              categoryMutation,
-              ...transactionResults.map(({ mutation }) => mutation),
-            ];
-
+          switchMap(({ category, updatedTransactions, mutations }) => {
             return db.mutations.addMany(mutations).pipe(
               switchMap(() => db.categories.add(category)),
               switchMap(() => db.transactions.putMany(updatedTransactions)),
@@ -195,64 +133,15 @@ export class CategoryService {
                 ),
               ),
               switchMap(() =>
-                this.getAssignableTransactions(
+                this.createOrUpdateCategory(
                   db,
                   input.transactionIds,
                   input.type,
+                  existing,
+                  input,
                 ),
               ),
-              switchMap((assignableTransactions) => {
-                const now = new Date().toISOString();
-
-                const updatedCategoryData: Omit<Category, keyof SyncMetadata> =
-                  {
-                    id: existing.id,
-                    name: this.cleanCategoryName(input.name),
-                    type: input.type,
-                    createdAt: existing.createdAt,
-                    updatedAt: now,
-                    deletedAt: null,
-                  };
-
-                const { entity: category, mutation: categoryMutation } =
-                  createMutation<Category>({
-                    entityType: "category",
-                    operation: "upsert",
-                    timestamp: now,
-                    previousEntity: existing,
-                    nextEntityData: updatedCategoryData,
-                  });
-
-                const transactionResults = assignableTransactions.map(
-                  (transaction) =>
-                    createMutation<Transaction>({
-                      previousEntity: transaction,
-                      nextEntityData: {
-                        id: transaction.id,
-                        type: transaction.type,
-                        amountInCents: transaction.amountInCents,
-                        description: transaction.description,
-                        occurredOn: transaction.occurredOn,
-                        categoryId: category.id,
-                        createdAt: transaction.createdAt,
-                        updatedAt: now,
-                        deletedAt: transaction.deletedAt,
-                      },
-                      entityType: "transaction",
-                      operation: "upsert",
-                      timestamp: now,
-                    }),
-                );
-
-                const updatedTransactions = transactionResults.map(
-                  ({ entity }) => entity,
-                );
-
-                const mutations = [
-                  categoryMutation,
-                  ...transactionResults.map(({ mutation }) => mutation),
-                ];
-
+              switchMap(({ category, updatedTransactions, mutations }) => {
                 return db.mutations.addMany(mutations).pipe(
                   switchMap(() => db.categories.put(category)),
                   switchMap(() => db.transactions.putMany(updatedTransactions)),
@@ -269,6 +158,82 @@ export class CategoryService {
             ),
           ),
         ),
+    );
+  }
+
+  private getByIdFrom(
+    db: PersistenceContext,
+    id: string,
+  ): Observable<Category> {
+    return db.categories.get(id).pipe(
+      map((category) => {
+        if (!category || category.deletedAt !== null) {
+          throw new Error("Category not found");
+        }
+
+        return category;
+      }),
+    );
+  }
+
+  private createOrUpdateCategory(
+    db: PersistenceContext,
+    ids: string[] | undefined,
+    type: TransactionType,
+    item: Category | null,
+    input: AddCategory | UpdateCategory,
+  ) {
+    return this.getAssignableTransactions(db, ids, type).pipe(
+      map((assignableTransactions) => {
+        const now = new Date().toISOString();
+        const updatedItemData: Omit<Category, keyof SyncMetadata> = {
+          id: item ? item.id : crypto.randomUUID(),
+          name: this.cleanCategoryName(input.name),
+          type: input.type,
+          createdAt: item ? item.createdAt : now,
+          updatedAt: now,
+          deletedAt: null,
+        };
+        const { entity: category, mutation: categoryMutation } =
+          createMutation<Category>({
+            entityType: "category",
+            operation: "upsert",
+            timestamp: now,
+            previousEntity: item,
+            nextEntityData: updatedItemData,
+          });
+
+        const transactionResults = assignableTransactions.map((transaction) =>
+          createMutation<Transaction>({
+            previousEntity: transaction,
+            nextEntityData: {
+              id: transaction.id,
+              type: transaction.type,
+              amountInCents: transaction.amountInCents,
+              description: transaction.description,
+              occurredOn: transaction.occurredOn,
+              categoryId: category.id,
+              createdAt: transaction.createdAt,
+              updatedAt: now,
+              deletedAt: transaction.deletedAt,
+            },
+            entityType: "transaction",
+            operation: "upsert",
+            timestamp: now,
+          }),
+        );
+
+        const updatedTransactions = transactionResults.map(
+          ({ entity }) => entity,
+        );
+
+        const mutations = [
+          categoryMutation,
+          ...transactionResults.map(({ mutation }) => mutation),
+        ];
+
+        return { category, updatedTransactions, mutations };
+      }),
     );
   }
 
