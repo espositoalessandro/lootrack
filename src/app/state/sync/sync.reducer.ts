@@ -3,13 +3,19 @@ import {
   connectSync,
   connectSyncFailure,
   connectSyncSuccess,
+  loadPendingChanges,
+  loadPendingChangesFailure,
+  loadPendingChangesSuccess,
   synchronize,
   synchronizeConflictFailure,
   synchronizeConnectionRequired,
   synchronizeFailure,
   synchronizeSuccess,
 } from "./sync.actions";
-import { SyncConflictCandidate } from "../../core/models/models";
+import {
+  PendingEntityChanges,
+  SyncConflictCandidate,
+} from "../../core/models/models";
 
 export type SyncConnectionStatus = "disconnected" | "connecting" | "connected";
 
@@ -18,6 +24,10 @@ export interface SyncState {
   synchronizing: boolean;
   error: string | null;
   conflicts: readonly SyncConflictCandidate[];
+
+  pendingChanges: readonly PendingEntityChanges[];
+  pendingChangesLoading: boolean;
+  pendingChangesError: string | null;
 }
 
 export const initialSyncState: SyncState = {
@@ -25,6 +35,9 @@ export const initialSyncState: SyncState = {
   synchronizing: false,
   error: null,
   conflicts: [],
+  pendingChanges: [],
+  pendingChangesLoading: false,
+  pendingChangesError: null,
 };
 
 export const syncReducer = createReducer(
@@ -86,5 +99,24 @@ export const syncReducer = createReducer(
     connectionStatus: "disconnected" as const,
     synchronizing: false,
     error: null,
+  })),
+
+  on(loadPendingChanges, (state) => ({
+    ...state,
+    pendingChangesLoading: true,
+    pendingChangesError: null,
+  })),
+
+  on(loadPendingChangesSuccess, (state, { pendingChanges }) => ({
+    ...state,
+    pendingChanges,
+    pendingChangesLoading: false,
+    pendingChangesError: null,
+  })),
+
+  on(loadPendingChangesFailure, (state, { error }) => ({
+    ...state,
+    pendingChangesLoading: false,
+    pendingChangesError: error,
   })),
 );

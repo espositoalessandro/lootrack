@@ -17,7 +17,7 @@ import {
   updateAppSettings,
 } from "./state/app-settings/app-settings.actions";
 import { selectAppSettings } from "./state/app-settings/app-settings.selector";
-import { synchronize } from "./state/sync/sync.actions";
+import { loadPendingChanges, synchronize } from "./state/sync/sync.actions";
 import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
 import { isAppLoading } from "./state/global.selector";
 
@@ -70,5 +70,6 @@ export class App implements OnInit {
     this.store.dispatch(loadCategories());
     this.store.dispatch(loadTransactions());
     this.store.dispatch(loadAppSettings());
+    this.store.dispatch(loadPendingChanges());
   }
 }

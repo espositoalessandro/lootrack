@@ -179,3 +179,16 @@ export interface CategoryMutationResult {
   category: Category;
   transactions?: Transaction[];
 }
+
+export interface PendingChange {
+  readonly operation: SyncOperation;
+  readonly createdAt: string;
+  readonly beforeJson: string | null;
+  readonly afterJson: string;
+}
+
+export interface PendingEntityChanges {
+  readonly entityType: SyncEntityType;
+  readonly entityId: string;
+  readonly changes: readonly PendingChange[];
+}

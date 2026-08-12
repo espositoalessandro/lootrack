@@ -1,5 +1,8 @@
 import { createAction, props } from "@ngrx/store";
-import { SyncConflictCandidate } from "../../core/models/models";
+import {
+  PendingEntityChanges,
+  SyncConflictCandidate,
+} from "../../core/models/models";
 
 export const connectSync = createAction("[Sync] Connect Requested");
 
@@ -33,4 +36,20 @@ export const synchronizeConflictFailure = createAction(
   props<{
     conflicts: readonly SyncConflictCandidate[];
   }>(),
+);
+
+export const loadPendingChanges = createAction(
+  "[Sync] Pending Changes Load Requested",
+);
+
+export const loadPendingChangesSuccess = createAction(
+  "[Sync] Pending Changes Load Succeeded",
+  props<{
+    pendingChanges: readonly PendingEntityChanges[];
+  }>(),
+);
+
+export const loadPendingChangesFailure = createAction(
+  "[Sync] Pending Changes Load Failed",
+  props<{ error: string }>(),
 );

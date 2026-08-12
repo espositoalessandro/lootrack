@@ -1,11 +1,23 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { catchError, concatMap, defer, EMPTY, exhaustMap, map, of } from "rxjs";
+import {
+  catchError,
+  concatMap,
+  defer,
+  EMPTY,
+  exhaustMap,
+  map,
+  of,
+  switchMap,
+} from "rxjs";
 import { SYNC_PROVIDER } from "../../core/models/CONST";
 import {
   connectSync,
   connectSyncFailure,
   connectSyncSuccess,
+  loadPendingChanges,
+  loadPendingChangesFailure,
+  loadPendingChangesSuccess,
   synchronize,
   synchronizeConflictFailure,
   synchronizeConnectionRequired,
@@ -15,8 +27,19 @@ import {
 import { TuiDialogService, TuiNotificationService } from "@taiga-ui/core";
 import { SyncEngine } from "../../core/sync/sync-engine";
 import { SyncRunConflictError } from "../../core/models/errors";
-import { loadCategories } from "../categories/categories.actions";
-import { loadTransactions } from "../transactions/transactions.actions";
+import {
+  addCategorySuccess,
+  deleteCategorySuccess,
+  loadCategories,
+  updateCategorySuccess,
+} from "../categories/categories.actions";
+import {
+  addTransactionSuccess,
+  deleteTransactionSuccess,
+  loadTransactions,
+  updateTransactionSuccess,
+} from "../transactions/transactions.actions";
+import { PendingChangesService } from "../../core/services/pending-changes.service";
 
 @Injectable()
 export class SyncEffects {
@@ -25,6 +48,7 @@ export class SyncEffects {
   private readonly dialogs = inject(TuiDialogService);
   private readonly notifications = inject(TuiNotificationService);
   private readonly syncEngine = inject(SyncEngine);
+  private readonly pendingChangesService = inject(PendingChangesService);
 
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
@@ -129,6 +153,48 @@ export class SyncEffects {
     this.actions$.pipe(
       ofType(synchronizeSuccess),
       concatMap(() => [loadTransactions(), loadCategories()]),
+    ),
+  );
+
+  readonly refreshPendingChanges$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(
+        addTransactionSuccess,
+        updateTransactionSuccess,
+        deleteTransactionSuccess,
+        addCategorySuccess,
+        updateCategorySuccess,
+        deleteCategorySuccess,
+        synchronizeSuccess,
+      ),
+      map(() => loadPendingChanges()),
+    ),
+  );
+
+  readonly loadPendingChanges$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadPendingChanges),
+
+      switchMap(() =>
+        this.pendingChangesService.getAll().pipe(
+          map((pendingChanges) =>
+            loadPendingChangesSuccess({
+              pendingChanges,
+            }),
+          ),
+
+          catchError((error: unknown) =>
+            of(
+              loadPendingChangesFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to load pending changes",
+              }),
+            ),
+          ),
+        ),
+      ),
     ),
   );
 }
