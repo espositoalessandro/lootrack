@@ -174,7 +174,6 @@ export class SyncEffects {
         addCategorySuccess,
         updateCategorySuccess,
         deleteCategorySuccess,
-        synchronizeSuccess,
       ),
       map(() => loadPendingChanges()),
     ),
@@ -210,7 +209,7 @@ export class SyncEffects {
   readonly resolveConflict$ = createEffect(() =>
     this.actions$.pipe(
       ofType(resolveSyncConflict),
-      switchMap(({ conflict, resolution }) =>
+      concatMap(({ conflict, resolution }) =>
         this.conflictService.resolve(conflict, resolution).pipe(
           map(() =>
             resolveSyncConflictSuccess({

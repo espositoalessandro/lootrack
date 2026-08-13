@@ -17,10 +17,7 @@ import {
   Transaction,
 } from "../../core/models/models";
 import { selectCategory } from "../../state/categories/categories.selector";
-import {
-  ConflictResolution,
-  ConflictResolutionService,
-} from "../../core/services/conflict-resolution.service";
+import { ConflictResolution } from "../../core/services/conflict-resolution.service";
 import { resolveSyncConflict } from "../../state/sync/sync.actions";
 
 interface PendingFieldView {
@@ -53,7 +50,6 @@ interface PendingItemView {
 })
 export class PendingChanges {
   private readonly store = inject(Store);
-  private readonly conflictService = inject(ConflictResolutionService);
 
   protected readonly conflicts = this.store.selectSignal(selectConflicts);
   protected readonly pendingChanges =

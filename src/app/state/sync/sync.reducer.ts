@@ -121,16 +121,12 @@ export const syncReducer = createReducer(
     pendingChangesError: error,
   })),
 
-  on(resolveSyncConflictSuccess, (state, { entityType, entityId }) => {
-    const conflicts = state.conflicts.filter(
+  on(resolveSyncConflictSuccess, (state, { entityType, entityId }) => ({
+    ...state,
+    conflicts: state.conflicts.filter(
       (conflict) =>
         conflict.entityType !== entityType || conflict.entityId !== entityId,
-    );
-
-    return {
-      ...state,
-      conflicts,
-      error: conflicts.length === 0 ? null : state.error,
-    };
-  }),
+    ),
+    error: null,
+  })),
 );
