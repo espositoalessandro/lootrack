@@ -1,51 +1,75 @@
 import {
   TUI_DARK_MODE,
+  TuiButton,
+  TuiDialog,
   TuiLoader,
   TuiRoot,
   TuiScrollRef,
 } from "@taiga-ui/core";
-import { Component, effect, inject, OnInit } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, effect, inject, OnInit, signal } from "@angular/core";
+import { Router, RouterOutlet } from "@angular/router";
 import { Store } from "@ngrx/store";
-
-import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 import { loadCategories } from "./state/categories/categories.actions";
 import { loadTransactions } from "./state/transactions/transactions.actions";
-import { FloatingHeader } from "./layout/floating-header/floating-header";
 import {
   loadAppSettings,
   updateAppSettings,
 } from "./state/app-settings/app-settings.actions";
 import { selectAppSettings } from "./state/app-settings/app-settings.selector";
-import { loadPendingChanges, synchronize } from "./state/sync/sync.actions";
+import {
+  loadPendingChanges,
+  synchronize,
+  synchronizeConflictFailure,
+} from "./state/sync/sync.actions";
 import { TuiPullToRefresh } from "@taiga-ui/addon-mobile";
 import { isAppLoading } from "./state/global.selector";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { Actions, ofType } from "@ngrx/effects";
+import { selectConflictCount } from "./state/sync/sync.selector";
+import { FloatingHeader } from "./layout/floating-header/floating-header";
+import { FloatingFooter } from "./layout/floating-footer/floating-footer";
 
 @Component({
   selector: "app-root",
   imports: [
     RouterOutlet,
     TuiRoot,
-    FloatingFooter,
     TuiLoader,
-    FloatingHeader,
     TuiPullToRefresh,
     TuiScrollRef,
+    FloatingHeader,
+    FloatingFooter,
+    TuiDialog,
+    TuiButton,
   ],
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })
 export class App implements OnInit {
   private readonly store = inject(Store);
+  private readonly router = inject(Router);
+  private readonly actions$ = inject(Actions);
+
   protected readonly darkMode = inject(TUI_DARK_MODE);
 
   protected readonly isAppLoading = this.store.selectSignal(isAppLoading);
   protected readonly settings = this.store.selectSignal(selectAppSettings);
 
+  protected readonly conflictDialogOpen = signal(false);
+
+  protected readonly conflictCount =
+    this.store.selectSignal(selectConflictCount);
+
   constructor() {
     effect(() => {
       this.darkMode.set(this.settings().theme === "dark");
     });
+
+    this.actions$
+      .pipe(ofType(synchronizeConflictFailure), takeUntilDestroyed())
+      .subscribe(() => {
+        this.conflictDialogOpen.set(true);
+      });
   }
 
   ngOnInit(): void {
@@ -64,6 +88,11 @@ export class App implements OnInit {
 
   protected requestSynchronization(): void {
     this.store.dispatch(synchronize());
+  }
+
+  protected reviewConflicts(): void {
+    this.conflictDialogOpen.set(false);
+    void this.router.navigateByUrl("/pending-changes");
   }
 
   private async initializeApp(): Promise<void> {

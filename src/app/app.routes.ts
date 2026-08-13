@@ -60,7 +60,7 @@ export const routes: Routes = [
       ),
     data: {
       header: {
-        title: "Pending",
+        title: "Sync",
         leading: "back",
       },
     },

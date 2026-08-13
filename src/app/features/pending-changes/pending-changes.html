@@ -1,5 +1,46 @@
 <section class="space-y-4 p-4">
-  @if (pendingChanges().length === 0) {
+  @if (conflicts().length > 0) {
+  <section class="space-y-3">
+    <div class="flex gap-3">
+      <tui-icon
+        icon="@tui.triangle-alert"
+        class="text-(--tui-status-negative)"
+      />
+
+      <div>
+        <h2 class="font-semibold">
+          {{ conflicts().length === 1 ? '1 conflict needs attention' :
+          conflicts().length + ' conflicts need attention' }}
+        </h2>
+
+        <p class="text-sm opacity-60">
+          Synchronization is paused until these are resolved.
+        </p>
+      </div>
+    </div>
+
+    @for ( conflict of conflicts(); track conflict.entityType + ":" +
+    conflict.entityId ) {
+    <article tuiAppearance="floating" class="rounded-2xl p-4">
+      <header>
+        <div>
+          <strong> {{ conflictTitle(conflict) }} </strong>
+
+          <span>
+            {{ conflict.entityType === "transaction" ? "Transaction" :
+            "Category" }}
+          </span>
+        </div>
+      </header>
+
+      <p class="text-sm opacity-70">{{ conflictDescription(conflict) }}</p>
+    </article>
+    }
+  </section>
+
+  @if (pendingChanges().length > 0) {
+  <div class="my-6 border-t border-(--tui-border-normal)"></div>
+  } } @if (pendingChanges().length === 0) {
   <div class="py-12 text-center">
     <h2 class="text-lg font-medium">Everything is synchronized</h2>
 

@@ -33,3 +33,13 @@ export const selectHasConflicts = createSelector(
   selectSyncState,
   (state) => state.conflicts.length > 0,
 );
+
+export const selectConflicts = createSelector(
+  selectSyncState,
+  (state) => state.conflicts,
+);
+
+export const selectConflictCount = createSelector(
+  selectConflicts,
+  (conflicts) => conflicts.length,
+);

@@ -2,14 +2,18 @@ import { Component, computed, inject } from "@angular/core";
 import { Store } from "@ngrx/store";
 
 import {
+  selectConflicts,
   selectPendingChanges,
   selectPendingMutationCount,
 } from "../../state/sync/sync.selector";
-import { TuiAppearance } from "@taiga-ui/core";
+import { TuiAppearance, TuiIcon } from "@taiga-ui/core";
 import { DatePipe } from "@angular/common";
 import {
+  Category,
   EntityFieldChange,
   PendingEntityChanges,
+  RemoteEntity,
+  SyncConflictCandidate,
   Transaction,
 } from "../../core/models/models";
 import { selectCategory } from "../../state/categories/categories.selector";
@@ -38,13 +42,13 @@ interface PendingItemView {
 
 @Component({
   selector: "app-pending-changes",
-  imports: [TuiAppearance, DatePipe],
+  imports: [TuiAppearance, DatePipe, TuiIcon],
   templateUrl: "./pending-changes.html",
   styleUrl: "./pending-changes.scss",
 })
 export class PendingChanges {
   private readonly store = inject(Store);
-
+  protected readonly conflicts = this.store.selectSignal(selectConflicts);
   protected readonly pendingChanges =
     this.store.selectSignal(selectPendingChanges);
 
@@ -134,5 +138,28 @@ export class PendingChanges {
       entityId: pending.entityId,
       entityType: pending.entityType,
     } as PendingItemView;
+  }
+
+  protected conflictTitle(conflict: SyncConflictCandidate): string {
+    const local = JSON.parse(conflict.localPayloadJson) as RemoteEntity;
+
+    if (conflict.entityType === "transaction") {
+      return (local as Transaction).description.trim() || "Transaction";
+    }
+
+    return (local as Category).name;
+  }
+
+  protected conflictDescription(conflict: SyncConflictCandidate): string {
+    switch (conflict.reason) {
+      case "diverged":
+        return "This item changed both on this device and in Google Sheets.";
+
+      case "remote-missing":
+        return "This item exists on this device but is missing from Google Sheets.";
+
+      case "invalid-local-chain":
+        return "Lootrack could not safely replay your local changes on top of the Google Sheets version.";
+    }
   }
 }

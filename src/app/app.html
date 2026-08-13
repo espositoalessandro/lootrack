@@ -3,7 +3,7 @@
     <tui-loader
       class="block h-full"
       [overlay]="true"
-      [loading]="!!isAppLoading()"
+      [loading]="isAppLoading()"
     >
       <main tuiScrollRef class="app-content">
         <tui-pull-to-refresh
@@ -21,4 +21,37 @@
 
     <app-floating-footer />
   </div>
+
+  <ng-template
+    [tuiDialogOptions]="{
+    label: 'Sync needs your attention',
+    size: 's'
+  }"
+    [(tuiDialog)]="conflictDialogOpen"
+  >
+    <p>
+      {{ conflictCount() === 1 ? '1 item was changed in more than one place.' :
+      conflictCount() + ' items were changed in more than one place.' }}
+    </p>
+
+    <p>
+      Nothing has been overwritten. Synchronization is paused until you choose
+      which versions to keep.
+    </p>
+
+    <footer class="mt-4 flex justify-end gap-2">
+      <button
+        tuiButton
+        type="button"
+        appearance="secondary"
+        (click)="conflictDialogOpen.set(false)"
+      >
+        Later
+      </button>
+
+      <button tuiButton type="button" (click)="reviewConflicts()">
+        Review conflicts
+      </button>
+    </footer>
+  </ng-template>
 </tui-root>
