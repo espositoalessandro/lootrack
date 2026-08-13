@@ -1,6 +1,12 @@
-<header class="pointer-events-none absolute inset-x-0 top-0 z-20">
+<header
+  class="pointer-events-none absolute inset-x-0 top-0 z-20"
+  [class.tui-liquid-glass_blur]="true"
+>
   <section tuiPlatform="ios" class="pointer-events-auto w-full">
-    <tui-app-bar>
+    <tui-app-bar
+      [class.tui-liquid-glass_blur]="true"
+      style="--t-padding: calc(var(--safe-area-top))"
+    >
       @if (header().leading === "back") {
       <button
         tuiAppBarBack
