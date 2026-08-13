@@ -1,27 +1,32 @@
-<nav
-  tuiTabBar
-  aria-label="Primary navigation"
-  class="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center"
->
-  <button
+<nav tuiTabBar aria-label="Primary navigation">
+  <a
     tuiTabBarItem
-    type="button"
+    icon="@tui.plus"
     aria-label="Add transaction"
-    [routerLink]="[
-        {
-          outlets: {
-            sheet: ['new-transactions']
-          }
-        }
-      ]"
-  >
-    <tui-icon icon="@tui.plus" />
-  </button>
+    [routerLink]="[{ outlets: {sheet: ['new-transactions'] } }]"
+    routerLinkActive
+  ></a>
+  <a
+    tuiTabBarItem
+    routerLink="/"
+    routerLinkActive
+    icon="@tui.home"
+    aria-label="Home"
+    [routerLinkActiveOptions]="{ exact: true }"
+  ></a>
 
-  <button tuiTabBarItem type="button" aria-label="Home" routerLink="/">
-    <tui-icon icon="@tui.home" />
-  </button>
-  <button tuiTabBarItem type="button" aria-label="Home" routerLink="/list">
-    <tui-icon icon="@tui.list" />
-  </button>
+  <a
+    tuiTabBarItem
+    routerLink="/list"
+    routerLinkActive
+    icon="@tui.list"
+    aria-label="Transactions"
+  ></a>
+  <a
+    tuiTabBarItem
+    routerLink="/pending-changes"
+    routerLinkActive
+    icon="@tui.refresh-cw"
+    aria-label="Transactions"
+  ></a>
 </nav>
