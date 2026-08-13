@@ -35,12 +35,32 @@
 
       <p class="text-sm opacity-70">{{ conflictDescription(conflict) }}</p>
     </article>
+    <div class="mt-4 flex gap-2">
+      <button
+        tuiButton
+        type="button"
+        appearance="secondary"
+        (click)="resolveConflict(conflict, 'keep-remote')"
+      >
+        {{ conflict.remotePayloadJson === null ? "Discard local copy" :
+        "UseRemote" }}
+      </button>
+
+      <button
+        tuiButton
+        type="button"
+        (click)="resolveConflict(conflict, 'keep-local')"
+      >
+        {{ conflict.remotePayloadJson === null ? "Restore to remote" :
+        "KeepDevice" }}
+      </button>
+    </div>
     }
   </section>
 
   @if (pendingChanges().length > 0) {
   <div class="my-6 border-t border-(--tui-border-normal)"></div>
-  } } @if (pendingChanges().length === 0) {
+  } } @if ( conflicts().length === 0 && pendingChanges().length === 0 ) {
   <div class="py-12 text-center">
     <h2 class="text-lg font-medium">Everything is synchronized</h2>
 

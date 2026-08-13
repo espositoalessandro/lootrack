@@ -18,6 +18,9 @@ import {
   loadPendingChanges,
   loadPendingChangesFailure,
   loadPendingChangesSuccess,
+  resolveSyncConflict,
+  resolveSyncConflictFailure,
+  resolveSyncConflictSuccess,
   synchronize,
   synchronizeConflictFailure,
   synchronizeConnectionRequired,
@@ -40,6 +43,7 @@ import {
   updateTransactionSuccess,
 } from "../transactions/transactions.actions";
 import { PendingChangesService } from "../../core/services/pending-changes.service";
+import { ConflictResolutionService } from "../../core/services/conflict-resolution.service";
 
 @Injectable()
 export class SyncEffects {
@@ -49,6 +53,7 @@ export class SyncEffects {
   private readonly notifications = inject(TuiNotificationService);
   private readonly syncEngine = inject(SyncEngine);
   private readonly pendingChangesService = inject(PendingChangesService);
+  private readonly conflictService = inject(ConflictResolutionService);
 
   readonly connect$ = createEffect(() =>
     this.actions$.pipe(
@@ -151,8 +156,12 @@ export class SyncEffects {
 
   readonly reloadLocalStateAfterSync$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(synchronizeSuccess),
-      concatMap(() => [loadTransactions(), loadCategories()]),
+      ofType(synchronizeSuccess, resolveSyncConflictSuccess),
+      concatMap(() => [
+        loadTransactions(),
+        loadCategories(),
+        loadPendingChanges(),
+      ]),
     ),
   );
 
@@ -190,6 +199,32 @@ export class SyncEffects {
                   error instanceof Error
                     ? error.message
                     : "Unable to load pending changes",
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  readonly resolveConflict$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(resolveSyncConflict),
+      switchMap(({ conflict, resolution }) =>
+        this.conflictService.resolve(conflict, resolution).pipe(
+          map(() =>
+            resolveSyncConflictSuccess({
+              entityType: conflict.entityType,
+              entityId: conflict.entityId,
+            }),
+          ),
+          catchError((error: unknown) =>
+            of(
+              resolveSyncConflictFailure({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Unable to resolve conflict",
               }),
             ),
           ),

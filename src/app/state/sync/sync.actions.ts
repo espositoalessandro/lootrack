@@ -2,7 +2,9 @@ import { createAction, props } from "@ngrx/store";
 import {
   PendingEntityChanges,
   SyncConflictCandidate,
+  SyncEntityType,
 } from "../../core/models/models";
+import { ConflictResolution } from "../../core/services/conflict-resolution.service";
 
 export const connectSync = createAction("[Sync] Connect Requested");
 
@@ -51,5 +53,26 @@ export const loadPendingChangesSuccess = createAction(
 
 export const loadPendingChangesFailure = createAction(
   "[Sync] Pending Changes Load Failed",
+  props<{ error: string }>(),
+);
+
+export const resolveSyncConflict = createAction(
+  "[Sync] Conflict Resolution Requested",
+  props<{
+    conflict: SyncConflictCandidate;
+    resolution: ConflictResolution;
+  }>(),
+);
+
+export const resolveSyncConflictSuccess = createAction(
+  "[Sync] Conflict Resolution Succeeded",
+  props<{
+    entityType: SyncEntityType;
+    entityId: string;
+  }>(),
+);
+
+export const resolveSyncConflictFailure = createAction(
+  "[Sync] Conflict Resolution Failed",
   props<{ error: string }>(),
 );

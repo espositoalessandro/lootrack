@@ -6,6 +6,7 @@ import {
   loadPendingChanges,
   loadPendingChangesFailure,
   loadPendingChangesSuccess,
+  resolveSyncConflictSuccess,
   synchronize,
   synchronizeConflictFailure,
   synchronizeConnectionRequired,
@@ -119,4 +120,17 @@ export const syncReducer = createReducer(
     pendingChangesLoading: false,
     pendingChangesError: error,
   })),
+
+  on(resolveSyncConflictSuccess, (state, { entityType, entityId }) => {
+    const conflicts = state.conflicts.filter(
+      (conflict) =>
+        conflict.entityType !== entityType || conflict.entityId !== entityId,
+    );
+
+    return {
+      ...state,
+      conflicts,
+      error: conflicts.length === 0 ? null : state.error,
+    };
+  }),
 );

@@ -6,7 +6,7 @@ import {
   selectPendingChanges,
   selectPendingMutationCount,
 } from "../../state/sync/sync.selector";
-import { TuiAppearance, TuiIcon } from "@taiga-ui/core";
+import { TuiAppearance, TuiButton, TuiIcon } from "@taiga-ui/core";
 import { DatePipe } from "@angular/common";
 import {
   Category,
@@ -17,6 +17,11 @@ import {
   Transaction,
 } from "../../core/models/models";
 import { selectCategory } from "../../state/categories/categories.selector";
+import {
+  ConflictResolution,
+  ConflictResolutionService,
+} from "../../core/services/conflict-resolution.service";
+import { resolveSyncConflict } from "../../state/sync/sync.actions";
 
 interface PendingFieldView {
   label: string;
@@ -42,12 +47,14 @@ interface PendingItemView {
 
 @Component({
   selector: "app-pending-changes",
-  imports: [TuiAppearance, DatePipe, TuiIcon],
+  imports: [TuiAppearance, DatePipe, TuiIcon, TuiButton],
   templateUrl: "./pending-changes.html",
   styleUrl: "./pending-changes.scss",
 })
 export class PendingChanges {
   private readonly store = inject(Store);
+  private readonly conflictService = inject(ConflictResolutionService);
+
   protected readonly conflicts = this.store.selectSignal(selectConflicts);
   protected readonly pendingChanges =
     this.store.selectSignal(selectPendingChanges);
@@ -161,5 +168,12 @@ export class PendingChanges {
       case "invalid-local-chain":
         return "Lootrack could not safely replay your local changes on top of the Google Sheets version.";
     }
+  }
+
+  protected resolveConflict(
+    conflict: SyncConflictCandidate,
+    resolution: ConflictResolution,
+  ): void {
+    this.store.dispatch(resolveSyncConflict({ conflict, resolution }));
   }
 }
