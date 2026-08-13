@@ -55,7 +55,7 @@ export class App implements OnInit {
   protected readonly isAppLoading = this.store.selectSignal(isAppLoading);
   protected readonly settings = this.store.selectSignal(selectAppSettings);
 
-  protected readonly conflictDialogOpen = signal(false);
+  protected conflictDialogOpen = signal(false);
 
   protected readonly conflictCount =
     this.store.selectSignal(selectConflictCount);

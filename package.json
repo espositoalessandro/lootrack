@@ -63,6 +63,7 @@
     "esbuild@0.27.7": true,
     "lmdb@3.5.4": true,
     "msgpackr-extract@3.0.4": true,
-    "fsevents@2.3.3": true
+    "fsevents@2.3.3": true,
+    "node-gyp-build-optional-packages@5.2.2": true
   }
 }
